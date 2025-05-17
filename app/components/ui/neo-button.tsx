@@ -1,0 +1,52 @@
+"use client";
+
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { Button as ShadcnButton } from "~/components/ui/button";
+import { cn } from "~/lib/utils";
+
+const neoButtonVariants = cva("font-space-grotesk font-bold transition-all", {
+  variants: {
+    neoVariant: {
+      default: "neo-brutalist btn-hover-effect",
+      sm: "neo-brutalist-sm btn-hover-effect-sm",
+      yellow: "neo-brutalist-yellow btn-hover-effect-yellow",
+      red: "neo-brutalist-red btn-hover-effect-red",
+      none: "",
+    },
+  },
+  defaultVariants: {
+    neoVariant: "default",
+  },
+});
+
+export interface NeoButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof neoButtonVariants> {
+  asChild?: boolean;
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
+  size?: "default" | "sm" | "lg" | "icon";
+}
+
+const NeoButton = React.forwardRef<HTMLButtonElement, NeoButtonProps>(
+  ({ className, neoVariant, variant, size, ...props }, ref) => {
+    return (
+      <ShadcnButton
+        className={cn(neoButtonVariants({ neoVariant, className }))}
+        ref={ref}
+        variant={variant}
+        size={size}
+        {...props}
+      />
+    );
+  }
+);
+NeoButton.displayName = "NeoButton";
+
+export { NeoButton };
