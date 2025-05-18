@@ -65,7 +65,7 @@ export function MenuSection() {
   return (
     <section
       id="menu"
-      className="scroll-mt-24 bg-white py-20"
+      className="scroll-mt-20 bg-white py-20"
     >
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">

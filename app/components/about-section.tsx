@@ -8,7 +8,7 @@ export function AboutSection() {
   return (
     <section
       id="about"
-      className="bg-muted scroll-mt-24 overflow-x-hidden py-20"
+      className="bg-muted scroll-mt-20 overflow-x-hidden py-20"
     >
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-5xl">

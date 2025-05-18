@@ -29,7 +29,7 @@ export function ContactSection() {
   return (
     <section
       id="contact"
-      className="bg-secondary relative scroll-mt-24 py-20"
+      className="bg-secondary relative scroll-mt-20 py-20"
     >
       <div className="retro-pattern absolute inset-0"></div>
       <div className="relative container mx-auto px-4">
