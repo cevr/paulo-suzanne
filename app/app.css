@@ -2,6 +2,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
+@font-face {
+  font-family: 'Astrud';
+  src: url('/fonts/astrud.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: hsl(0 0% 100%);
@@ -93,6 +101,7 @@
     --font-serif: var(--font-serif);
     --font-space-grotesk: 'Space Grotesk', sans-serif;
     --font-inter: 'Inter', sans-serif;
+    --font-astrud: 'Astrud', sans-serif;
 
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
@@ -119,6 +128,11 @@
   html {
     scroll-behavior: smooth;
   }
+}
+
+@utility text-stroke-* {
+  /* prettier-ignore */
+  -webkit-text-stroke: --value(integer)px black;
 }
 
 .retro-pattern {
@@ -366,23 +380,4 @@
 
 .dark .btn-hover-effect-red-sm:hover {
   box-shadow: 5px 5px 0px 0px var(--primary);
-}
-
-.neo-brutalist-toast {
-  @apply border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)];
-  animation: toast-bounce 0.3s ease;
-}
-
-@keyframes toast-bounce {
-  0% {
-    transform: translateY(10px);
-    opacity: 0;
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
 }
