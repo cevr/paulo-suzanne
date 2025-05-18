@@ -1,18 +1,24 @@
-import { Form } from "react-router";
-import { useLanguage } from "../lib/language-provider";
-import { NeoButton } from "~/components/ui/neo-button";
+import { Form } from 'react-router';
+
+import { NeoButton } from '~/components/ui/neo-button';
+
+import { useLanguage } from '../lib/language-provider';
 
 export function LanguageSwitcher() {
   const { language, setLanguage } = useLanguage();
 
   return (
-    <Form action="/lang" method="post" navigate={false}>
+    <Form
+      action="/lang"
+      method="post"
+      navigate={false}
+    >
       <div className="flex items-center gap-2">
         <NeoButton
           variant="default"
-          neoVariant={language === "fr" ? "sm" : "whiteSm"}
+          neoVariant={language === 'fr' ? 'sm' : 'whiteSm'}
           size="sm"
-          onClick={() => setLanguage("fr")}
+          onClick={() => setLanguage('fr')}
           className="font-bold"
           name="lang"
           value="fr"
@@ -21,9 +27,9 @@ export function LanguageSwitcher() {
         </NeoButton>
         <NeoButton
           variant="default"
-          neoVariant={language === "en" ? "sm" : "whiteSm"}
+          neoVariant={language === 'en' ? 'sm' : 'whiteSm'}
           size="sm"
-          onClick={() => setLanguage("en")}
+          onClick={() => setLanguage('en')}
           className="font-bold"
           name="lang"
           value="en"

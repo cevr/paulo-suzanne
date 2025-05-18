@@ -1,5 +1,6 @@
-import { Link } from "react-router";
-import { useLanguage } from "../lib/language-provider";
+import { Link } from 'react-router';
+
+import { useLanguage } from '../lib/language-provider';
 
 export function Footer() {
   const { t } = useLanguage();
@@ -7,11 +8,14 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-black text-white border-t-4 border-primary">
+    <footer className="border-primary border-t-4 bg-black text-white">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className="grid gap-8 md:grid-cols-4">
           <div className="md:col-span-1">
-            <Link to="/" className="inline-block mb-4">
+            <Link
+              to="/"
+              className="mb-4 inline-block"
+            >
               <img
                 src="/images/logo.png"
                 alt="Paolo & Suzanne"
@@ -23,14 +27,14 @@ export function Footer() {
             <p className="text-gray-400">
               {t(
                 "Serving Quebec's favorite comfort food since 1980",
-                "Servant la cuisine réconfortante préférée du Québec depuis 1980"
+                'Servant la cuisine réconfortante préférée du Québec depuis 1980',
               )}
             </p>
           </div>
 
           <div>
-            <h3 className="text-xl font-space-grotesk font-bold mb-4">
-              {t("Quick Links", "Liens Rapides")}
+            <h3 className="font-space-grotesk mb-4 text-xl font-bold">
+              {t('Quick Links', 'Liens Rapides')}
             </h3>
             <ul className="space-y-2">
               <li>
@@ -38,7 +42,7 @@ export function Footer() {
                   to="#menu"
                   className="hover:text-primary transition-colors"
                 >
-                  {t("Menu", "Menu")}
+                  {t('Menu', 'Menu')}
                 </Link>
               </li>
               <li>
@@ -46,7 +50,7 @@ export function Footer() {
                   to="#about"
                   className="hover:text-primary transition-colors"
                 >
-                  {t("About", "À propos")}
+                  {t('About', 'À propos')}
                 </Link>
               </li>
               <li>
@@ -54,7 +58,7 @@ export function Footer() {
                   to="#location"
                   className="hover:text-primary transition-colors"
                 >
-                  {t("Location", "Emplacement")}
+                  {t('Location', 'Emplacement')}
                 </Link>
               </li>
               <li>
@@ -62,17 +66,17 @@ export function Footer() {
                   to="#contact"
                   className="hover:text-primary transition-colors"
                 >
-                  {t("Contact", "Contact")}
+                  {t('Contact', 'Contact')}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-xl font-space-grotesk font-bold mb-4">
-              {t("Contact Info", "Coordonnées")}
+            <h3 className="font-space-grotesk mb-4 text-xl font-bold">
+              {t('Contact Info', 'Coordonnées')}
             </h3>
-            <address className="not-italic space-y-2 text-gray-400">
+            <address className="space-y-2 text-gray-400 not-italic">
               <p>10721 Bd Pie-IX</p>
               <p>Montréal, QC H1H 4A9</p>
               <p>Canada</p>
@@ -81,25 +85,25 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-xl font-space-grotesk font-bold mb-4">
-              {t("Hours", "Heures d'ouverture")}
+            <h3 className="font-space-grotesk mb-4 text-xl font-bold">
+              {t('Hours', "Heures d'ouverture")}
             </h3>
-            <p className="text-xl font-space-grotesk font-bold text-secondary">
-              {t("OPEN 24/7", "OUVERT 24/7")}
+            <p className="font-space-grotesk text-secondary text-xl font-bold">
+              {t('OPEN 24/7', 'OUVERT 24/7')}
             </p>
-            <p className="text-gray-400 mt-2">
+            <p className="mt-2 text-gray-400">
               {t(
-                "Open 24 hours a day, 7 days a week",
-                "Ouvert 24 heures sur 24, 7 jours sur 7"
+                'Open 24 hours a day, 7 days a week',
+                'Ouvert 24 heures sur 24, 7 jours sur 7',
               )}
             </p>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-500">
+        <div className="mt-12 border-t border-gray-800 pt-8 text-center text-gray-500">
           <p>
-            © {currentYear} Paolo & Suzanne.{" "}
-            {t("All rights reserved.", "Tous droits réservés.")}
+            © {currentYear} Paolo & Suzanne.{' '}
+            {t('All rights reserved.', 'Tous droits réservés.')}
           </p>
         </div>
       </div>

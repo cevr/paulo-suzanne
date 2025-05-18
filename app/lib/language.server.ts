@@ -4,15 +4,16 @@ import {
   unstable_RouterContextProvider,
   type unstable_MiddlewareFunction,
   type unstable_RouterContext,
-} from "react-router";
-import { createTypedCookie } from "remix-utils/typed-cookie";
-import { z } from "zod"; //or another Standard Schema compatible library
-import { LangSchema, type Lang } from "./language";
+} from 'react-router';
+import { createTypedCookie } from 'remix-utils/typed-cookie';
+import { z } from 'zod'; //or another Standard Schema compatible library
 
-const cookie = createCookie("__ps_lang", {
+import { LangSchema, type Lang } from './language';
+
+const cookie = createCookie('__ps_lang', {
   httpOnly: true,
-  path: "/",
-  sameSite: "lax",
+  path: '/',
+  sameSite: 'lax',
 });
 
 const langCookie = createTypedCookie({
@@ -32,11 +33,11 @@ export const getLanguage = async (context: unstable_RouterContextProvider) => {
 
 export const LanguageMiddleware: unstable_MiddlewareFunction = async (
   { request, context },
-  next
+  next,
 ) => {
-  const cookieHeader = request.headers.get("Cookie");
+  const cookieHeader = request.headers.get('Cookie');
   const cookieValue = await langCookie.parse(cookieHeader);
-  const lang = cookieValue || "fr";
+  const lang = cookieValue || 'fr';
   context.set(cookieContext, lang);
   return next();
 };

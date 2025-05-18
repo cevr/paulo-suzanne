@@ -1,33 +1,56 @@
+import { Clock, MapPin } from 'lucide-react';
 
-
-import { MapPin, Clock } from "lucide-react"
-import { useLanguage } from "../lib/language-provider"
+import { useLanguage } from '../lib/language-provider';
 
 export function LocationSection() {
-  const { t } = useLanguage()
+  const { t } = useLanguage();
 
   const hours = [
-    { day: t("Monday", "Lundi"), hours: t("Open 24 Hours", "Ouvert 24 Heures") },
-    { day: t("Tuesday", "Mardi"), hours: t("Open 24 Hours", "Ouvert 24 Heures") },
-    { day: t("Wednesday", "Mercredi"), hours: t("Open 24 Hours", "Ouvert 24 Heures") },
-    { day: t("Thursday", "Jeudi"), hours: t("Open 24 Hours", "Ouvert 24 Heures") },
-    { day: t("Friday", "Vendredi"), hours: t("Open 24 Hours", "Ouvert 24 Heures") },
-    { day: t("Saturday", "Samedi"), hours: t("Open 24 Hours", "Ouvert 24 Heures") },
-    { day: t("Sunday", "Dimanche"), hours: t("Open 24 Hours", "Ouvert 24 Heures") },
-  ]
+    {
+      day: t('Monday', 'Lundi'),
+      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
+    },
+    {
+      day: t('Tuesday', 'Mardi'),
+      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
+    },
+    {
+      day: t('Wednesday', 'Mercredi'),
+      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
+    },
+    {
+      day: t('Thursday', 'Jeudi'),
+      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
+    },
+    {
+      day: t('Friday', 'Vendredi'),
+      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
+    },
+    {
+      day: t('Saturday', 'Samedi'),
+      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
+    },
+    {
+      day: t('Sunday', 'Dimanche'),
+      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
+    },
+  ];
 
   return (
-    <section id="location" className="py-20 bg-white scroll-mt-24">
+    <section
+      id="location"
+      className="scroll-mt-24 bg-white py-20"
+    >
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="inline-block text-4xl md:text-5xl font-space-grotesk font-black mb-4 bg-secondary p-4 neo-brutalist rotate-1">
-            {t("FIND US", "NOUS TROUVER")}
+        <div className="mb-12 text-center">
+          <h2 className="font-space-grotesk bg-secondary neo-brutalist mb-4 inline-block rotate-1 p-4 text-4xl font-black md:text-5xl">
+            {t('FIND US', 'NOUS TROUVER')}
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+        <div className="mx-auto grid max-w-5xl gap-12 md:grid-cols-2">
           <div>
-            <div className="neo-brutalist overflow-hidden h-[400px]">
+            <div className="neo-brutalist h-[400px] overflow-hidden">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2794.3133186774316!2d-73.6394359!3d45.5339675!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4cc91f0d7a25b70f%3A0x2f95c2f8d692c8e0!2sPaolo%20%26%20Suzanne!5e0!3m2!1sen!2sca!4v1715962921!5m2!1sen!2sca"
                 width="100%"
@@ -36,17 +59,22 @@ export function LocationSection() {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title={t("Paolo & Suzanne location map", "Carte de l'emplacement de Paolo & Suzanne")}
+                title={t(
+                  'Paolo & Suzanne location map',
+                  "Carte de l'emplacement de Paolo & Suzanne",
+                )}
               ></iframe>
             </div>
           </div>
 
           <div className="space-y-8">
-            <div className="bg-muted p-6 neo-brutalist-sm">
+            <div className="bg-muted neo-brutalist-sm p-6">
               <div className="flex items-start gap-4">
-                <MapPin className="h-6 w-6 text-primary shrink-0 mt-1" />
+                <MapPin className="text-primary mt-1 h-6 w-6 shrink-0" />
                 <div>
-                  <h3 className="text-xl font-space-grotesk font-bold mb-2">{t("Address", "Adresse")}</h3>
+                  <h3 className="font-space-grotesk mb-2 text-xl font-bold">
+                    {t('Address', 'Adresse')}
+                  </h3>
                   <p className="text-lg">
                     10721 Bd Pie-IX
                     <br />
@@ -58,14 +86,19 @@ export function LocationSection() {
               </div>
             </div>
 
-            <div className="bg-muted p-6 neo-brutalist-sm">
+            <div className="bg-muted neo-brutalist-sm p-6">
               <div className="flex items-start gap-4">
-                <Clock className="h-6 w-6 text-primary shrink-0 mt-1" />
+                <Clock className="text-primary mt-1 h-6 w-6 shrink-0" />
                 <div>
-                  <h3 className="text-xl font-space-grotesk font-bold mb-2">{t("Hours", "Heures d'ouverture")}</h3>
+                  <h3 className="font-space-grotesk mb-2 text-xl font-bold">
+                    {t('Hours', "Heures d'ouverture")}
+                  </h3>
                   <div className="space-y-1">
                     {hours.map((item, index) => (
-                      <div key={index} className="flex justify-between">
+                      <div
+                        key={index}
+                        className="flex justify-between"
+                      >
                         <span className="font-medium">{item.day}</span>
                         <span>{item.hours}</span>
                       </div>
@@ -78,5 +111,5 @@ export function LocationSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

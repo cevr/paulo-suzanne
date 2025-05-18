@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @layer base {
   :root {
@@ -128,7 +128,7 @@
 }
 
 .dark .neo-brutalist {
-  @apply border-4 border-primary text-white bg-black shadow-[8px_8px_0px_0px_var(--primary)];
+  @apply border-primary border-4 bg-black text-white shadow-[8px_8px_0px_0px_var(--primary)];
 }
 
 .neo-brutalist-sm {
@@ -136,7 +136,7 @@
 }
 
 .dark .neo-brutalist-sm {
-  @apply border-2 border-primary text-white bg-black shadow-[4px_4px_0px_0px_var(--primary)];
+  @apply border-primary border-2 bg-black text-white shadow-[4px_4px_0px_0px_var(--primary)];
 }
 
 .neo-brutalist-white {
@@ -160,7 +160,7 @@
 }
 
 .dark .neo-brutalist-yellow {
-  @apply border-4 border-secondary text-white bg-black shadow-[8px_8px_0px_0px_var(--secondary)];
+  @apply border-secondary border-4 bg-black text-white shadow-[8px_8px_0px_0px_var(--secondary)];
 }
 
 .neo-brutalist-yellow-sm {
@@ -168,7 +168,7 @@
 }
 
 .dark .neo-brutalist-yellow-sm {
-  @apply border-2 border-secondary text-white bg-black shadow-[4px_4px_0px_0px_var(--secondary)];
+  @apply border-secondary border-2 bg-black text-white shadow-[4px_4px_0px_0px_var(--secondary)];
 }
 
 .neo-brutalist-red {
@@ -176,7 +176,7 @@
 }
 
 .dark .neo-brutalist-red {
-  @apply border-4 border-primary text-white bg-black shadow-[8px_8px_0px_0px_var(--primary)];
+  @apply border-primary border-4 bg-black text-white shadow-[8px_8px_0px_0px_var(--primary)];
 }
 
 .neo-brutalist-red-sm {
@@ -184,11 +184,13 @@
 }
 
 .dark .neo-brutalist-red-sm {
-  @apply border-2 border-primary text-white bg-black shadow-[4px_4px_0px_0px_var(--primary)];
+  @apply border-primary border-2 bg-black text-white shadow-[4px_4px_0px_0px_var(--primary)];
 }
 
 .btn-hover-effect {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-hover-effect:hover {
@@ -210,7 +212,9 @@
 }
 
 .btn-hover-effect-sm {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-hover-effect-sm:hover {
@@ -232,7 +236,9 @@
 }
 
 .btn-hover-effect-white {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-hover-effect-white:hover {
@@ -254,7 +260,9 @@
 }
 
 .btn-hover-effect-white-sm {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-hover-effect-white-sm:hover {
@@ -276,11 +284,15 @@
 }
 
 .btn-hover-effect-yellow {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-hover-effect-yellow-sm {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-hover-effect-yellow-sm:hover {
@@ -311,7 +323,9 @@
 }
 
 .btn-hover-effect-red {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-hover-effect-red:hover {
@@ -333,7 +347,9 @@
 }
 
 .btn-hover-effect-red-sm {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-hover-effect-red-sm:hover {

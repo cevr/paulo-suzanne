@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { Menu, X } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router';
 
-import { Menu, X } from "lucide-react";
-import { useLanguage } from "../lib/language-provider";
-import { LanguageSwitcher } from "./language-switcher";
-import { Button } from "~/components/ui/button";
-import { NeoButton } from "~/components/ui/neo-button";
-import { Link } from "react-router";
+import { Button } from '~/components/ui/button';
+import { NeoButton } from '~/components/ui/neo-button';
+
+import { useLanguage } from '../lib/language-provider';
+import { LanguageSwitcher } from './language-switcher';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,29 +18,32 @@ export function Header() {
 
   const navItems = [
     {
-      href: "#menu",
-      label: t("Menu", "Menu"),
+      href: '#menu',
+      label: t('Menu', 'Menu'),
     },
     {
-      href: "#about",
-      label: t("About", "À propos"),
+      href: '#about',
+      label: t('About', 'À propos'),
     },
     {
-      href: "#location",
-      label: t("Location", "Emplacement"),
+      href: '#location',
+      label: t('Location', 'Emplacement'),
     },
     {
-      href: "#contact",
-      label: t("Contact", "Contact"),
+      href: '#contact',
+      label: t('Contact', 'Contact'),
     },
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-black text-white border-b-4 border-primary dark">
+    <header className="border-primary dark sticky top-0 z-50 border-b-4 bg-black text-white">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center">
+            <Link
+              to="/"
+              className="flex items-center"
+            >
               <img
                 src="/images/logo.png"
                 alt="Paolo & Suzanne"
@@ -52,20 +56,24 @@ export function Header() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-6">
+            <div className="hidden items-center gap-6 md:flex">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   to={item.href}
-                  className="font-space-grotesk text-lg font-bold hover:text-primary transition-colors"
+                  className="font-space-grotesk hover:text-primary text-lg font-bold transition-colors"
                 >
                   {item.label}
                 </Link>
               ))}
             </div>
 
-            <NeoButton variant="default" size="lg" className="hidden md:flex">
-              {t("Order Online", "Commander en ligne")}
+            <NeoButton
+              variant="default"
+              size="lg"
+              className="hidden md:flex"
+            >
+              {t('Order Online', 'Commander en ligne')}
             </NeoButton>
 
             {/* Mobile Order Button */}
@@ -73,9 +81,9 @@ export function Header() {
               variant="default"
               neoVariant="sm"
               size="sm"
-              className="md:hidden text-xs px-2 py-1"
+              className="px-2 py-1 text-xs md:hidden"
             >
-              {t("Order", "Commander")}
+              {t('Order', 'Commander')}
             </NeoButton>
 
             <Button
@@ -92,14 +100,14 @@ export function Header() {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-black text-white border-t-2 border-primary">
+        <div className="border-primary border-t-2 bg-black text-white md:hidden">
           <div className="container mx-auto px-4 py-4">
             <div className="flex flex-col gap-4">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   to={item.href}
-                  className="font-space-grotesk text-xl font-bold py-2 hover:text-primary transition-colors"
+                  className="font-space-grotesk hover:text-primary py-2 text-xl font-bold transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.label}
