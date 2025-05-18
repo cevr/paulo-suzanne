@@ -30,21 +30,25 @@ export function Hero() {
           </p>
 
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <NeoButton
-              variant="default"
-              size="lg"
-              className="text-lg"
-            >
-              <Link to="#menu">{t('View Menu', 'Voir le Menu')}</Link>
-            </NeoButton>
-            <NeoButton
-              variant="secondary"
-              neoVariant="yellow"
-              size="lg"
-              className="text-lg"
-            >
-              {t('Order Online', 'Commander en ligne')}
-            </NeoButton>
+            <Link to="#menu">
+              <NeoButton
+                variant="secondary"
+                neoVariant="yellow"
+                size="lg"
+                className="text-lg"
+              >
+                {t('View Menu', 'Voir le Menu')}
+              </NeoButton>
+            </Link>
+            <a>
+              <NeoButton
+                variant="default"
+                size="lg"
+                className="text-lg"
+              >
+                {t('Order Online', 'Commander en ligne')}
+              </NeoButton>
+            </a>
           </div>
         </div>
       </div>
