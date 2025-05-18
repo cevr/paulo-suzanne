@@ -139,6 +139,22 @@
   @apply border-2 border-primary text-white bg-black shadow-[4px_4px_0px_0px_var(--primary)];
 }
 
+.neo-brutalist-white {
+  @apply border-4 border-black bg-white text-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)];
+}
+
+.dark .neo-brutalist-white {
+  @apply border-4 border-white bg-black text-white shadow-[8px_8px_0px_0px_rgba(255,255,255,1)];
+}
+
+.neo-brutalist-white-sm {
+  @apply border-2 border-black bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)];
+}
+
+.dark .neo-brutalist-white-sm {
+  @apply border-2 border-white bg-black text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,1)];
+}
+
 .neo-brutalist-yellow {
   @apply border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)];
 }
@@ -213,6 +229,50 @@
 
 .dark .btn-hover-effect-sm:active {
   box-shadow: 3px 3px 0px 0px var(--primary);
+}
+
+.btn-hover-effect-white {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-hover-effect-white:hover {
+  transform: translateY(-2px);
+  box-shadow: 10px 10px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .btn-hover-effect-white:hover {
+  box-shadow: 10px 10px 0px 0px rgba(255, 255, 255, 1);
+}
+
+.btn-hover-effect-white:active {
+  transform: translateY(1px);
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .btn-hover-effect-white:active {
+  box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 1);
+}
+
+.btn-hover-effect-white-sm {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-hover-effect-white-sm:hover {
+  transform: translateY(-1px);
+  box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .btn-hover-effect-white-sm:hover {
+  box-shadow: 5px 5px 0px 0px rgba(255, 255, 255, 1);
+}
+
+.btn-hover-effect-white-sm:active {
+  transform: translateY(1px);
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.dark .btn-hover-effect-white-sm:active {
+  box-shadow: 3px 3px 0px 0px rgba(255, 255, 255, 1);
 }
 
 .btn-hover-effect-yellow {
