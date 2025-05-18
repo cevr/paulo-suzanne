@@ -45,9 +45,9 @@ export function Header() {
               className="flex items-center"
             >
               <img
-                src="/images/logo.png"
+                src="/images/logo-small.png"
                 alt="Paolo & Suzanne"
-                width={120}
+                width={60}
                 height={60}
                 className="h-12 w-auto"
               />

@@ -30,7 +30,7 @@ export function AboutSection() {
 
                 <p className="text-lg">
                   {t(
-                    "Born in 1980 out of friendship—and the irresistible pull of golden fries—Paulo et Suzanne has been Quebec City's go-to casse-croûte for over four decades.",
+                    "Born in 1980 out of friendship—and the irresistible pull of golden fries—Paulo et Suzanne has been Quebec's go-to casse-croûte for over four decades.",
                     "Né en 1980 d'une amitié—et de l'attrait irrésistible des frites dorées—Paulo et Suzanne est le casse-croûte incontournable de Québec depuis plus de quatre décennies.",
                   )}
                 </p>

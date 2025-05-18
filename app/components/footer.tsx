@@ -17,7 +17,7 @@ export function Footer() {
               className="mb-4 inline-block"
             >
               <img
-                src="/images/logo.png"
+                src="/images/logo-small.png"
                 alt="Paolo & Suzanne"
                 width={150}
                 height={75}
