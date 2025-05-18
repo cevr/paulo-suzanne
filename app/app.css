@@ -195,7 +195,7 @@
 
 .btn-hover-effect-yellow:active {
   transform: translateY(1px);
-  box-shadow: 6px 6px 0px 0px hsl(var(--secondary));
+  box-shadow: 6px 6px 0px 0px var(--secondary);
 }
 
 .btn-hover-effect-red {
@@ -204,12 +204,12 @@
 
 .btn-hover-effect-red:hover {
   transform: translateY(-2px);
-  box-shadow: 10px 10px 0px 0px hsl(var(--primary));
+  box-shadow: 10px 10px 0px 0px var(--primary);
 }
 
 .btn-hover-effect-red:active {
   transform: translateY(1px);
-  box-shadow: 6px 6px 0px 0px hsl(var(--primary));
+  box-shadow: 6px 6px 0px 0px var(--primary);
 }
 
 .btn-hover-effect-red-sm {
