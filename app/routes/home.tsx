@@ -32,20 +32,6 @@ export function meta({ matches }: Route.MetaArgs) {
   ];
 }
 
-export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData();
-  const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
-  const subject = formData.get('subject') as string;
-  const message = formData.get('message') as string;
-
-  // Here you would typically send the email using your preferred email service
-  // For example, using SendGrid, Mailgun, etc.
-  console.log('Contact form submission:', { name, email, subject, message });
-
-  return { success: true };
-}
-
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col">

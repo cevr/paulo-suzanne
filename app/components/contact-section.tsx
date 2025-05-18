@@ -1,30 +1,9 @@
 import { Facebook, Instagram, Mail, Phone } from 'lucide-react';
-import React from 'react';
-import { Form, useActionData } from 'react-router';
-import { toast } from 'sonner';
-
-import { Input } from '~/components/ui/input';
-import { NeoButton } from '~/components/ui/neo-button';
-import { Textarea } from '~/components/ui/textarea';
 
 import { useLanguage } from '../lib/language-provider';
 
 export function ContactSection() {
   const { t } = useLanguage();
-  const action = useActionData();
-  const formRef = React.useRef<HTMLFormElement>(null);
-
-  React.useEffect(() => {
-    if (action?.success) {
-      toast.success(
-        t(
-          'Thank you for your message! We will get back to you as soon as possible.',
-          'Merci pour votre message! Nous vous répondrons dans les plus brefs délais.',
-        ),
-      );
-      formRef.current?.reset();
-    }
-  }, [action]);
 
   return (
     <section
@@ -39,8 +18,8 @@ export function ContactSection() {
           </h2>
         </div>
 
-        <div className="mx-auto grid max-w-5xl gap-12 md:grid-cols-2">
-          <div className="neo-brutalist bg-white p-8">
+        <div className="mx-auto flex max-w-5xl flex-col items-center gap-12">
+          <div className="neo-brutalist bg-white p-8 md:min-w-xl">
             <h3 className="font-space-grotesk mb-6 text-2xl font-bold">
               {t('Get in Touch', 'Entrez en Contact')}
             </h3>
@@ -100,88 +79,6 @@ export function ContactSection() {
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="neo-brutalist bg-white p-8">
-            <h3 className="font-space-grotesk mb-6 text-2xl font-bold">
-              {t('Send a Message', 'Envoyez un Message')}
-            </h3>
-
-            <Form
-              method="post"
-              className="flex flex-col gap-4"
-              ref={formRef}
-            >
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="mb-1 block text-sm font-medium"
-                  >
-                    {t('Name', 'Nom')}
-                  </label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder={t('Your name', 'Votre nom')}
-                    className="neo-brutalist-sm"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="mb-1 block text-sm font-medium"
-                  >
-                    {t('Email', 'Courriel')}
-                  </label>
-                  <Input
-                    id="email"
-                    type="email"
-                    name="email"
-                    placeholder={t('Your email', 'Votre courriel')}
-                    className="neo-brutalist-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="subject"
-                  className="mb-1 block text-sm font-medium"
-                >
-                  {t('Subject', 'Sujet')}
-                </label>
-                <Input
-                  id="subject"
-                  name="subject"
-                  placeholder={t('Message subject', 'Sujet du message')}
-                  className="neo-brutalist-sm"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="message"
-                  className="mb-1 block text-sm font-medium"
-                >
-                  {t('Message', 'Message')}
-                </label>
-                <Textarea
-                  id="message"
-                  name="message"
-                  placeholder={t('Your message', 'Votre message')}
-                  rows={5}
-                  className="neo-brutalist-sm"
-                />
-              </div>
-
-              <NeoButton
-                type="submit"
-                className="w-full"
-              >
-                {t('Send Message', 'Envoyer le Message')}
-              </NeoButton>
-            </Form>
           </div>
         </div>
       </div>
