@@ -1,5 +1,7 @@
 import { Facebook, Instagram, Mail, Phone } from 'lucide-react';
+import React from 'react';
 import { Form, useActionData } from 'react-router';
+import { toast } from 'sonner';
 
 import { Input } from '~/components/ui/input';
 import { NeoButton } from '~/components/ui/neo-button';
@@ -10,6 +12,19 @@ import { useLanguage } from '../lib/language-provider';
 export function ContactSection() {
   const { t } = useLanguage();
   const action = useActionData();
+  const formRef = React.useRef<HTMLFormElement>(null);
+
+  React.useEffect(() => {
+    if (action?.success) {
+      toast.success(
+        t(
+          'Thank you for your message! We will get back to you as soon as possible.',
+          'Merci pour votre message! Nous vous répondrons dans les plus brefs délais.',
+        ),
+      );
+      formRef.current?.reset();
+    }
+  }, [action]);
 
   return (
     <section
@@ -91,7 +106,7 @@ export function ContactSection() {
             <Form
               method="post"
               className="flex flex-col gap-4"
-              navigate={false}
+              ref={formRef}
             >
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -163,11 +178,6 @@ export function ContactSection() {
                 {t('Send Message', 'Envoyer le Message')}
               </NeoButton>
             </Form>
-            {action?.success && (
-              <p className="text-green-500">
-                {t('Message sent successfully', 'Message envoyé avec succès')}
-              </p>
-            )}
           </div>
         </div>
       </div>

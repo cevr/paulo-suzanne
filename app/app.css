@@ -364,3 +364,22 @@
 .dark .btn-hover-effect-red-sm:hover {
   box-shadow: 5px 5px 0px 0px var(--primary);
 }
+
+.neo-brutalist-toast {
+  @apply border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)];
+  animation: toast-bounce 0.3s ease;
+}
+
+@keyframes toast-bounce {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

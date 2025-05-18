@@ -11,6 +11,7 @@ import type { Route } from './+types/root';
 
 import './app.css';
 
+import { Toaster } from './components/ui/sonner';
 import { LanguageProvider } from './lib/language-provider';
 import { getLanguage, LanguageMiddleware } from './lib/language.server';
 
@@ -60,6 +61,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
   return (
     <LanguageProvider initialLanguage={lang}>
       <Outlet />
+      <Toaster className="neo-brutalist-toast" />
     </LanguageProvider>
   );
 }
