@@ -53,22 +53,20 @@ function carouselReducer(
 }
 
 export function Carousel({ children, className, ...props }: CarouselProps) {
-  const [state, dispatch] = React.useReducer(carouselReducer, {
+  const state = React.useReducer(carouselReducer, {
     activeIndex: 0,
     length: React.Children.count(children),
   });
 
-  const value = React.useMemo(() => [state, dispatch] as const, [state]);
-
   return (
-    <CarouselContext.Provider value={value}>
+    <CarouselContext value={state}>
       <div
         className={cn('relative', className)}
         {...props}
       >
         {children}
       </div>
-    </CarouselContext.Provider>
+    </CarouselContext>
   );
 }
 
@@ -112,14 +110,7 @@ export function CarouselItem({
   className,
   ...props
 }: CarouselItemProps) {
-  return (
-    <div
-      className={cn('px-1', className)}
-      {...props}
-    >
-      {children}
-    </div>
-  );
+  return <div {...props}>{children}</div>;
 }
 
 export function CarouselPrevious({
