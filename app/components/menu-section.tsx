@@ -1,5 +1,4 @@
-;
-import { useLanguage } from "./language-provider";
+import { useLanguage } from "../lib/language-provider";
 import { NeoButton } from "~/components/ui/neo-button";
 import { Download, FileText } from "lucide-react";
 
@@ -55,7 +54,7 @@ export function MenuSection() {
     <section id="menu" className="py-20 bg-white scroll-mt-24">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="inline-block text-4xl md:text-5xl font-space-grotesk font-black mb-4 bg-secondary p-4 neo-brutalist rotate-[-1deg]">
+          <h2 className="inline-block text-4xl md:text-5xl font-space-grotesk font-black mb-4 bg-secondary p-4 neo-brutalist -rotate-1">
             {t("OUR MENU", "NOTRE MENU")}
           </h2>
           <p className="text-xl max-w-2xl mx-auto mb-8">
@@ -72,7 +71,7 @@ export function MenuSection() {
                 <CarouselContent>
                   {foodImages.map((image, index) => (
                     <CarouselItem key={index}>
-                      <div className="relative aspect-[16/10] w-full">
+                      <div className="relative aspect-16/10 w-full">
                         <img
                           src={image.src || "/placeholder.svg"}
                           alt={image.alt}

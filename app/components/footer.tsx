@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { useLanguage } from "./language-provider";
+import { useLanguage } from "../lib/language-provider";
 
 export function Footer() {
   const { t } = useLanguage();

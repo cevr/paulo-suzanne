@@ -7,13 +7,22 @@ import { Header } from "~/components/header";
 import { LocationSection } from "~/components/location-section";
 import { MenuSection } from "~/components/menu-section";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ params }: Route.MetaArgs) {
+  const { lang } = params;
+  const title =
+    lang === "fr"
+      ? "Paolo & Suzanne | L'Original Casse-Croûte"
+      : "Paolo & Suzanne | The Original Casse-Croûte";
+  const description =
+    lang === "fr"
+      ? "Poutine, burgers et sandwichs depuis 1980"
+      : "Poutine, burgers and sandwiches since 1980";
+
   return [
-    { title: "Paolo & Suzanne | L'Original Casse-Croûte" },
+    { title },
     {
       name: "description",
-      content:
-        "Poutine, burgers et sandwichs depuis 1980 | Poutine, burgers and sandwiches since 1980",
+      content: description,
     },
   ];
 }

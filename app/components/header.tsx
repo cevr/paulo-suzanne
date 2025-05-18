@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { Menu, X } from "lucide-react";
-import { useLanguage } from "./language-provider";
+import { useLanguage } from "../lib/language-provider";
 import { LanguageSwitcher } from "./language-switcher";
 import { Button } from "~/components/ui/button";
 import { NeoButton } from "~/components/ui/neo-button";

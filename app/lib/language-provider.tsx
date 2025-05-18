@@ -12,17 +12,23 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined
 );
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>("fr");
+export function LanguageProvider({
+  children,
+  initialLanguage,
+}: {
+  children: ReactNode;
+  initialLanguage: Language;
+}) {
+  const [language, setLanguage] = useState<Language>(initialLanguage);
 
   const t = (en: string, fr: string) => {
     return language === "en" ? en : fr;
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext value={{ language, setLanguage, t }}>
       {children}
-    </LanguageContext.Provider>
+    </LanguageContext>
   );
 }
 

@@ -114,6 +114,15 @@
   }
 }
 
+.retro-pattern {
+  background-image: radial-gradient(
+    circle at center,
+    rgba(212, 17.2, 17.2, 1) 1px,
+    transparent 0px
+  );
+  background-size: 20px 20px;
+}
+
 .neo-brutalist {
   @apply border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)];
 }
@@ -123,20 +132,19 @@
 }
 
 .neo-brutalist-yellow {
-  @apply border-4 border-black shadow-[8px_8px_0px_0px_theme(colors.secondary)];
+  @apply border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)];
+}
+
+.neo-brutalist-yellow-sm {
+  @apply border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)];
 }
 
 .neo-brutalist-red {
-  @apply border-4 border-black shadow-[8px_8px_0px_0px_theme(colors.primary)];
+  @apply border-4 border-black shadow-[8px_8px_0px_0px_var(--primary)];
 }
 
-.retro-pattern {
-  background-image: radial-gradient(
-    circle at center,
-    hsl(var(--secondary)) 0.5px,
-    transparent 0.5px
-  );
-  background-size: 15px 15px;
+.neo-brutalist-red-sm {
+  @apply border-2 border-black shadow-[4px_4px_0px_0px_var(--primary)];
 }
 
 .btn-hover-effect {
@@ -171,9 +179,18 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.btn-hover-effect-yellow-sm {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-hover-effect-yellow-sm:hover {
+  transform: translateY(-1px);
+  box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
+}
+
 .btn-hover-effect-yellow:hover {
   transform: translateY(-2px);
-  box-shadow: 10px 10px 0px 0px hsl(var(--secondary));
+  box-shadow: 10px 10px 0px 0px rgba(0, 0, 0, 1);
 }
 
 .btn-hover-effect-yellow:active {
@@ -193,4 +210,13 @@
 .btn-hover-effect-red:active {
   transform: translateY(1px);
   box-shadow: 6px 6px 0px 0px hsl(var(--primary));
+}
+
+.btn-hover-effect-red-sm {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-hover-effect-red-sm:hover {
+  transform: translateY(-1px);
+  box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
 }

@@ -1,7 +1,7 @@
 
 
 import { MapPin, Clock } from "lucide-react"
-import { useLanguage } from "./language-provider"
+import { useLanguage } from "../lib/language-provider"
 
 export function LocationSection() {
   const { t } = useLanguage()
@@ -20,7 +20,7 @@ export function LocationSection() {
     <section id="location" className="py-20 bg-white scroll-mt-24">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="inline-block text-4xl md:text-5xl font-space-grotesk font-black mb-4 bg-secondary p-4 neo-brutalist rotate-[1deg]">
+          <h2 className="inline-block text-4xl md:text-5xl font-space-grotesk font-black mb-4 bg-secondary p-4 neo-brutalist rotate-1">
             {t("FIND US", "NOUS TROUVER")}
           </h2>
         </div>
@@ -44,7 +44,7 @@ export function LocationSection() {
           <div className="space-y-8">
             <div className="bg-muted p-6 neo-brutalist-sm">
               <div className="flex items-start gap-4">
-                <MapPin className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+                <MapPin className="h-6 w-6 text-primary shrink-0 mt-1" />
                 <div>
                   <h3 className="text-xl font-space-grotesk font-bold mb-2">{t("Address", "Adresse")}</h3>
                   <p className="text-lg">
@@ -60,7 +60,7 @@ export function LocationSection() {
 
             <div className="bg-muted p-6 neo-brutalist-sm">
               <div className="flex items-start gap-4">
-                <Clock className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+                <Clock className="h-6 w-6 text-primary shrink-0 mt-1" />
                 <div>
                   <h3 className="text-xl font-space-grotesk font-bold mb-2">{t("Hours", "Heures d'ouverture")}</h3>
                   <div className="space-y-1">
