@@ -76,11 +76,22 @@ export function Footer() {
             <h3 className="font-space-grotesk mb-4 text-xl font-bold">
               {t('Contact Info', 'Coordonnées')}
             </h3>
-            <address className="space-y-2 text-gray-400 not-italic">
-              <p>10721 Bd Pie-IX</p>
-              <p>Montréal, QC H1H 4A9</p>
+            <address className="flex flex-col gap-2 text-gray-400 not-italic">
+              <p>5501 Boul Gouin O</p>
+              <p>Montréal, QC H4J 1C8</p>
               <p>Canada</p>
-              <p className="text-white">(514) 322-6336</p>
+              <a
+                href="tel:+15143365561"
+                className="text-white"
+              >
+                (514) 336-5561
+              </a>
+              <a
+                href="mailto:info@paoloetsuzanne.com"
+                className="text-white"
+              >
+                info@paoloetsuzanne.com
+              </a>
             </address>
           </div>
 
@@ -88,13 +99,10 @@ export function Footer() {
             <h3 className="font-space-grotesk mb-4 text-xl font-bold">
               {t('Hours', "Heures d'ouverture")}
             </h3>
-            <p className="font-space-grotesk text-secondary text-xl font-bold">
-              {t('OPEN 24/7', 'OUVERT 24/7')}
-            </p>
-            <p className="mt-2 text-gray-400">
+            <p className="font-space-grotesk text-secondary text-xl font-bold uppercase">
               {t(
-                'Open 24 hours a day, 7 days a week',
-                'Ouvert 24 heures sur 24, 7 jours sur 7',
+                'Weekdays 10am-3am, Weekends 24/7',
+                'En semaine 10h-3h, Fins de semaine 24/7',
               )}
             </p>
           </div>

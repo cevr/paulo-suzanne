@@ -23,10 +23,7 @@ export function Hero() {
           </h2>
 
           <p className="neo-brutalist mb-8 inline-block rotate-1 bg-white p-4 text-xl font-bold md:text-2xl">
-            {t(
-              'Open 24/7 - The Original Casse-Croûte',
-              "Ouvert 24/7 - L'Original Casse-Croûte",
-            )}
+            {t('The Original Casse-Croûte', "L'Original Casse-Croûte")}
           </p>
 
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
@@ -40,7 +37,11 @@ export function Hero() {
                 {t('View Menu', 'Voir le Menu')}
               </NeoButton>
             </Link>
-            <a>
+            <a
+              href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <NeoButton
                 variant="default"
                 size="lg"

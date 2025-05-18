@@ -68,23 +68,37 @@ export function Header() {
               ))}
             </div>
 
-            <NeoButton
-              variant="default"
-              size="lg"
+            <a
+              href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
+              target="_blank"
+              rel="noopener noreferrer"
               className="hidden md:flex"
             >
-              {t('Order Online', 'Commander en ligne')}
-            </NeoButton>
+              <NeoButton
+                variant="default"
+                size="lg"
+                className="hidden md:flex"
+              >
+                {t('Order Online', 'Commander en ligne')}
+              </NeoButton>
+            </a>
 
             {/* Mobile Order Button */}
-            <NeoButton
-              variant="default"
-              neoVariant="sm"
-              size="sm"
-              className="px-2 py-1 text-xs md:hidden"
+            <a
+              href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="md:hidden"
             >
-              {t('Order', 'Commander')}
-            </NeoButton>
+              <NeoButton
+                variant="default"
+                neoVariant="sm"
+                size="sm"
+                className="px-2 py-1 text-xs md:hidden"
+              >
+                {t('Order', 'Commander')}
+              </NeoButton>
+            </a>
 
             <Button
               variant="ghost"

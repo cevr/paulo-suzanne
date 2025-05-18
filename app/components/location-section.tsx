@@ -4,35 +4,25 @@ import { useLanguage } from '../lib/language-provider';
 
 export function LocationSection() {
   const { t } = useLanguage();
-
   const hours = [
-    {
-      day: t('Monday', 'Lundi'),
-      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
-    },
-    {
-      day: t('Tuesday', 'Mardi'),
-      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
-    },
-    {
-      day: t('Wednesday', 'Mercredi'),
-      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
-    },
-    {
-      day: t('Thursday', 'Jeudi'),
-      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
-    },
+    { day: t('Monday', 'Lundi'), hours: t('10am to 3am', '10h à 3h') },
+    { day: t('Tuesday', 'Mardi'), hours: t('10am to 3am', '10h à 3h') },
+    { day: t('Wednesday', 'Mercredi'), hours: t('10am to 3am', '10h à 3h') },
+    { day: t('Thursday', 'Jeudi'), hours: t('10am to 3am', '10h à 3h') },
     {
       day: t('Friday', 'Vendredi'),
-      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
+      hours: t(
+        'Opens at 10am (stays open overnight)',
+        'Ouvre à 10h (reste ouvert toute la nuit)',
+      ),
     },
     {
       day: t('Saturday', 'Samedi'),
-      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
+      hours: t('Open 24 hours', 'Ouvert 24 heures'),
     },
     {
       day: t('Sunday', 'Dimanche'),
-      hours: t('Open 24 Hours', 'Ouvert 24 Heures'),
+      hours: t('Open until 3am Monday', "Ouvert jusqu'à 3h lundi"),
     },
   ];
 
@@ -50,9 +40,9 @@ export function LocationSection() {
 
         <div className="mx-auto grid max-w-5xl gap-12 md:grid-cols-2">
           <div>
-            <div className="neo-brutalist h-[400px] overflow-hidden">
+            <div className="neo-brutalist h-[460px] overflow-hidden">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2794.3133186774316!2d-73.6394359!3d45.5339675!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4cc91f0d7a25b70f%3A0x2f95c2f8d692c8e0!2sPaolo%20%26%20Suzanne!5e0!3m2!1sen!2sca!4v1715962921!5m2!1sen!2sca"
+                src="https://www.google.com/maps/embed/v1/place?q=5501+Boul+Gouin+O,+Montréal,+QC+H4J+1C8,+Canada&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
@@ -76,9 +66,9 @@ export function LocationSection() {
                     {t('Address', 'Adresse')}
                   </h3>
                   <p className="text-lg">
-                    10721 Bd Pie-IX
+                    5501 Boul Gouin O
                     <br />
-                    Montréal, QC H1H 4A9
+                    Montréal, QC H4J 1C8
                     <br />
                     Canada
                   </p>
@@ -86,21 +76,21 @@ export function LocationSection() {
               </div>
             </div>
 
-            <div className="bg-muted neo-brutalist-sm p-6">
+            <div className="bg-muted neo-brutalist-sm p-6 pr-12">
               <div className="flex items-start gap-4">
                 <Clock className="text-primary mt-1 h-6 w-6 shrink-0" />
-                <div>
+                <div className="flex flex-1 flex-col">
                   <h3 className="font-space-grotesk mb-2 text-xl font-bold">
                     {t('Hours', "Heures d'ouverture")}
                   </h3>
-                  <div className="space-y-1">
+                  <div className="gap-1">
                     {hours.map((item, index) => (
                       <div
                         key={index}
                         className="flex justify-between"
                       >
                         <span className="font-medium">{item.day}</span>
-                        <span>{item.hours}</span>
+                        <span className="text-right">{item.hours}</span>
                       </div>
                     ))}
                   </div>

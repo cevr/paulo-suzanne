@@ -1,4 +1,5 @@
 import { Facebook, Instagram, Mail, Phone } from 'lucide-react';
+import { Form, useActionData } from 'react-router';
 
 import { Input } from '~/components/ui/input';
 import { NeoButton } from '~/components/ui/neo-button';
@@ -8,6 +9,7 @@ import { useLanguage } from '../lib/language-provider';
 
 export function ContactSection() {
   const { t } = useLanguage();
+  const action = useActionData();
 
   return (
     <section
@@ -35,7 +37,12 @@ export function ContactSection() {
                   <h4 className="text-lg font-medium">
                     {t('Phone', 'Téléphone')}
                   </h4>
-                  <p className="text-lg">(514) 322-6336</p>
+                  <a
+                    href="tel:+15143365561"
+                    className="text-lg"
+                  >
+                    (514) 336-5561
+                  </a>
                 </div>
               </div>
 
@@ -45,7 +52,12 @@ export function ContactSection() {
                   <h4 className="text-lg font-medium">
                     {t('Email', 'Courriel')}
                   </h4>
-                  <p className="text-lg">info@paoloetsuzanne.com</p>
+                  <a
+                    href="mailto:info@paoloetsuzanne.com"
+                    className="text-lg"
+                  >
+                    info@paoloetsuzanne.com
+                  </a>
                 </div>
               </div>
 
@@ -55,13 +67,13 @@ export function ContactSection() {
                 </h4>
                 <div className="flex gap-4">
                   <a
-                    href="#"
+                    href="https://www.instagram.com/pauloetsuzanne_officiel/"
                     className="bg-primary neo-brutalist-sm btn-hover-effect-sm hover:bg-primary/90 rounded-full p-3 text-white transition-colors"
                   >
                     <Instagram className="h-6 w-6" />
                   </a>
                   <a
-                    href="#"
+                    href="https://www.facebook.com/pauloetsuzanne247/"
                     className="bg-primary neo-brutalist-sm btn-hover-effect-sm hover:bg-primary/90 rounded-full p-3 text-white transition-colors"
                   >
                     <Facebook className="h-6 w-6" />
@@ -76,7 +88,11 @@ export function ContactSection() {
               {t('Send a Message', 'Envoyez un Message')}
             </h3>
 
-            <form className="space-y-4">
+            <Form
+              method="post"
+              className="flex flex-col gap-4"
+              navigate={false}
+            >
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label
@@ -87,6 +103,7 @@ export function ContactSection() {
                   </label>
                   <Input
                     id="name"
+                    name="name"
                     placeholder={t('Your name', 'Votre nom')}
                     className="neo-brutalist-sm"
                   />
@@ -101,6 +118,7 @@ export function ContactSection() {
                   <Input
                     id="email"
                     type="email"
+                    name="email"
                     placeholder={t('Your email', 'Votre courriel')}
                     className="neo-brutalist-sm"
                   />
@@ -116,6 +134,7 @@ export function ContactSection() {
                 </label>
                 <Input
                   id="subject"
+                  name="subject"
                   placeholder={t('Message subject', 'Sujet du message')}
                   className="neo-brutalist-sm"
                 />
@@ -130,6 +149,7 @@ export function ContactSection() {
                 </label>
                 <Textarea
                   id="message"
+                  name="message"
                   placeholder={t('Your message', 'Votre message')}
                   rows={5}
                   className="neo-brutalist-sm"
@@ -142,7 +162,12 @@ export function ContactSection() {
               >
                 {t('Send Message', 'Envoyer le Message')}
               </NeoButton>
-            </form>
+            </Form>
+            {action?.success && (
+              <p className="text-green-500">
+                {t('Message sent successfully', 'Message envoyé avec succès')}
+              </p>
+            )}
           </div>
         </div>
       </div>
