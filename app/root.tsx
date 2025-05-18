@@ -61,7 +61,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
   return (
     <LanguageProvider initialLanguage={lang}>
       <Outlet />
-      <Toaster className="neo-brutalist-toast" />
+      <Toaster />
     </LanguageProvider>
   );
 }

@@ -115,15 +115,19 @@ export function MenuSection() {
               </p>
 
               <div className="flex gap-4">
-                <NeoButton
-                  variant="default"
-                  size="lg"
-                  className="gap-2"
-                  onClick={() => window.open('/menu.pdf', '_blank')}
+                <a
+                  href="https://nebula.wsimg.com/d6f136992ba0c8cc1b43f24bb13938e2?AccessKeyId=4A810DB41D146C1A6336&disposition=0&alloworigin=1"
+                  target="_blank"
                 >
-                  <FileText size={18} />
-                  {t('View Menu', 'Voir le Menu')}
-                </NeoButton>
+                  <NeoButton
+                    variant="default"
+                    size="lg"
+                    className="gap-2"
+                  >
+                    <FileText size={18} />
+                    {t('View Menu', 'Voir le Menu')}
+                  </NeoButton>
+                </a>
               </div>
             </div>
           </div>
