@@ -14,6 +14,8 @@ const neoButtonVariants = cva("font-space-grotesk font-bold transition-all", {
       yellowSm: "neo-brutalist-yellow-sm btn-hover-effect-yellow-sm",
       red: "neo-brutalist-red btn-hover-effect-red",
       redSm: "neo-brutalist-red-sm btn-hover-effect-red-sm",
+      whiteSm: "neo-brutalist-white-sm btn-hover-effect-white-sm",
+      white: "neo-brutalist-white btn-hover-effect-white",
       none: "",
     },
   },

@@ -9,8 +9,8 @@ export function LanguageSwitcher() {
     <Form action="/lang" method="post" navigate={false}>
       <div className="flex items-center gap-2">
         <NeoButton
-          variant={language === "fr" ? "default" : "outline"}
-          neoVariant="sm"
+          variant="default"
+          neoVariant={language === "fr" ? "sm" : "whiteSm"}
           size="sm"
           onClick={() => setLanguage("fr")}
           className="font-bold"
@@ -20,8 +20,8 @@ export function LanguageSwitcher() {
           FR
         </NeoButton>
         <NeoButton
-          variant={language === "en" ? "default" : "outline"}
-          neoVariant="yellowSm"
+          variant="default"
+          neoVariant={language === "en" ? "sm" : "whiteSm"}
           size="sm"
           onClick={() => setLanguage("en")}
           className="font-bold"
