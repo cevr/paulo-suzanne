@@ -46,7 +46,7 @@ export function Header() {
             >
               <img
                 src="/images/logo-small.png"
-                alt="Paolo & Suzanne"
+                alt="Paulo & Suzanne"
                 width={60}
                 height={60}
                 className="h-12 w-auto"

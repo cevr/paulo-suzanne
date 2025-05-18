@@ -50,8 +50,8 @@ export function LocationSection() {
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 title={t(
-                  'Paolo & Suzanne location map',
-                  "Carte de l'emplacement de Paolo & Suzanne",
+                  'Paulo & Suzanne location map',
+                  "Carte de l'emplacement de Paulo & Suzanne",
                 )}
               ></iframe>
             </div>

@@ -16,8 +16,8 @@ export function meta({ matches }: Route.MetaArgs) {
 
   const title =
     lang === 'fr'
-      ? "Paolo & Suzanne | L'Original Casse-Croûte"
-      : 'Paolo & Suzanne | The Original Casse-Croûte';
+      ? "Paulo & Suzanne | L'Original Casse-Croûte"
+      : 'Paulo & Suzanne | The Original Casse-Croûte';
   const description =
     lang === 'fr'
       ? 'Poutine, burgers et sandwichs depuis 1980'

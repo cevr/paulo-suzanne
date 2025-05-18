@@ -18,7 +18,7 @@ export function Footer() {
             >
               <img
                 src="/images/logo-small.png"
-                alt="Paolo & Suzanne"
+                alt="Paulo & Suzanne"
                 width={150}
                 height={75}
                 className="h-16 w-auto"
@@ -87,10 +87,10 @@ export function Footer() {
                 (514) 336-5561
               </a>
               <a
-                href="mailto:info@paoloetsuzanne.com"
+                href="mailto:info@pauloetsuzanne.com"
                 className="text-white"
               >
-                info@paoloetsuzanne.com
+                info@pauloetsuzanne.com
               </a>
             </address>
           </div>
@@ -110,7 +110,7 @@ export function Footer() {
 
         <div className="mt-12 border-t border-gray-800 pt-8 text-center text-gray-500">
           <p>
-            © {currentYear} Paolo & Suzanne.{' '}
+            © {currentYear} Paulo & Suzanne.{' '}
             {t('All rights reserved.', 'Tous droits réservés.')}
           </p>
         </div>

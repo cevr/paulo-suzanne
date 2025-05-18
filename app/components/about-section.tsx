@@ -114,8 +114,8 @@ export function AboutSection() {
                     <img
                       src="/retro-diner-red-booths.png"
                       alt={t(
-                        'Paolo & Suzanne restaurant interior',
-                        'Intérieur du restaurant Paolo & Suzanne',
+                        'Paulo & Suzanne restaurant interior',
+                        'Intérieur du restaurant Paulo & Suzanne',
                       )}
                       width={500}
                       height={500}

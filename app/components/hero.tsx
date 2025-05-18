@@ -18,7 +18,7 @@ export function Hero() {
             </h1>
           </div>
 
-          <h2 className="font-space-grotesk mb-6 text-5xl font-black text-black md:text-7xl">
+          <h2 className="font-space-grotesk mb-6 text-5xl font-black text-black md:text-7xl text-balance">
             {t('LEGENDARY POUTINE & BURGERS', 'POUTINE & BURGERS LÉGENDAIRES')}
           </h2>
 

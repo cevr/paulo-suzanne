@@ -68,10 +68,10 @@ export function ContactSection() {
                     {t('Email', 'Courriel')}
                   </h4>
                   <a
-                    href="mailto:info@paoloetsuzanne.com"
+                    href="mailto:info@pauloetsuzanne.com"
                     className="text-lg"
                   >
-                    info@paoloetsuzanne.com
+                    info@pauloetsuzanne.com
                   </a>
                 </div>
               </div>
@@ -84,11 +84,15 @@ export function ContactSection() {
                   <a
                     href="https://www.instagram.com/pauloetsuzanne_officiel/"
                     className="bg-primary neo-brutalist-sm btn-hover-effect-sm hover:bg-primary/90 rounded-full p-3 text-white transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     <Instagram className="h-6 w-6" />
                   </a>
                   <a
                     href="https://www.facebook.com/pauloetsuzanne247/"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="bg-primary neo-brutalist-sm btn-hover-effect-sm hover:bg-primary/90 rounded-full p-3 text-white transition-colors"
                   >
                     <Facebook className="h-6 w-6" />

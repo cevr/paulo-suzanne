@@ -27,7 +27,7 @@ export function MenuSection() {
     },
     {
       src: '/deluxe-bacon-cheeseburger.png',
-      alt: t("Paolo's Special Burger", 'Burger Spécial de Paolo'),
+      alt: t("Paulo's Special Burger", 'Burger Spécial de Paulo'),
       description: t(
         'Double beef patty with all the fixings',
         'Double galette de bœuf avec toutes les garnitures',

@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "paolo-suzanne",
+      "name": "paulo-suzanne",
       "dependencies": {
         "@react-router/node": "^7.6.0",
         "@react-router/serve": "^7.6.0",
