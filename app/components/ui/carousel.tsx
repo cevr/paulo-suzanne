@@ -19,7 +19,8 @@ type CarouselState = {
 type CarouselAction =
   | { type: 'NEXT' }
   | { type: 'PREV' }
-  | { type: 'GOTO'; payload: number };
+  | { type: 'GOTO'; payload: number }
+  | { type: 'SET_LENGTH'; payload: number };
 
 export const CarouselContext = React.createContext<
   [CarouselState, React.Dispatch<CarouselAction>] | undefined
@@ -47,6 +48,11 @@ function carouselReducer(
         ...state,
         activeIndex: action.payload,
       };
+    case 'SET_LENGTH':
+      return {
+        ...state,
+        length: action.payload,
+      };
     default:
       return state;
   }
@@ -55,7 +61,7 @@ function carouselReducer(
 export function Carousel({ children, className, ...props }: CarouselProps) {
   const state = React.useReducer(carouselReducer, {
     activeIndex: 0,
-    length: React.Children.count(children),
+    length: 0,
   });
 
   return (
@@ -80,8 +86,12 @@ export function CarouselContent({
   className,
   ...props
 }: CarouselContentProps) {
-  const [state] = useCarousel();
+  const [state, dispatch] = useCarousel();
   const itemCount = React.Children.count(children);
+
+  React.useEffect(() => {
+    dispatch({ type: 'SET_LENGTH', payload: itemCount });
+  }, [itemCount]);
 
   return (
     <div

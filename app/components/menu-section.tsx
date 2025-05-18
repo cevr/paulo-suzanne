@@ -9,6 +9,7 @@ import {
   CarouselPrevious,
 } from '~/components/ui/carousel';
 import { NeoButton } from '~/components/ui/neo-button';
+import { cn } from '~/lib/utils';
 
 import { useLanguage } from '../lib/language-provider';
 
@@ -18,36 +19,46 @@ export function MenuSection() {
   // Food image data with descriptions
   const foodImages = [
     {
-      src: '/placeholder-xq2qh.png',
-      alt: t('Classic Poutine', 'Poutine Classique'),
-      description: t(
-        'Our famous classic poutine',
-        'Notre fameuse poutine classique',
-      ),
+      src: '/images/food/burger-guac.avif',
+      alt: t('Burger Guac', 'Burger Guac'),
+      description: t('Burger Guac', 'Burger Guac'),
     },
     {
-      src: '/deluxe-bacon-cheeseburger.png',
-      alt: t("Paulo's Special Burger", 'Burger Spécial de Paulo'),
-      description: t(
-        'Double beef patty with all the fixings',
-        'Double galette de bœuf avec toutes les garnitures',
-      ),
+      src: '/images/food/burger-poutine.avif',
+      alt: t('Burger Poutine', 'Burger Poutine'),
+      description: t('Burger Poutine', 'Burger Poutine'),
     },
     {
-      src: '/club-sandwich-fries.png',
-      alt: t('Club Sandwich', 'Sandwich Club'),
-      description: t(
-        'Triple-decker with chicken and bacon',
-        'Triple étage avec poulet et bacon',
-      ),
+      src: '/images/food/burger.avif',
+      alt: t('Burger', 'Burger'),
+      description: t('Burger', 'Burger'),
     },
     {
-      src: '/placeholder-0ruhj.png',
-      alt: t('Smoked Meat Sandwich', 'Sandwich au Smoked Meat'),
-      description: t(
-        'Montreal-style smoked meat',
-        'Smoked meat style Montréal',
-      ),
+      src: '/images/food/crepes.avif',
+      alt: t('Crepe', 'Crepe'),
+      description: t('Crepe', 'Crepe'),
+    },
+    {
+      src: '/images/food/fries.avif',
+      alt: t('Fries', 'Fries'),
+      description: t('Fries', 'Fries'),
+      className: 'object-top',
+    },
+    {
+      src: '/images/food/hot-dogs-poutine.avif',
+      alt: t('Hot Dogs Poutine', 'Hot Dogs Poutine'),
+      description: t('Hot Dogs Poutine', 'Hot Dogs Poutine'),
+    },
+    {
+      src: '/images/food/poutine-burger.avif',
+      alt: t('Poutine Burger', 'Poutine Burger'),
+      description: t('Poutine Burger', 'Poutine Burger'),
+    },
+    {
+      src: '/images/food/montrealaise.avif',
+      alt: t('Montrealais', 'Montrealais'),
+      description: t('Montrealais', 'Montrealais'),
+      className: 'object-top',
     },
   ];
 
@@ -75,13 +86,16 @@ export function MenuSection() {
                 <CarouselContent>
                   {foodImages.map((image, index) => (
                     <CarouselItem key={index}>
-                      <div className="relative aspect-16/10 w-full">
+                      <div className="relative flex size-full flex-col">
                         <img
                           src={image.src || '/placeholder.svg'}
                           alt={image.alt}
-                          className="object-cover"
+                          className={cn(
+                            'aspect-16/9 flex-1 object-cover',
+                            image.className,
+                          )}
                         />
-                        <div className="absolute right-0 bottom-0 left-0 w-full bg-black p-4 text-white">
+                        <div className="w-full bg-black p-4 text-white">
                           <h3 className="font-space-grotesk text-xl font-bold">
                             {image.alt}
                           </h3>
