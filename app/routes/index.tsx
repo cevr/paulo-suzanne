@@ -6,9 +6,13 @@ import { Hero } from "~/components/hero";
 import { Header } from "~/components/header";
 import { LocationSection } from "~/components/location-section";
 import { MenuSection } from "~/components/menu-section";
+import type { Lang } from "~/lib/language";
 
-export function meta({ params }: Route.MetaArgs) {
-  const { lang } = params;
+export function meta({ matches }: Route.MetaArgs) {
+  const { lang } = matches.find((match) => match?.id === "root")?.data as {
+    lang: Lang;
+  };
+
   const title =
     lang === "fr"
       ? "Paolo & Suzanne | L'Original Casse-Croûte"
