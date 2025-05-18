@@ -98,7 +98,7 @@ export function MenuSection() {
             <div className="flex flex-col items-center">
               <FileText size={64} className="text-primary mb-4" />
               <h3 className="text-2xl font-space-grotesk font-bold mb-2">
-                {t("Download Our Menu", "Téléchargez Notre Menu")}
+                {t("View Our Menu", "Voir Notre Menu")}
               </h3>
               <p className="text-center mb-6">
                 {t(
@@ -116,17 +116,6 @@ export function MenuSection() {
                 >
                   <FileText size={18} />
                   {t("View Menu", "Voir le Menu")}
-                </NeoButton>
-
-                <NeoButton
-                  variant="secondary"
-                  neoVariant="yellow"
-                  size="lg"
-                  className="gap-2"
-                  onClick={() => window.open("/menu.pdf", "download")}
-                >
-                  <Download size={18} />
-                  {t("Download PDF", "Télécharger PDF")}
                 </NeoButton>
               </div>
             </div>
