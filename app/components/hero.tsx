@@ -8,7 +8,7 @@ export function Hero() {
   const t = useTranslate();
 
   return (
-    <section className="bg-secondary relative overflow-hidden py-20 md:pb-32">
+    <section className="bg-secondary relative overflow-hidden pt-10 pb-20 md:pb-32">
       <div className="retro-pattern absolute inset-0"></div>
       <div className="relative z-10 container mx-auto px-4">
         <div className="mx-auto flex max-w-3xl flex-col items-center justify-center text-center">
