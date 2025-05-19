@@ -2,10 +2,10 @@ import { Link } from 'react-router';
 
 import { NeoButton } from '~/components/ui/neo-button';
 
-import { useLanguage } from '../lib/language-provider';
+import { useTranslate } from '../lib/language-provider';
 
 export function Hero() {
-  const { t } = useLanguage();
+  const t =useTranslate();
 
   return (
     <section className="bg-secondary relative overflow-hidden py-20 md:pb-32">

@@ -1,9 +1,9 @@
 import { Link } from 'react-router';
 
-import { useLanguage } from '../lib/language-provider';
+import { useTranslate } from '../lib/language-provider';
 
 export function Footer() {
-  const { t } = useLanguage();
+  const t =useTranslate();
 
   const currentYear = new Date().getFullYear();
 

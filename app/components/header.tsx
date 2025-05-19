@@ -5,13 +5,13 @@ import { Link } from 'react-router';
 import { Button } from '~/components/ui/button';
 import { NeoButton } from '~/components/ui/neo-button';
 
-import { useLanguage } from '../lib/language-provider';
+import { useTranslate } from '../lib/language-provider';
 import { LanguageSwitcher } from './language-switcher';
 
 export function Header() {
   const [_, startTransition] = useTransition();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { t } = useLanguage();
+  const t =useTranslate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);

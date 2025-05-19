@@ -11,10 +11,10 @@ import {
 import { NeoButton } from '~/components/ui/neo-button';
 import { cn } from '~/lib/utils';
 
-import { useLanguage } from '../lib/language-provider';
+import { useTranslate } from '../lib/language-provider';
 
 export function MenuSection() {
-  const { t } = useLanguage();
+  const t =useTranslate();
 
   // Food image data with descriptions
   const foodImages = [

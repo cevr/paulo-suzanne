@@ -1,9 +1,9 @@
 import { Clock, MapPin } from 'lucide-react';
 
-import { useLanguage } from '../lib/language-provider';
+import { useTranslate } from '../lib/language-provider';
 
 export function LocationSection() {
-  const { t } = useLanguage();
+  const t =useTranslate();
   const hours = [
     { day: t('Monday', 'Lundi'), hours: t('10am to 3am', '10h à 3h') },
     { day: t('Tuesday', 'Mardi'), hours: t('10am to 3am', '10h à 3h') },

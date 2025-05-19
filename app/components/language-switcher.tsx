@@ -1,11 +1,14 @@
+import { useTransition } from 'react';
 import { Form } from 'react-router';
 
 import { NeoButton } from '~/components/ui/neo-button';
 
-import { useLanguage } from '../lib/language-provider';
+import { useLanguage, useSetLanguage } from '../lib/language-provider';
 
 export function LanguageSwitcher() {
-  const { language, setLanguage } = useLanguage();
+  const [_, startTransition] = useTransition();
+  const language = useLanguage();
+  const setLanguage = useSetLanguage();
 
   return (
     <Form
@@ -18,7 +21,7 @@ export function LanguageSwitcher() {
           variant="default"
           neoVariant={language === 'fr' ? 'sm' : 'whiteSm'}
           size="sm"
-          onClick={() => setLanguage('fr')}
+          onClick={() => startTransition(() => setLanguage('fr'))}
           className="font-bold"
           name="lang"
           value="fr"

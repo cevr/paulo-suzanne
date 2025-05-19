@@ -1,9 +1,9 @@
 'use client';
 
-import { useLanguage } from '~/lib/language-provider';
+import { useTranslate } from '~/lib/language-provider';
 
 export function AboutSection() {
-  const { t } = useLanguage();
+  const t =useTranslate();
 
   return (
     <section

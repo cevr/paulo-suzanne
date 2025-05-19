@@ -1,9 +1,9 @@
 import { Facebook, Instagram, Mail, Phone } from 'lucide-react';
 
-import { useLanguage } from '../lib/language-provider';
+import { useTranslate } from '../lib/language-provider';
 
 export function ContactSection() {
-  const { t } = useLanguage();
+  const t =useTranslate();
 
   return (
     <section
