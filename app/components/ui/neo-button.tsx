@@ -39,19 +39,23 @@ export interface NeoButtonProps
   size?: 'default' | 'sm' | 'lg' | 'icon';
 }
 
-const NeoButton = React.forwardRef<HTMLButtonElement, NeoButtonProps>(
-  ({ className, neoVariant, variant, size, ...props }, ref) => {
-    return (
-      <ShadcnButton
-        className={cn(neoButtonVariants({ neoVariant, className }))}
-        ref={ref}
-        variant={variant}
-        size={size}
-        {...props}
-      />
-    );
-  },
-);
+function NeoButton({
+  className,
+  neoVariant,
+  variant,
+  size,
+  ...props
+}: NeoButtonProps) {
+  return (
+    <ShadcnButton
+      className={cn(neoButtonVariants({ neoVariant, className }))}
+      variant={variant}
+      size={size}
+      {...props}
+    />
+  );
+}
+
 NeoButton.displayName = 'NeoButton';
 
 export { NeoButton };

@@ -1,5 +1,5 @@
-import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { MenuIcon, XIcon } from 'lucide-react';
+import { useState, useTransition } from 'react';
 import { Link } from 'react-router';
 
 import { Button } from '~/components/ui/button';
@@ -9,6 +9,7 @@ import { useLanguage } from '../lib/language-provider';
 import { LanguageSwitcher } from './language-switcher';
 
 export function Header() {
+  const [_, startTransition] = useTransition();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t } = useLanguage();
 
@@ -103,34 +104,41 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={toggleMenu}
+              onClick={() => {
+                startTransition(() => toggleMenu());
+              }}
               className="md:hidden"
             >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMenuOpen ? (
+                <XIcon className="size-6" />
+              ) : (
+                <MenuIcon className="size-6" />
+              )}
             </Button>
           </div>
         </div>
       </div>
 
       {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="border-primary border-t-2 bg-black text-white md:hidden">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex flex-col gap-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className="font-space-grotesk hover:text-primary py-2 text-xl font-bold transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+      <div
+        data-visible={isMenuOpen ? '' : undefined}
+        className="border-primary absolute top-20 right-0 left-0 hidden border-t-2 bg-black text-white data-visible:block md:hidden"
+      >
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col gap-4">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className="font-space-grotesk hover:text-primary py-2 text-xl font-bold transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }

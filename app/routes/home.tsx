@@ -7,7 +7,7 @@ import { LocationSection } from '~/components/location-section';
 import { MenuSection } from '~/components/menu-section';
 import type { Lang } from '~/lib/language';
 
-import type { Route } from './+types/index';
+import type { Route } from './+types/home';
 
 export function meta({ matches }: Route.MetaArgs) {
   const { lang } = matches.find((match) => match?.id === 'root')?.data as {
