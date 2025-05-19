@@ -37,11 +37,11 @@ export function LanguageProvider({
 
   return (
     <LanguageContext.Provider value={language}>
-      <LanguageTranslationContext.Provider value={t}>
-        <SetLanguageContext.Provider value={setLanguage}>
+      <SetLanguageContext.Provider value={setLanguage}>
+        <LanguageTranslationContext.Provider value={t}>
           {children}
-        </SetLanguageContext.Provider>
-      </LanguageTranslationContext.Provider>
+        </LanguageTranslationContext.Provider>
+      </SetLanguageContext.Provider>
     </LanguageContext.Provider>
   );
 }
