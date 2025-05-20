@@ -3,7 +3,6 @@ import { useState, useTransition } from 'react';
 import { Link } from 'react-router';
 
 import { Button } from '~/components/ui/button';
-import { NeoButton } from '~/components/ui/neo-button';
 
 import { useTranslate } from '../lib/language-provider';
 import { LanguageSwitcher } from './language-switcher';
@@ -11,7 +10,7 @@ import { LanguageSwitcher } from './language-switcher';
 export function Header() {
   const [_, startTransition] = useTransition();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const t =useTranslate();
+  const t = useTranslate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -75,13 +74,14 @@ export function Header() {
               rel="noopener noreferrer"
               className="hidden md:flex"
             >
-              <NeoButton
-                variant="default"
+              <Button
+                variant="neo"
+                color="red"
                 size="lg"
-                className="hidden md:flex text-xl"
+                className="hidden text-xl md:flex"
               >
                 {t('Order Online', 'Commander en ligne')}
-              </NeoButton>
+              </Button>
             </a>
 
             {/* Mobile Order Button */}
@@ -91,14 +91,13 @@ export function Header() {
               rel="noopener noreferrer"
               className="md:hidden"
             >
-              <NeoButton
-                variant="default"
-                neoVariant="sm"
+              <Button
+                variant="neo"
                 size="sm"
                 className="px-2 py-1 text-lg md:hidden"
               >
                 {t('Order', 'Commander')}
-              </NeoButton>
+              </Button>
             </a>
 
             <Button

@@ -18,6 +18,13 @@ const buttonVariants = cva(
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
+        neo: 'font-space-grotesk font-bold',
+      },
+      color: {
+        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        yellow: 'neo-brutalist-yellow btn-hover-effect-yellow',
+        red: 'neo-brutalist-red btn-hover-effect-red',
+        white: 'neo-brutalist-white btn-hover-effect-white',
       },
       size: {
         default: 'h-10 px-4 py-2',
@@ -28,20 +35,55 @@ const buttonVariants = cva(
     },
     defaultVariants: {
       variant: 'default',
+      color: 'default',
       size: 'default',
     },
+    compoundVariants: [
+      {
+        variant: 'neo',
+        color: 'default',
+        className: 'neo-brutalist btn-hover-effect',
+      },
+      {
+        variant: 'neo',
+        size: 'sm',
+        color: 'default',
+        className: 'neo-brutalist-sm btn-hover-effect-sm',
+      },
+      {
+        variant: 'neo',
+        size: 'sm',
+        color: 'yellow',
+        className: 'neo-brutalist-yellow-sm btn-hover-effect-yellow-sm',
+      },
+      {
+        variant: 'neo',
+        size: 'sm',
+        color: 'red',
+        className: 'neo-brutalist-red-sm btn-hover-effect-red-sm',
+      },
+      {
+        variant: 'neo',
+        size: 'sm',
+        color: 'white',
+        className: 'neo-brutalist-white-sm btn-hover-effect-white-sm',
+      },
+    ],
   },
 );
 
+type ButtonVariantProps = VariantProps<typeof buttonVariants>;
+
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'color'>,
+    ButtonVariantProps {
   asChild?: boolean;
 }
 
 function Button({
   className,
   variant,
+  color,
   size,
   asChild = false,
   ...props
@@ -49,7 +91,7 @@ function Button({
   const Comp = asChild ? (Slot as any) : 'button';
   return (
     <Comp
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant, color, size, className }))}
       {...props}
     />
   );

@@ -1,8 +1,7 @@
 import { Link } from 'react-router';
 
-import { NeoButton } from '~/components/ui/neo-button';
-
 import { useTranslate } from '../lib/language-provider';
+import { Button } from './ui/button';
 
 export function Hero() {
   const t = useTranslate();
@@ -19,7 +18,7 @@ export function Hero() {
             </h1>
           </div>
 
-          <h2 className="font-space-grotesk mb-6 text-5xl font-black text-balance text-black md:text-7xl h-[144px]">
+          <h2 className="font-space-grotesk mb-6 h-[144px] text-5xl font-black text-balance text-black md:text-7xl">
             {t('LEGENDARY POUTINE & BURGERS', 'POUTINE & BURGERS LÉGENDAIRES')}
           </h2>
 
@@ -29,27 +28,27 @@ export function Hero() {
 
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Link to="#menu">
-              <NeoButton
-                variant="secondary"
-                neoVariant="yellow"
+              <Button
+                variant="neo"
+                color="yellow"
                 size="lg"
                 className="text-lg"
               >
                 {t('View Menu', 'Voir le Menu')}
-              </NeoButton>
+              </Button>
             </Link>
             <a
               href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <NeoButton
-                variant="default"
+              <Button
+                variant="neo"
                 size="lg"
                 className="text-lg"
               >
                 {t('Order Online', 'Commander en ligne')}
-              </NeoButton>
+              </Button>
             </a>
           </div>
         </div>

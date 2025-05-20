@@ -1,5 +1,6 @@
-import { Download, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
+import { Button } from '~/components/ui/button';
 import {
   Carousel,
   CarouselContent,
@@ -8,13 +9,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '~/components/ui/carousel';
-import { NeoButton } from '~/components/ui/neo-button';
 import { cn } from '~/lib/utils';
 
 import { useTranslate } from '../lib/language-provider';
 
 export function MenuSection() {
-  const t =useTranslate();
+  const t = useTranslate();
 
   // Food image data with descriptions
   const foodImages = [
@@ -133,14 +133,14 @@ export function MenuSection() {
                   href="https://nebula.wsimg.com/d6f136992ba0c8cc1b43f24bb13938e2?AccessKeyId=4A810DB41D146C1A6336&disposition=0&alloworigin=1"
                   target="_blank"
                 >
-                  <NeoButton
-                    variant="default"
+                  <Button
+                    variant="neo"
                     size="lg"
                     className="gap-2"
                   >
                     <FileText size={18} />
                     {t('View Menu', 'Voir le Menu')}
-                  </NeoButton>
+                  </Button>
                 </a>
               </div>
             </div>

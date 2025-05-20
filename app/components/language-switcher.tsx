@@ -1,7 +1,7 @@
 import { useTransition } from 'react';
 import { Form } from 'react-router';
 
-import { NeoButton } from '~/components/ui/neo-button';
+import { Button } from '~/components/ui/button';
 
 import { useLanguage, useSetLanguage } from '../lib/language-provider';
 
@@ -17,9 +17,9 @@ export function LanguageSwitcher() {
       navigate={false}
     >
       <div className="flex items-center gap-2">
-        <NeoButton
-          variant="default"
-          neoVariant={language === 'fr' ? 'sm' : 'whiteSm'}
+        <Button
+          variant="neo"
+          color={language === 'fr' ? 'red' : 'white'}
           size="sm"
           onClick={() => startTransition(() => setLanguage('fr'))}
           className="font-bold"
@@ -27,10 +27,10 @@ export function LanguageSwitcher() {
           value="fr"
         >
           FR
-        </NeoButton>
-        <NeoButton
-          variant="default"
-          neoVariant={language === 'en' ? 'sm' : 'whiteSm'}
+        </Button>
+        <Button
+          variant="neo"
+          color={language === 'en' ? 'red' : 'white'}
           size="sm"
           onClick={() => setLanguage('en')}
           className="font-bold"
@@ -38,7 +38,7 @@ export function LanguageSwitcher() {
           value="en"
         >
           EN
-        </NeoButton>
+        </Button>
       </div>
     </Form>
   );
