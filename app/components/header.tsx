@@ -78,7 +78,7 @@ export function Header() {
               <NeoButton
                 variant="default"
                 size="lg"
-                className="hidden md:flex"
+                className="hidden md:flex text-xl"
               >
                 {t('Order Online', 'Commander en ligne')}
               </NeoButton>
@@ -95,7 +95,7 @@ export function Header() {
                 variant="default"
                 neoVariant="sm"
                 size="sm"
-                className="px-2 py-1 text-xs md:hidden"
+                className="px-2 py-1 text-lg md:hidden"
               >
                 {t('Order', 'Commander')}
               </NeoButton>
