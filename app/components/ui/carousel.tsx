@@ -131,10 +131,10 @@ export function CarouselPrevious({
 
   return (
     <Button
-      variant="outline"
+      variant="neo"
       size="icon"
       className={cn(
-        'absolute top-1/2 left-2 z-10 h-8 w-8 -translate-y-1/2 rounded-full bg-white',
+        'absolute top-1/2 left-2 z-10 h-8 w-8 -translate-y-1/2 rounded-full',
         className,
       )}
       onClick={() => dispatch({ type: 'PREV' })}
@@ -154,10 +154,10 @@ export function CarouselNext({
 
   return (
     <Button
-      variant="outline"
+      variant="neo"
       size="icon"
       className={cn(
-        'absolute top-1/2 right-2 z-10 h-8 w-8 -translate-y-1/2 rounded-full bg-white',
+        'absolute top-1/2 right-3 z-10 h-8 w-8 -translate-y-1/2 rounded-full',
         className,
       )}
       onClick={() => dispatch({ type: 'NEXT' })}

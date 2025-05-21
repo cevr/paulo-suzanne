@@ -22,7 +22,7 @@ const buttonVariants = cva(
       },
       color: {
         default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        yellow: 'neo-brutalist-yellow btn-hover-effect-yellow',
+        yellow: 'neo-brutalist-yellow bg-secondary btn-hover-effect-yellow',
         red: 'neo-brutalist-red btn-hover-effect-red',
         white: 'neo-brutalist-white btn-hover-effect-white',
       },
@@ -67,6 +67,12 @@ const buttonVariants = cva(
         size: 'sm',
         color: 'white',
         className: 'neo-brutalist-white-sm btn-hover-effect-white-sm',
+      },
+      {
+        variant: 'neo',
+        size: 'icon',
+        color: 'default',
+        className: 'neo-brutalist-sm btn-hover-effect-sm',
       },
     ],
   },
