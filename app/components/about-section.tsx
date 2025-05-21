@@ -61,7 +61,7 @@ export function AboutSection() {
                       <p>
                         {t(
                           '2007: Manon and Angelo’s daughter, Alexia, jumped in at age 15 as our rookie bus girl—scrubbing tables, perfecting gravy ratios and soaking up every ounce of poutine wisdom.',
-                          '2007 : À 15 ans, Alexia, la fille de Manon et Angelo, a débarqué comme aide-serveuse débutante—elle lavait les tables, maîtrisait déjà le bon ratio de sauce brune et emmagasinait chaque parcelle de sagesse poutinienne.',
+                          '2007: À 15 ans, Alexia, la fille de Manon et Angelo, a débarqué comme aide-serveuse débutante—elle lavait les tables, maîtrisait déjà le bon ratio de sauce brune et emmagasinait chaque parcelle de sagesse poutinienne.',
                         )}
                       </p>
                     </li>
@@ -70,7 +70,7 @@ export function AboutSection() {
                       <p>
                         {t(
                           '2019: Diploma in hand and a lifetime of cheesy memories, Alexia officially took the helm—ushering in our third generation of flavour masters (and still hands-on with every fry!).',
-                          '2019 : Diplôme en poche et riche d’une vie entière de souvenirs bien fromagés, Alexia a officiellement pris les rênes—inaugurant la troisième génération de maîtres de la saveur (et continuant de mettre la main à la pâte… ou à la frite !).',
+                          '2019: Diplôme en poche et riche d’une vie entière de souvenirs bien fromagés, Alexia a officiellement pris les rênes—inaugurant la troisième génération de maîtres de la saveur (et continuant de mettre la main à la pâte… ou à la frite !).',
                         )}
                       </p>
                     </li>
