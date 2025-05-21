@@ -63,7 +63,7 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
     activeIndex: 0,
     length: 0,
   });
-  const timerRef = React.useRef<number | null>(null);
+  const timerRef = React.useRef<number | undefined>(undefined);
   const elementRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -71,10 +71,20 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
       state[1]({ type: 'NEXT' });
     }, 5000);
 
+    // if window is focused, reset timer
+    window.addEventListener('blur', () => {
+      clearTimeout(timerRef.current);
+    });
+
+    window.addEventListener('focus', () => {
+      clearTimeout(timerRef.current);
+      timerRef.current = window.setTimeout(() => {
+        state[1]({ type: 'NEXT' });
+      }, 5000);
+    });
+
     return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
+      clearTimeout(timerRef.current);
     };
   }, [state]);
 
