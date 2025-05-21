@@ -72,7 +72,7 @@ export function MenuSection() {
           <h2 className="font-space-grotesk bg-secondary neo-brutalist mb-4 inline-block -rotate-1 p-4 text-4xl font-black md:text-5xl">
             {t('OUR MENU', 'NOTRE MENU')}
           </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-xl">
+          <p className="mx-auto my-8 max-w-2xl text-2xl font-bold">
             {t(
               "Serving Quebec's favorite comfort food since 1980",
               'Servant la cuisine réconfortante préférée du Québec depuis 1980',

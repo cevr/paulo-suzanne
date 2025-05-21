@@ -63,11 +63,50 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
     activeIndex: 0,
     length: 0,
   });
+  const timerRef = React.useRef<number | null>(null);
+  const elementRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    timerRef.current = window.setTimeout(() => {
+      state[1]({ type: 'NEXT' });
+    }, 5000);
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [state]);
+
+  React.useEffect(() => {
+    // only if element or children are focused
+    function handleKeyDown(e: KeyboardEvent) {
+      if (
+        elementRef.current?.contains(document.activeElement) ||
+        elementRef.current === document.activeElement
+      ) {
+        if (e.key === 'ArrowRight') {
+          state[1]({ type: 'NEXT' });
+        }
+        if (e.key === 'ArrowLeft') {
+          state[1]({ type: 'PREV' });
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     <CarouselContext value={state}>
       <div
-        className={cn('relative', className)}
+        className={cn('relative outline-none', className)}
+        ref={elementRef}
+        tabIndex={0}
         {...props}
       >
         {children}
