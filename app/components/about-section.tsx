@@ -112,7 +112,7 @@ export function AboutSection() {
                 <div className="neo-brutalist-red aspect-square rotate-[2deg] bg-white p-4">
                   <div className="h-full w-full bg-gray-200">
                     <img
-                      src="/retro-diner-red-booths.avif"
+                      src="/indoor.avif"
                       alt={t(
                         'Paulo & Suzanne restaurant interior',
                         'Intérieur du restaurant Paulo & Suzanne',
