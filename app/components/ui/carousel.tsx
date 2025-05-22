@@ -57,16 +57,17 @@ function carouselReducer(
 }
 
 export function Carousel({ children, className, ...props }: CarouselProps) {
-  const state = React.useReducer(carouselReducer, {
+  const reducer = React.useReducer(carouselReducer, {
     activeIndex: 0,
     length: 0,
   });
   const timerRef = React.useRef<number | undefined>(undefined);
   const elementRef = React.useRef<HTMLDivElement>(null);
+  const [state, dispatch] = reducer;
 
   React.useEffect(() => {
     timerRef.current = window.setTimeout(() => {
-      state[1]({ type: 'NEXT' });
+      dispatch({ type: 'NEXT' });
     }, 5000);
 
     // if window is focused, reset timer
@@ -77,14 +78,14 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
     window.addEventListener('focus', () => {
       clearTimeout(timerRef.current);
       timerRef.current = window.setTimeout(() => {
-        state[1]({ type: 'NEXT' });
+        dispatch({ type: 'NEXT' });
       }, 5000);
     });
 
     return () => {
       clearTimeout(timerRef.current);
     };
-  }, [state]);
+  }, [state.activeIndex]);
 
   React.useEffect(() => {
     // only if element or children are focused
@@ -94,10 +95,10 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
         elementRef.current === document.activeElement
       ) {
         if (e.key === 'ArrowRight') {
-          state[1]({ type: 'NEXT' });
+          dispatch({ type: 'NEXT' });
         }
         if (e.key === 'ArrowLeft') {
-          state[1]({ type: 'PREV' });
+          dispatch({ type: 'PREV' });
         }
       }
     }
@@ -110,7 +111,7 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
   }, []);
 
   return (
-    <CarouselContext value={state}>
+    <CarouselContext value={reducer}>
       <div
         className={cn('relative outline-none', className)}
         ref={elementRef}
@@ -136,18 +137,177 @@ export function CarouselContent({
   const [state, dispatch] = useCarousel();
   const itemCount = React.Children.count(children);
 
+  // Drag state
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragOffset, setDragOffset] = React.useState(0);
+  const [startX, setStartX] = React.useState(0);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
   React.useEffect(() => {
     dispatch({ type: 'SET_LENGTH', payload: itemCount });
   }, [itemCount]);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setStartX(e.touches[0].clientX);
+    setDragOffset(0);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+
+    e.preventDefault();
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - startX;
+    const containerWidth = containerRef.current?.offsetWidth || 0;
+
+    // Convert pixel difference to percentage
+    const offsetPercentage = (diff / containerWidth) * 100;
+    setDragOffset(offsetPercentage);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+
+    e.preventDefault();
+    const containerWidth = containerRef.current?.offsetWidth || 0;
+    const threshold = containerWidth * 0.25; // 25% of container width
+    const pixelOffset = (dragOffset / 100) * containerWidth;
+
+    setIsDragging(false);
+
+    // Determine if we should navigate to next/prev
+    if (Math.abs(pixelOffset) > threshold) {
+      if (pixelOffset > 0) {
+        // Dragged right, go to previous
+        dispatch({ type: 'PREV' });
+      } else {
+        // Dragged left, go to next
+        dispatch({ type: 'NEXT' });
+      }
+    }
+
+    // Reset drag offset
+    setDragOffset(0);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setStartX(e.clientX);
+    setDragOffset(0);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+
+    const currentX = e.clientX;
+    const diff = currentX - startX;
+    const containerWidth = containerRef.current?.offsetWidth || 0;
+
+    // Convert pixel difference to percentage
+    const offsetPercentage = (diff / containerWidth) * 100;
+    setDragOffset(offsetPercentage);
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging) return;
+
+    const containerWidth = containerRef.current?.offsetWidth || 0;
+    const threshold = containerWidth * 0.25; // 25% of container width
+    const pixelOffset = (dragOffset / 100) * containerWidth;
+
+    setIsDragging(false);
+
+    // Determine if we should navigate to next/prev
+    if (Math.abs(pixelOffset) > threshold) {
+      if (pixelOffset > 0) {
+        // Dragged right, go to previous
+        dispatch({ type: 'PREV' });
+      } else {
+        // Dragged left, go to next
+        dispatch({ type: 'NEXT' });
+      }
+    }
+
+    // Reset drag offset
+    setDragOffset(0);
+  };
+
+  // Add global mouse event listeners for drag outside component
+  React.useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+
+      const currentX = e.clientX;
+      const diff = currentX - startX;
+      const containerWidth = containerRef.current?.offsetWidth || 0;
+
+      // Convert pixel difference to percentage
+      const offsetPercentage = (diff / containerWidth) * 100;
+      setDragOffset(offsetPercentage);
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (!isDragging) return;
+
+      const containerWidth = containerRef.current?.offsetWidth || 0;
+      const threshold = containerWidth * 0.25; // 25% of container width
+      const pixelOffset = (dragOffset / 100) * containerWidth;
+
+      setIsDragging(false);
+
+      // Determine if we should navigate to next/prev
+      if (Math.abs(pixelOffset) > threshold) {
+        if (pixelOffset > 0) {
+          // Dragged right, go to previous
+          dispatch({ type: 'PREV' });
+        } else {
+          // Dragged left, go to next
+          dispatch({ type: 'NEXT' });
+        }
+      }
+
+      // Reset drag offset
+      setDragOffset(0);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDragging, startX, dragOffset, dispatch]);
+
+  // Calculate the final transform value including drag offset
+  const baseTransform = -state.activeIndex * 100;
+  const finalTransform = baseTransform + dragOffset;
+
   return (
     <div
+      ref={containerRef}
       className={cn('overflow-hidden', className)}
       {...props}
     >
       <div
-        className="flex transition-transform duration-500 ease-in-out"
-        style={{ transform: `translateX(-${state.activeIndex * 100}%)` }}
+        className={cn(
+          'flex ease-in-out',
+          isDragging ? 'transition-none' : 'transition-transform duration-500',
+        )}
+        style={{
+          transform: `translateX(${finalTransform}%)`,
+          touchAction: 'pan-y pinch-zoom'
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
       >
         {React.Children.map(children, (child) => (
           <div className="min-w-0 flex-[0_0_100%]">{child}</div>
