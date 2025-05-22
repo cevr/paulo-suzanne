@@ -13,13 +13,13 @@ export function ContactSection() {
       <div className="retro-pattern absolute inset-0"></div>
       <div className="relative container mx-auto px-4">
         <div className="mb-12 text-center">
-          <h2 className="font-space-grotesk neo-brutalist-red mb-4 inline-block -rotate-1 bg-white p-4 text-4xl font-black md:text-5xl">
+          <h2 className="font-space-grotesk neo-brutalist-red mb-4 inline-block -rotate-1 bg-white p-4 text-4xl font-black lg:text-5xl">
             {t('CONTACT US', 'CONTACTEZ-NOUS')}
           </h2>
         </div>
 
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-12">
-          <div className="neo-brutalist bg-white p-8 md:min-w-xl">
+          <div className="neo-brutalist bg-white p-8 lg:min-w-xl">
             <h3 className="font-space-grotesk mb-6 text-2xl font-bold">
               {t('Get in Touch', 'Entrez en Contact')}
             </h3>

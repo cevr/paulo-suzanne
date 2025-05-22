@@ -55,8 +55,8 @@ export function Header() {
             <LanguageSwitcher />
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden items-center gap-6 md:flex">
+          <div className="flex items-center gap-4">
+            <div className="hidden items-center gap-6 lg:flex">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
@@ -72,13 +72,13 @@ export function Header() {
               href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:flex"
+              className="hidden lg:flex"
             >
               <Button
                 variant="neo"
                 color="red"
                 size="lg"
-                className="hidden text-xl md:flex"
+                className="hidden text-xl lg:flex"
               >
                 {t('Order Online', 'Commander en ligne')}
               </Button>
@@ -89,12 +89,12 @@ export function Header() {
               href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
               target="_blank"
               rel="noopener noreferrer"
-              className="md:hidden"
+              className="lg:hidden"
             >
               <Button
                 variant="neo"
                 size="sm"
-                className="px-2 py-1 text-lg md:hidden"
+                className="px-2 py-1 text-lg lg:hidden"
               >
                 {t('Order', 'Commander')}
               </Button>
@@ -106,7 +106,7 @@ export function Header() {
               onClick={() => {
                 startTransition(() => toggleMenu());
               }}
-              className="md:hidden"
+              className="lg:hidden bg-transparent"
             >
               {isMenuOpen ? (
                 <XIcon className="size-6" />
@@ -121,7 +121,7 @@ export function Header() {
       {/* Mobile menu */}
       <div
         data-visible={isMenuOpen ? '' : undefined}
-        className="border-primary absolute top-20 right-0 left-0 hidden border-t-2 bg-black text-white data-visible:block md:hidden"
+        className="border-primary absolute top-20 right-0 left-0 hidden border-t-2 bg-black text-white data-visible:block lg:hidden"
       >
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col gap-4">

@@ -69,7 +69,7 @@ export function MenuSection() {
     >
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
-          <h2 className="font-space-grotesk bg-secondary neo-brutalist mb-4 inline-block -rotate-1 p-4 text-4xl font-black md:text-5xl">
+          <h2 className="font-space-grotesk bg-secondary neo-brutalist mb-4 inline-block -rotate-1 p-4 text-4xl font-black lg:text-5xl">
             {t('OUR MENU', 'NOTRE MENU')}
           </h2>
           <p className="mx-auto my-8 max-w-2xl text-2xl font-bold">

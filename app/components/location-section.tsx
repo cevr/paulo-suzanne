@@ -33,12 +33,12 @@ export function LocationSection() {
     >
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
-          <h2 className="font-space-grotesk bg-secondary neo-brutalist mb-4 inline-block rotate-1 p-4 text-4xl font-black md:text-5xl">
+          <h2 className="font-space-grotesk bg-secondary neo-brutalist mb-4 inline-block rotate-1 p-4 text-4xl font-black lg:text-5xl">
             {t('FIND US', 'NOUS TROUVER')}
           </h2>
         </div>
 
-        <div className="mx-auto grid max-w-5xl gap-12 md:grid-cols-2">
+        <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2">
           <div>
             <div className="neo-brutalist h-[460px] overflow-hidden">
               <iframe

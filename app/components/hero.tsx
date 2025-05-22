@@ -7,7 +7,7 @@ export function Hero() {
   const t = useTranslate();
 
   return (
-    <section className="bg-secondary relative overflow-hidden pt-10 pb-20 md:pb-32">
+    <section className="bg-secondary relative overflow-hidden pt-10 pb-20 lg:pb-32">
       <div className="retro-pattern absolute inset-0"></div>
       <div className="relative z-10 container mx-auto px-4">
         <div className="mx-auto flex max-w-3xl flex-col items-center justify-center text-center">
@@ -18,11 +18,11 @@ export function Hero() {
             </h1>
           </div>
 
-          <h2 className="font-space-grotesk mb-6 h-[144px] text-5xl font-black text-balance text-black md:text-7xl">
+          <h2 className="font-space-grotesk mb-6 h-[144px] text-5xl font-black text-balance text-black lg:text-7xl">
             {t('LEGENDARY POUTINE & BURGERS', 'POUTINE & BURGERS LÉGENDAIRES')}
           </h2>
 
-          <p className="neo-brutalist mb-8 inline-block rotate-1 bg-white p-4 text-xl font-bold md:text-2xl">
+          <p className="neo-brutalist mb-8 inline-block rotate-1 bg-white p-4 text-xl font-bold lg:text-2xl">
             {t('The Original Casse-Croûte', "L'Original Casse-Croûte")}
           </p>
 

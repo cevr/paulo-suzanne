@@ -10,10 +10,10 @@ export function AboutSection() {
     >
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-5xl">
-          <div className="grid items-start gap-12 md:grid-cols-2">
+          <div className="grid items-start gap-12 lg:grid-cols-2">
             <div>
               <div className="bg-primary neo-brutalist-yellow mb-6 inline-block rotate-[-2deg] p-4">
-                <h2 className="font-space-grotesk text-3xl font-black text-white md:text-4xl">
+                <h2 className="font-space-grotesk text-3xl font-black text-white lg:text-4xl">
                   {t('OUR STORY', 'NOTRE HISTOIRE')}
                 </h2>
               </div>
@@ -139,7 +139,7 @@ export function AboutSection() {
                     />
                   </div>
                 </div>
-                <div className="bg-secondary neo-brutalist absolute -right-4 -bottom-8 rotate-[-3deg] p-4 md:-right-8">
+                <div className="bg-secondary neo-brutalist absolute -right-4 -bottom-8 rotate-[-3deg] p-4 lg:-right-8">
                   <p className="font-space-grotesk text-2xl font-black">
                     {t('SINCE 1980', 'DEPUIS 1980')}
                   </p>
