@@ -71,19 +71,24 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
     }, 5000);
 
     // if window is focused, reset timer
-    window.addEventListener('blur', () => {
-      clearTimeout(timerRef.current);
-    });
-
-    window.addEventListener('focus', () => {
+    function handleFocus() {
       clearTimeout(timerRef.current);
       timerRef.current = window.setTimeout(() => {
         dispatch({ type: 'NEXT' });
       }, 5000);
-    });
+    }
+
+    function handleBlur() {
+      clearTimeout(timerRef.current);
+    }
+    window.addEventListener('blur', handleBlur);
+
+    window.addEventListener('focus', handleFocus);
 
     return () => {
       clearTimeout(timerRef.current);
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
     };
   }, [state.activeIndex]);
 
@@ -300,7 +305,7 @@ export function CarouselContent({
         )}
         style={{
           transform: `translateX(${finalTransform}%)`,
-          touchAction: 'pan-y pinch-zoom'
+          touchAction: 'pan-y pinch-zoom',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
