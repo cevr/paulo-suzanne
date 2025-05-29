@@ -13,7 +13,7 @@ import './app.css';
 
 import { Toaster } from './components/ui/sonner';
 import { LanguageProvider } from './lib/language-provider';
-import { getLanguage, LanguageMiddleware } from './lib/language.server';
+import { getLanguage } from './lib/language.server';
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -42,12 +42,10 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-export const loader = async ({ context }: Route.LoaderArgs) => {
-  const lang = await getLanguage(context);
+export const loader = async ({ request }: Route.LoaderArgs) => {
+  const lang = await getLanguage(request);
   return { lang };
 };
-
-export const unstable_middleware = [LanguageMiddleware];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (

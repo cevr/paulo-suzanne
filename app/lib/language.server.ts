@@ -1,9 +1,4 @@
-import {
-  createCookie,
-  unstable_createContext,
-  unstable_RouterContextProvider,
-  type unstable_MiddlewareFunction,
-} from 'react-router';
+import { createCookie, unstable_createContext } from 'react-router';
 import { createTypedCookie } from 'remix-utils/typed-cookie';
 
 import { LangSchema, type Lang } from './language';
@@ -22,21 +17,8 @@ export const setLanguage = async (lang: Lang) => {
   return cookie;
 };
 
-export const getLanguage = async (context: unstable_RouterContextProvider) => {
-  return context.get(cookieContext);
-};
-
-export const LanguageMiddleware: unstable_MiddlewareFunction = async (
-  { request, context },
-  next,
-) => {
+export const getLanguage = async (request: Request) => {
   const cookieHeader = request.headers.get('Cookie');
   const cookieValue = await langCookie.parse(cookieHeader);
-  console.log({
-    cookieHeader,
-    cookieValue,
-  });
-  const lang = cookieValue || 'fr';
-  context.set(cookieContext, lang);
-  return next();
+  return cookieValue || 'fr';
 };
