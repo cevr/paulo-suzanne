@@ -80,11 +80,11 @@ export function MenuSection() {
       ),
     },
     {
-      src: '/images/food/omlette-compagnarde.avif',
-      alt: t('Omlette Compagnarde', 'Omlette Compagnarde'),
+      src: '/images/food/omelette-compagnarde.avif',
+      alt: t('Omelette Compagnarde', 'Omelette Compagnarde'),
       description: t(
         'Our Compagnarde Omelette with 3 eggs, sausages, bacon, ham, potatoes and cheese',
-        'Notre omlette compagnarde avec 3 œufs, saucisses, bacons, jambons, patates et fromage',
+        'Notre omelette compagnarde avec 3 œufs, saucisses, bacons, jambons, patates et fromage',
       ),
     },
     {
