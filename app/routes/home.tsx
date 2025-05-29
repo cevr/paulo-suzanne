@@ -29,6 +29,22 @@ export function meta({ matches }: Route.MetaArgs) {
       name: 'description',
       content: description,
     },
+    {
+      property: 'og:image',
+      content: '/indoor.avif',
+    },
+    {
+      property: 'og:image:width',
+      content: '800',
+    },
+    {
+      property: 'og:image:height',
+      content: '600',
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    },
   ];
 }
 

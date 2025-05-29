@@ -27,15 +27,6 @@ export function MenuSection() {
       ),
     },
     {
-      src: '/images/food/popcorn-poutine-piri-piri.avif',
-      alt: t('Popcorn Poutine Piri Piri', 'Poutine Popcorn Piri Piri'),
-      description: t(
-        'Our Popcorn Poutine Piri Piri with popcorn chicken, cheese curds, and gravy, with Piri Piri sauce',
-        'Notre Poutine Popcorn Piri Piri avec poulet popcorn, fromage en grains, sauce brune et sauce Piri Piri',
-      ),
-      className: 'object-bottom',
-    },
-    {
       src: '/images/food/poutine-extra-cheese.avif',
       alt: t('Classic Poutine', 'Poutine Classique'),
       description: t(
