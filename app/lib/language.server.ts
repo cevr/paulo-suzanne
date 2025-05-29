@@ -3,18 +3,12 @@ import {
   unstable_createContext,
   unstable_RouterContextProvider,
   type unstable_MiddlewareFunction,
-  type unstable_RouterContext,
 } from 'react-router';
 import { createTypedCookie } from 'remix-utils/typed-cookie';
-import { z } from 'zod'; //or another Standard Schema compatible library
 
 import { LangSchema, type Lang } from './language';
 
-const cookie = createCookie('__ps_lang', {
-  httpOnly: true,
-  path: '/',
-  sameSite: 'lax',
-});
+const cookie = createCookie('__ps_lang');
 
 const langCookie = createTypedCookie({
   cookie: cookie,
