@@ -19,7 +19,7 @@ export function ContactSection() {
         </div>
 
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-12">
-          <div className="neo-brutalist bg-white p-8 lg:min-w-xl">
+          <div className="neo-brutalist bg-white p-8 md:min-w-xl">
             <h3 className="font-space-grotesk mb-6 text-2xl font-bold">
               {t('Get in Touch', 'Entrez en Contact')}
             </h3>

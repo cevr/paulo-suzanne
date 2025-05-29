@@ -18,7 +18,8 @@ const langCookie = createTypedCookie({
 let cookieContext = unstable_createContext<Lang>();
 
 export const setLanguage = async (lang: Lang) => {
-  return await langCookie.serialize(lang);
+  const cookie = await langCookie.serialize(lang);
+  return cookie;
 };
 
 export const getLanguage = async (context: unstable_RouterContextProvider) => {
