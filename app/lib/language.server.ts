@@ -32,6 +32,10 @@ export const LanguageMiddleware: unstable_MiddlewareFunction = async (
 ) => {
   const cookieHeader = request.headers.get('Cookie');
   const cookieValue = await langCookie.parse(cookieHeader);
+  console.log({
+    cookieHeader,
+    cookieValue,
+  });
   const lang = cookieValue || 'fr';
   context.set(cookieContext, lang);
   return next();
