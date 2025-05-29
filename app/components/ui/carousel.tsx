@@ -315,7 +315,7 @@ export function CarouselContent({
         onMouseUp={handleMouseUp}
       >
         {React.Children.map(children, (child) => (
-          <div className="min-w-0 flex-[0_0_100%]">{child}</div>
+          <div className="min-w-0 flex-[0_0_100%] bg-black">{child}</div>
         ))}
       </div>
     </div>

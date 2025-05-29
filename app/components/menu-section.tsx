@@ -19,46 +19,99 @@ export function MenuSection() {
   // Food image data with descriptions
   const foodImages = [
     {
-      src: '/images/food/burger-guac.avif',
-      alt: t('Burger Guac', 'Burger Guac'),
-      description: t('Burger Guac', 'Burger Guac'),
+      src: '/images/food/poutine-pop-n-hot.avif',
+      alt: t("Poutine Pop'n'Hot", "Poutine Pop'n'Hot"),
+      description: t(
+        "Our Pop'n'Hot Poutine with popcorn chicken, bacon, hot peppers and southwest sauce",
+        "Notre Poutine Pop'n'Hot avec poulet popcorn, bacon, piments forts et sauce sud-ouest",
+      ),
     },
     {
-      src: '/images/food/burger-poutine.avif',
-      alt: t('Burger Poutine', 'Burger Poutine'),
-      description: t('Burger Poutine', 'Burger Poutine'),
+      src: '/images/food/popcorn-poutine-piri-piri.avif',
+      alt: t('Popcorn Poutine Piri Piri', 'Poutine Popcorn Piri Piri'),
+      description: t(
+        'Our Popcorn Poutine Piri Piri with popcorn chicken, cheese curds, and gravy, with Piri Piri sauce',
+        'Notre Poutine Popcorn Piri Piri avec poulet popcorn, fromage en grains, sauce brune et sauce Piri Piri',
+      ),
+      className: 'object-bottom',
     },
     {
-      src: '/images/food/burger.avif',
-      alt: t('Burger', 'Burger'),
-      description: t('Burger', 'Burger'),
+      src: '/images/food/poutine-extra-cheese.avif',
+      alt: t('Classic Poutine', 'Poutine Classique'),
+      description: t(
+        'Our classic poutine with fries, extra cheese curds, and gravy',
+        'Notre poutine classique avec frites, fromage en grains extra et sauce brune',
+      ),
+      className: 'object-bottom',
     },
     {
-      src: '/images/food/crepes.avif',
-      alt: t('Crepe', 'Crepe'),
-      description: t('Crepe', 'Crepe'),
+      src: '/images/food/grilled-chicken-burger-piri-piri.avif',
+      alt: t(
+        'Grilled Chicken Burger Piri Piri',
+        'Burger Poulet grillé Piri Piri ',
+      ),
+      description: t(
+        'Our Grilled Chicken Burger Piri Piri with grilled chicken, piri piri sauce, lettuce, tomatoes and cheese',
+        'Notre burger poulet grillé Piri Piri avec poulet grillé, sauce piri piri, laitue, tomates et fromage',
+      ),
     },
     {
-      src: '/images/food/fries.avif',
-      alt: t('Fries', 'Fries'),
-      description: t('Fries', 'Fries'),
+      src: '/images/food/southwest-club-grilled-chicken.avif',
+      alt: t('Southwest Club Grilled Chicken', 'Club Sud-Ouest Poulet Grillé'),
+      description: t(
+        'Our Southwest Club Grilled Chicken with bacon, lettuce, tomatoes, swiss cheese and our homemade spicy southwest mayo sauce',
+        'Notre Club sud-ouest poulet grillé avec bacon, laitue, tomates, fromage suisse et notre sauce mayo épicée fait maison sud ouest',
+      ),
+    },
+    {
+      src: '/images/food/grilled-cheese-smoked-meat.avif',
+      alt: t('Grilled Cheese Smoked Meat', 'Grilled Cheese Smoked Meat'),
+      description: t(
+        'Our Grilled Cheese Smoked Meat with smoked meat, swiss cheese, and mustard',
+        'Notre Grilled Cheese Smoked Meat avec viande fumée, fromage suisse et moutarde',
+      ),
+    },
+    {
+      src: '/images/food/veggie-burger.avif',
+      alt: t('Veggie Burger', 'Burger Végétarien'),
+      description: t(
+        'Homemade with pico de gallo, lettuce, and guacamole - and an amazing chickpea gallete',
+        'Fait maison avec pico de gallo, laitue et guacamole - et une galette de pois chiche incroyable',
+      ),
+      className: 'object-bottom',
+    },
+    {
+      src: '/images/food/famous-crepes.avif',
+      alt: t('Crepe Supreme', 'Crêpe Suprême'),
+      description: t(
+        'Our famous crepe with strawberries, banana, nutella and our custard cream',
+        'Notre fameuse crêpe avec fraises, banane, nutella et notre crème anglaise',
+      ),
+    },
+    {
+      src: '/images/food/omlette-compagnarde.avif',
+      alt: t('Omlette Compagnarde', 'Omlette Compagnarde'),
+      description: t(
+        'Our Compagnarde Omelette with 3 eggs, sausages, bacon, ham, potatoes and cheese',
+        'Notre omlette compagnarde avec 3 œufs, saucisses, bacons, jambons, patates et fromage',
+      ),
+    },
+    {
+      src: '/images/food/homemade-meat-sauce.avif',
+      alt: t('Homemade Meat Sauce', 'Sauce Viande Fait Maison'),
+      description: t(
+        'Our Homemade Meat Sauce since 1980',
+        'Notre sauce viande fait maison depuis 1980',
+      ),
       className: 'object-top',
     },
     {
-      src: '/images/food/hot-dogs-poutine.avif',
-      alt: t('Hot Dogs Poutine', 'Hot Dogs Poutine'),
-      description: t('Hot Dogs Poutine', 'Hot Dogs Poutine'),
-    },
-    {
-      src: '/images/food/poutine-burger.avif',
-      alt: t('Poutine Burger', 'Poutine Burger'),
-      description: t('Poutine Burger', 'Poutine Burger'),
-    },
-    {
-      src: '/images/food/montrealaise.avif',
-      alt: t('Montrealais', 'Montrealais'),
-      description: t('Montrealais', 'Montrealais'),
-      className: 'object-top',
+      src: '/images/food/swag.avif',
+      alt: t('Swag', 'Swag'),
+      description: t(
+        'Get our exclusive merch and support our local business',
+        'Obtenez notre merch exclusive et soutenez notre entreprise locale',
+      ),
     },
   ];
 
@@ -91,7 +144,7 @@ export function MenuSection() {
                           src={image.src || '/placeholder.svg'}
                           alt={image.alt}
                           className={cn(
-                            'aspect-16/9 flex-1 object-cover',
+                            'aspect-square flex-1 object-cover',
                             image.className,
                           )}
                         />
