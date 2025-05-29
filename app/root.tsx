@@ -1,3 +1,5 @@
+import './app.css';
+
 import {
   isRouteErrorResponse,
   Links,
@@ -8,9 +10,6 @@ import {
 } from 'react-router';
 
 import type { Route } from './+types/root';
-
-import './app.css';
-
 import { Toaster } from './components/ui/sonner';
 import { LanguageProvider } from './lib/language-provider';
 import { getLanguage } from './lib/language.server';
