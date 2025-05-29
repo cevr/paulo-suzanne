@@ -43,7 +43,7 @@ export function AboutSection() {
                       <p>
                         {t(
                           'March 18, 1980: Three friends—Suzanne, Andrie and Jocelyn—opened our doors across from Sacré-Coeur Hospital.',
-                          "18 mars 1980: Trois amis—Suzanne, Andrie et Jocelyn—ont ouvert nos portes en face de l'Hôpital Sacré-Cœur.",
+                          "18 mars 1980 : Trois amis—Suzanne, Andrie et Jocelyn—ont ouvert nos portes en face de l'Hôpital Sacré-Cœur.",
                         )}
                       </p>
                     </li>
@@ -51,8 +51,8 @@ export function AboutSection() {
                       <span className="text-primary mr-2 font-bold">•</span>
                       <p>
                         {t(
-                          "October 2003: Suzanne handed the reins to Manon and Angelo… but never left the kitchen! She's still here, serving up smiles (and fries) to this day.",
-                          "Octobre 2003: Suzanne a passé les rênes à Manon et Angelo... mais n'a jamais quitté la cuisine! Elle est toujours là, servant des sourires (et des frites) jusqu'à ce jour.",
+                          'October 2003: Suzanne handed the reins to Manon and Angelo, passing the torch to a new generation! Angelo, a passionate restaurateur with years of experience, saw immense potential in this little gem. Having opened several establishments over the years and always seeking fresh inspiration through his travels, he was ready to take the restaurant to exciting new heights.',
+                          "Octobre 2003 : Suzanne a passé le flambeau à Manon et Angelo, transmettant l'héritage à une nouvelle génération ! Angelo, passionné de restauration et restaurateur chevronné, voyait un immense potentiel dans ce petit bijou. Ayant ouvert plusieurs établissements au fil des ans et toujours en quête d'idées nouvelles à travers ses voyages, il était prêt à porter le restaurant vers de nouveaux sommets.",
                         )}
                       </p>
                     </li>
@@ -61,7 +61,7 @@ export function AboutSection() {
                       <p>
                         {t(
                           '2007: Manon and Angelo’s daughter, Alexia, jumped in at age 15 as our rookie bus girl—scrubbing tables, perfecting gravy ratios and soaking up every ounce of poutine wisdom.',
-                          '2007: À 15 ans, Alexia, la fille de Manon et Angelo, a débarqué comme aide-serveuse débutante—elle lavait les tables, maîtrisait déjà le bon ratio de sauce brune et emmagasinait chaque parcelle de sagesse poutinienne.',
+                          '2007 : À 15 ans, Alexia, la fille de Manon et Angelo, a débarqué comme aide-serveuse débutante—elle lavait les tables, maîtrisait déjà le bon ratio de sauce brune et emmagasinait chaque parcelle de sagesse poutinienne.',
                         )}
                       </p>
                     </li>
@@ -70,7 +70,7 @@ export function AboutSection() {
                       <p>
                         {t(
                           '2019: Diploma in hand and a lifetime of cheesy memories, Alexia officially took the helm—ushering in our third generation of flavour masters (and still hands-on with every fry!).',
-                          '2019: Diplôme en poche et riche d’une vie entière de souvenirs bien fromagés, Alexia a officiellement pris les rênes—inaugurant la troisième génération de maîtres de la saveur (et continuant de mettre la main à la pâte… ou à la frite !).',
+                          '2019 : Diplôme en poche et riche d’une vie entière de souvenirs bien fromagés, Alexia a officiellement pris les rênes—inaugurant la troisième génération de maîtres de la saveur (et continuant de mettre la main à la pâte… ou à la frite !).',
                         )}
                       </p>
                     </li>
