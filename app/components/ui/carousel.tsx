@@ -64,25 +64,56 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
   const timerRef = React.useRef<number | undefined>(undefined);
   const elementRef = React.useRef<HTMLDivElement>(null);
   const [state, dispatch] = reducer;
+  const [isInViewport, setIsInViewport] = React.useState(false);
 
+  // Intersection Observer to track if carousel is in viewport
   React.useEffect(() => {
-    timerRef.current = window.setTimeout(() => {
-      dispatch({ type: 'NEXT' });
-    }, 5000);
+    const element = elementRef.current;
+    if (!element) return;
 
-    // if window is focused, reset timer
-    function handleFocus() {
-      clearTimeout(timerRef.current);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInViewport(entry.isIntersecting);
+      },
+      {
+        threshold: 0.8,
+      },
+    );
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  // Auto-advance timer - only when in viewport and window is focused
+  React.useEffect(() => {
+    // Clear any existing timer
+    clearTimeout(timerRef.current);
+
+    // Only start timer if carousel is in viewport
+    if (isInViewport) {
       timerRef.current = window.setTimeout(() => {
         dispatch({ type: 'NEXT' });
       }, 5000);
     }
 
+    // Handle window focus/blur events
+    function handleFocus() {
+      clearTimeout(timerRef.current);
+      if (isInViewport) {
+        timerRef.current = window.setTimeout(() => {
+          dispatch({ type: 'NEXT' });
+        }, 5000);
+      }
+    }
+
     function handleBlur() {
       clearTimeout(timerRef.current);
     }
-    window.addEventListener('blur', handleBlur);
 
+    window.addEventListener('blur', handleBlur);
     window.addEventListener('focus', handleFocus);
 
     return () => {
@@ -90,7 +121,7 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
       window.removeEventListener('blur', handleBlur);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [state.activeIndex]);
+  }, [state.activeIndex, isInViewport]);
 
   React.useEffect(() => {
     // only if element or children are focused
