@@ -43,9 +43,6 @@ export const links: Route.LinksFunction = () => [
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
   const lang = await getLanguage(request);
-  console.log({
-    lang,
-  });
   return { lang };
 };
 
