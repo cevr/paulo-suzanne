@@ -6,7 +6,7 @@ export default {
   ssr: true,
   // prerender: true,
   future: {
-    unstable_middleware: true,
+    v8_middleware: true,
     unstable_optimizeDeps: true,
     unstable_splitRouteModules: true,
     unstable_subResourceIntegrity: true,

@@ -174,7 +174,7 @@ export function MenuSection() {
 
               <div className="flex gap-4">
                 <a
-                  href="https://nebula.wsimg.com/d6f136992ba0c8cc1b43f24bb13938e2?AccessKeyId=4A810DB41D146C1A6336&disposition=0&alloworigin=1"
+                  href="/menu.pdf"
                   target="_blank"
                 >
                   <Button
