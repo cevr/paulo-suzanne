@@ -47,6 +47,8 @@ export const links: Route.LinksFunction = () => [
   { rel: 'alternate', hrefLang: 'fr', href: CANONICAL_URL },
   { rel: 'alternate', hrefLang: 'en', href: CANONICAL_URL },
   { rel: 'alternate', hrefLang: 'x-default', href: CANONICAL_URL },
+  { rel: 'icon', href: '/favicon.ico' },
+  { rel: 'apple-touch-icon', href: '/favicon.ico' },
 ];
 
 const jsonLd = {
@@ -119,6 +121,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1"
+        />
+        <meta
+          name="theme-color"
+          content="#d41111"
         />
         <Meta />
         <Links />

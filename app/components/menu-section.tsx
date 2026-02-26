@@ -177,6 +177,7 @@ export function MenuSection() {
                 <a
                   href="/menu.pdf"
                   target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <Button
                     variant="neo"

@@ -34,9 +34,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-space-grotesk mb-4 text-xl font-bold">
+            <h2 className="font-space-grotesk mb-4 text-xl font-bold">
               {t('Quick Links', 'Liens Rapides')}
-            </h3>
+            </h2>
             <ul className="space-y-2">
               <li>
                 <Link
@@ -74,9 +74,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-space-grotesk mb-4 text-xl font-bold">
+            <h2 className="font-space-grotesk mb-4 text-xl font-bold">
               {t('Contact Info', 'Coordonnées')}
-            </h3>
+            </h2>
             <address className="flex flex-col gap-2 text-gray-400 not-italic">
               <p>5501 Boul Gouin O</p>
               <p>Montréal, QC H4J 1C8</p>
@@ -97,9 +97,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-space-grotesk mb-4 text-xl font-bold">
+            <h2 className="font-space-grotesk mb-4 text-xl font-bold">
               {t('Hours', "Heures d'ouverture")}
-            </h3>
+            </h2>
             <p className="font-space-grotesk text-secondary text-xl font-bold uppercase">
               {t(
                 'Weekdays 10am-3am, Weekends 24/7',
