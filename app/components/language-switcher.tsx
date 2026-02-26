@@ -25,6 +25,7 @@ export function LanguageSwitcher() {
           className="font-bold"
           name="lang"
           value="fr"
+          aria-pressed={language === 'fr'}
         >
           FR
         </Button>
@@ -36,6 +37,7 @@ export function LanguageSwitcher() {
           className="font-bold"
           name="lang"
           value="en"
+          aria-pressed={language === 'en'}
         >
           EN
         </Button>

@@ -429,7 +429,7 @@ export function CarouselDots({
           variant="outline"
           size="icon"
           className={cn(
-            'h-2 w-2 rounded-full border-none p-0',
+            'relative h-2 w-2 rounded-full border-none p-0 ring-offset-0 before:absolute before:-inset-3 before:content-[""]',
             state.activeIndex === index
               ? 'bg-primary'
               : 'bg-muted-foreground/20',

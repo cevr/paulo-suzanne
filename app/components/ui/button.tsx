@@ -94,7 +94,7 @@ function Button({
   asChild = false,
   ...props
 }: ButtonProps) {
-  const Comp = asChild ? (Slot as any) : 'button';
+  const Comp = asChild ? Slot.Slot : 'button';
   return (
     <Comp
       className={cn(buttonVariants({ variant, color, size, className }))}

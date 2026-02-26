@@ -68,37 +68,37 @@ export function Header() {
               ))}
             </div>
 
-            <a
-              href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden lg:flex"
+            <Button
+              asChild
+              variant="neo"
+              color="red"
+              size="lg"
+              className="hidden text-xl lg:flex"
             >
-              <Button
-                variant="neo"
-                color="red"
-                size="lg"
-                className="hidden text-xl lg:flex"
+              <a
+                href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 {t('Order Online', 'Commander en ligne')}
-              </Button>
-            </a>
+              </a>
+            </Button>
 
             {/* Mobile Order Button */}
-            <a
-              href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lg:hidden"
+            <Button
+              asChild
+              variant="neo"
+              size="sm"
+              className="px-2 py-1 text-lg lg:hidden"
             >
-              <Button
-                variant="neo"
-                size="sm"
-                className="px-2 py-1 text-lg lg:hidden"
+              <a
+                href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 {t('Order', 'Commander')}
-              </Button>
-            </a>
+              </a>
+            </Button>
 
             <Button
               variant="ghost"
@@ -107,6 +107,8 @@ export function Header() {
                 startTransition(() => toggleMenu());
               }}
               className="lg:hidden bg-transparent"
+              aria-label={isMenuOpen ? t('Close menu', 'Fermer le menu') : t('Open menu', 'Ouvrir le menu')}
+              aria-expanded={isMenuOpen}
             >
               {isMenuOpen ? (
                 <XIcon className="size-6" />

@@ -1,12 +1,5 @@
 @import 'tailwindcss';
 
-@font-face {
-  font-family: 'Astrud';
-  src: url('/fonts/astrud.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
 
 @layer base {
   :root {
@@ -103,7 +96,7 @@
     --font-serif: 'Space Grotesk', sans-serif;
     --font-space-grotesk: 'Space Grotesk', sans-serif;
     --font-inter: 'Inter', sans-serif;
-    --font-astrud: 'Astrud', sans-serif;
+
 
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
@@ -127,8 +120,17 @@
     @apply bg-background text-foreground;
   }
 
-  html {
-    scroll-behavior: smooth;
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    svg * {
+      animation-play-state: paused !important;
+      animation-duration: 0.001s !important;
+    }
   }
 }
 

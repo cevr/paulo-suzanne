@@ -65,16 +65,18 @@ export function ContactSection() {
                     className="bg-primary neo-brutalist-sm btn-hover-effect-sm hover:bg-primary/90 rounded-full p-3 text-white transition-colors"
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label={t('Follow us on Instagram', 'Suivez-nous sur Instagram')}
                   >
-                    <Instagram className="h-6 w-6" />
+                    <Instagram className="h-6 w-6" aria-hidden="true" />
                   </a>
                   <a
                     href="https://www.facebook.com/pauloetsuzanne247/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-primary neo-brutalist-sm btn-hover-effect-sm hover:bg-primary/90 rounded-full p-3 text-white transition-colors"
+                    aria-label={t('Follow us on Facebook', 'Suivez-nous sur Facebook')}
                   >
-                    <Facebook className="h-6 w-6" />
+                    <Facebook className="h-6 w-6" aria-hidden="true" />
                   </a>
                 </div>
               </div>

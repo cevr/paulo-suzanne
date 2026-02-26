@@ -18,7 +18,7 @@ export function Hero() {
             </p>
           </div>
 
-          <h1 className="font-space-grotesk mb-6 h-[144px] text-5xl font-black text-balance text-black lg:text-7xl">
+          <h1 className="font-space-grotesk mb-6 text-5xl font-black text-balance text-black lg:text-7xl">
             {t('LEGENDARY POUTINE & BURGERS', 'POUTINE & BURGERS LÉGENDAIRES')}
           </h1>
 
@@ -27,29 +27,31 @@ export function Hero() {
           </p>
 
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <Link to="#menu">
-              <Button
-                variant="neo"
-                color="yellow"
-                size="lg"
-                className="text-lg"
-              >
-                {t('View Menu', 'Voir le Menu')}
-              </Button>
-            </Link>
-            <a
-              href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Button
+              asChild
+              variant="neo"
+              color="yellow"
+              size="lg"
+              className="text-lg"
             >
-              <Button
-                variant="neo"
-                size="lg"
-                className="text-lg"
+              <Link to="#menu">
+                {t('View Menu', 'Voir le Menu')}
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="neo"
+              size="lg"
+              className="text-lg"
+            >
+              <a
+                href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 {t('Order Online', 'Commander en ligne')}
-              </Button>
-            </a>
+              </a>
+            </Button>
           </div>
         </div>
       </div>
@@ -64,6 +66,7 @@ function Logo() {
       width="406"
       height="439"
       fill="none"
+      aria-hidden="true"
     >
       <path
         fill="var(--primary)"
