@@ -13,14 +13,14 @@ export function Hero() {
         <div className="mx-auto flex max-w-3xl flex-col items-center justify-center text-center">
           <Logo />
           <div className="neo-brutalist -mt-14 mb-6 inline-block -rotate-2 bg-white p-4">
-            <h1 className="font-space-grotesk text-primary text-2xl font-black">
+            <p className="font-space-grotesk text-primary text-2xl font-black">
               {t('SINCE 1980', 'DEPUIS 1980')}
-            </h1>
+            </p>
           </div>
 
-          <h2 className="font-space-grotesk mb-6 h-[144px] text-5xl font-black text-balance text-black lg:text-7xl">
+          <h1 className="font-space-grotesk mb-6 h-[144px] text-5xl font-black text-balance text-black lg:text-7xl">
             {t('LEGENDARY POUTINE & BURGERS', 'POUTINE & BURGERS LÉGENDAIRES')}
-          </h2>
+          </h1>
 
           <p className="neo-brutalist mb-8 inline-block rotate-1 bg-white p-4 text-xl font-bold lg:text-2xl">
             {t('The Original Casse-Croûte', "L'Original Casse-Croûte")}

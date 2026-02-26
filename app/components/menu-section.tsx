@@ -134,6 +134,7 @@ export function MenuSection() {
                         <img
                           src={image.src || '/placeholder.svg'}
                           alt={image.alt}
+                          loading="lazy"
                           className={cn(
                             'aspect-square flex-1 object-cover',
                             image.className,

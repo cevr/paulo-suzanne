@@ -21,6 +21,7 @@ export function Footer() {
                 alt="Paulo & Suzanne"
                 width={150}
                 height={75}
+                loading="lazy"
                 className="h-16 w-auto"
               />
             </Link>

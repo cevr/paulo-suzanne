@@ -30,8 +30,20 @@ export function meta({ matches }: Route.MetaArgs) {
       content: description,
     },
     {
+      property: 'og:url',
+      content: 'https://pauloetsuzanne.com/',
+    },
+    {
+      property: 'og:title',
+      content: title,
+    },
+    {
+      property: 'og:description',
+      content: description,
+    },
+    {
       property: 'og:image',
-      content: '/indoor.avif',
+      content: 'https://pauloetsuzanne.com/indoor.avif',
     },
     {
       property: 'og:image:width',
@@ -44,6 +56,10 @@ export function meta({ matches }: Route.MetaArgs) {
     {
       property: 'og:type',
       content: 'website',
+    },
+    {
+      property: 'og:locale',
+      content: lang === 'fr' ? 'fr_CA' : 'en_CA',
     },
   ];
 }
