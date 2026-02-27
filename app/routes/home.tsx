@@ -9,6 +9,8 @@ import type { Lang } from '~/lib/language';
 
 import type { Route } from './+types/home';
 
+const CANONICAL_URL = 'https://pauloetsuzanne.com/';
+
 export function meta({ matches }: Route.MetaArgs) {
   const { lang } = matches.find((match) => match?.id === 'root')?.data as {
     lang: Lang;
@@ -22,6 +24,8 @@ export function meta({ matches }: Route.MetaArgs) {
     lang === 'fr'
       ? 'Poutine, burgers et sandwichs depuis 1980'
       : 'Poutine, burgers and sandwiches since 1980';
+  const canonicalUrl =
+    lang === 'fr' ? CANONICAL_URL : `${CANONICAL_URL}en`;
 
   return [
     { title },
@@ -30,8 +34,13 @@ export function meta({ matches }: Route.MetaArgs) {
       content: description,
     },
     {
+      tagName: 'link',
+      rel: 'canonical',
+      href: canonicalUrl,
+    },
+    {
       property: 'og:url',
-      content: 'https://pauloetsuzanne.com/',
+      content: canonicalUrl,
     },
     {
       property: 'og:title',
@@ -43,7 +52,7 @@ export function meta({ matches }: Route.MetaArgs) {
     },
     {
       property: 'og:image',
-      content: 'https://pauloetsuzanne.com/indoor.avif',
+      content: `${CANONICAL_URL}indoor.avif`,
     },
     {
       property: 'og:image:width',

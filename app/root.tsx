@@ -14,7 +14,6 @@ import type { Route } from './+types/root';
 import { Toaster } from './components/ui/sonner';
 import { LanguageProvider } from './lib/language-provider';
 import type { Lang } from './lib/language';
-import { getLanguage } from './lib/language.server';
 
 const CANONICAL_URL = 'https://pauloetsuzanne.com/';
 
@@ -33,9 +32,8 @@ export const links: Route.LinksFunction = () => [
     rel: 'stylesheet',
     href: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap&subset=latin',
   },
-  { rel: 'canonical', href: CANONICAL_URL },
   { rel: 'alternate', hrefLang: 'fr', href: CANONICAL_URL },
-  { rel: 'alternate', hrefLang: 'en', href: CANONICAL_URL },
+  { rel: 'alternate', hrefLang: 'en', href: `${CANONICAL_URL}en` },
   { rel: 'alternate', hrefLang: 'x-default', href: CANONICAL_URL },
   { rel: 'icon', href: '/favicon.ico' },
   { rel: 'apple-touch-icon', href: '/favicon.ico' },
@@ -92,8 +90,9 @@ const jsonLd = {
   ],
 };
 
-export const loader = async ({ request }: Route.LoaderArgs) => {
-  const lang = await getLanguage(request);
+export const loader = ({ request }: Route.LoaderArgs) => {
+  const url = new URL(request.url);
+  const lang: Lang = url.pathname.startsWith('/en') ? 'en' : 'fr';
   return { lang };
 };
 

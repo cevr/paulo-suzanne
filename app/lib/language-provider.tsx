@@ -2,46 +2,31 @@ import React, { type ReactNode } from 'react';
 
 type Language = 'en' | 'fr';
 
-interface LanguageContextType {
-  language: Language;
-  setLanguage: (language: Language) => void;
-  t: (en: string, fr: string) => string;
-}
-
-const LanguageContext = React.createContext<
-  LanguageContextType['language'] | undefined
->(undefined);
+const LanguageContext = React.createContext<Language | undefined>(undefined);
 
 const LanguageTranslationContext = React.createContext<
-  LanguageContextType['t'] | undefined
->(undefined);
-
-const SetLanguageContext = React.createContext<
-  React.Dispatch<React.SetStateAction<Language>> | undefined
+  ((en: string, fr: string) => string) | undefined
 >(undefined);
 
 export function LanguageProvider({
   children,
   initialLanguage,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   initialLanguage: Language;
 }) {
-  const [language, setLanguage] = React.useState<Language>(initialLanguage);
   const t = React.useCallback(
     (en: string, fr: string) => {
-      return language === 'en' ? en : fr;
+      return initialLanguage === 'en' ? en : fr;
     },
-    [language],
+    [initialLanguage],
   );
 
   return (
-    <LanguageContext.Provider value={language}>
-      <SetLanguageContext.Provider value={setLanguage}>
-        <LanguageTranslationContext.Provider value={t}>
-          {children}
-        </LanguageTranslationContext.Provider>
-      </SetLanguageContext.Provider>
+    <LanguageContext.Provider value={initialLanguage}>
+      <LanguageTranslationContext.Provider value={t}>
+        {children}
+      </LanguageTranslationContext.Provider>
     </LanguageContext.Provider>
   );
 }
@@ -57,15 +42,7 @@ export function useLanguage() {
 export function useTranslate() {
   const context = React.useContext(LanguageTranslationContext);
   if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
-  return context;
-}
-
-export function useSetLanguage() {
-  const context = React.useContext(SetLanguageContext);
-  if (context === undefined) {
-    throw new Error('useSetLanguage must be used within a LanguageProvider');
+    throw new Error('useTranslate must be used within a LanguageProvider');
   }
   return context;
 }
