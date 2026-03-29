@@ -50,7 +50,14 @@ Bun.serve({
     }
 
     // Everything else (data requests, unknown paths) — SSR handler
-    return handler(req);
+    try {
+      return await handler(req);
+    } catch {
+      return new Response('Not Found', { status: 404 });
+    }
+  },
+  error() {
+    return new Response('Internal Server Error', { status: 500 });
   },
 });
 
