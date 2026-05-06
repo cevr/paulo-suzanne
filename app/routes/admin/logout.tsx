@@ -1,7 +1,10 @@
 import { redirect } from 'react-router';
 
+import { adminSecurityHeaders } from '~/lib/admin-headers';
 import { routeAction, routeHandler } from '~/lib/effect/route';
 import { Auth } from '~/services/Auth';
+
+export const headers = adminSecurityHeaders;
 
 export const action = routeAction(function* () {
   const auth = yield* Auth;

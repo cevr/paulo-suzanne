@@ -1,15 +1,14 @@
 import { Effect } from 'effect';
 import { Form, redirect, useActionData } from 'react-router';
 
+import { adminMeta, adminSecurityHeaders } from '~/lib/admin-headers';
 import { ReactRouterContext } from '~/lib/effect/router-context';
 import { routeAction, routeHandler } from '~/lib/effect/route';
 import { Auth, BadPassword } from '~/services/Auth';
 
-export const meta = () => [{ name: 'robots', content: 'noindex, nofollow' }];
+export const meta = adminMeta;
 
-export const headers = () => ({
-  'Cache-Control': 'private, no-store, max-age=0',
-});
+export const headers = adminSecurityHeaders;
 
 export const loader = routeHandler(function* () {
   const { request } = yield* ReactRouterContext;
