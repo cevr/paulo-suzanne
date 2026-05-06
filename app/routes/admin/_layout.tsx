@@ -14,22 +14,22 @@ export const loader = routeHandler(function* () {
 export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-neutral-50">
-      <header className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
+      <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
           <Link to="/admin" className="text-lg font-semibold">
             Admin
           </Link>
           <Form method="post" action="/admin/logout">
             <button
               type="submit"
-              className="rounded border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-100"
+              className="inline-flex min-h-11 cursor-pointer items-center rounded-md border border-neutral-300 px-4 text-sm font-medium transition-colors hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900"
             >
               Sign out
             </button>
           </Form>
         </div>
       </header>
-      <main className="mx-auto max-w-4xl px-6 py-8">
+      <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         <Outlet />
       </main>
     </div>

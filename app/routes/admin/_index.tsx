@@ -72,30 +72,31 @@ export const action = routeAction(function* () {
 });
 
 function GroupLabel({ group }: { group: AssetState['group'] }) {
-  if (group === 'menu') return <span className="rounded bg-amber-100 px-2 py-0.5 text-xs">menu</span>;
-  if (group === 'atmosphere') return <span className="rounded bg-sky-100 px-2 py-0.5 text-xs">atmosphere</span>;
-  return <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs">food</span>;
+  if (group === 'menu')
+    return <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium">menu</span>;
+  if (group === 'atmosphere')
+    return <span className="rounded bg-sky-100 px-2 py-0.5 text-xs font-medium">atmosphere</span>;
+  return <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium">food</span>;
 }
 
-const PREVIEW_BOX = 'flex h-20 w-28 items-center justify-center rounded border border-neutral-200 bg-neutral-50 text-xs text-neutral-600';
+const PREVIEW_BOX =
+  'flex h-20 w-24 flex-shrink-0 items-center justify-center rounded border border-neutral-200 bg-neutral-50 text-xs text-neutral-600 sm:w-28';
 
 function CurrentPreview({ asset }: { asset: AssetState }) {
   const src = `/${asset.key}?v=${asset.version}`;
   if (asset.group === 'menu') {
     return (
-      <a href={src} target="_blank" rel="noopener noreferrer" className={`${PREVIEW_BOX} hover:bg-neutral-100`}>
+      <a
+        href={src}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`${PREVIEW_BOX} cursor-pointer transition-colors hover:bg-neutral-100`}
+      >
         Open PDF
       </a>
     );
   }
-  return (
-    <img
-      src={src}
-      alt={asset.label}
-      loading="lazy"
-      className={`${PREVIEW_BOX} object-cover`}
-    />
-  );
+  return <img src={src} alt={asset.label} loading="lazy" className={`${PREVIEW_BOX} object-cover`} />;
 }
 
 function NewPreview({ file, group }: { file: File; group: AssetState['group'] }) {
@@ -109,7 +110,12 @@ function NewPreview({ file, group }: { file: File; group: AssetState['group'] })
   if (url === null) return <div className={PREVIEW_BOX}>…</div>;
   if (group === 'menu') {
     return (
-      <a href={url} target="_blank" rel="noopener noreferrer" className={`${PREVIEW_BOX} hover:bg-neutral-100`}>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`${PREVIEW_BOX} cursor-pointer transition-colors hover:bg-neutral-100`}
+      >
         New PDF
       </a>
     );
@@ -123,38 +129,50 @@ function NewPreview({ file, group }: { file: File; group: AssetState['group'] })
   );
 }
 
-function AssetRow({ asset, def, submitting }: { asset: AssetState; def: ManagedAsset | undefined; submitting: boolean }) {
+function AssetRow({
+  asset,
+  def,
+  submitting,
+}: {
+  asset: AssetState;
+  def: ManagedAsset | undefined;
+  submitting: boolean;
+}) {
   const [picked, setPicked] = useState<File | null>(null);
 
   return (
-    <li className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex min-w-0 items-center gap-4">
+    <li className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+      <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
         <div className="flex flex-shrink-0 items-center gap-2">
           <CurrentPreview asset={asset} />
           {picked !== null && (
             <>
-              <span className="text-neutral-400" aria-hidden>→</span>
+              <span className="text-neutral-400" aria-hidden>
+                →
+              </span>
               <NewPreview file={picked} group={asset.group} />
             </>
           )}
         </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
             <GroupLabel group={asset.group} />
             <h3 className="truncate text-sm font-medium">{asset.label}</h3>
           </div>
           <p className="mt-1 truncate text-xs text-neutral-500">/{asset.key}</p>
           <p className="mt-1 text-xs">
-            {asset.inBucket ? (
+            {asset.inBucket ?
               <span className="text-emerald-700">In bucket</span>
-            ) : (
-              <span className="text-neutral-500">Using bundled file</span>
-            )}
+            : <span className="text-neutral-500">Using bundled file</span>}
           </p>
         </div>
       </div>
 
-      <Form method="post" encType="multipart/form-data" className="flex flex-shrink-0 items-center gap-2">
+      <Form
+        method="post"
+        encType="multipart/form-data"
+        className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center"
+      >
         <input type="hidden" name="key" value={asset.key} />
         <input
           type="file"
@@ -165,12 +183,12 @@ function AssetRow({ asset, def, submitting }: { asset: AssetState; def: ManagedA
             const f = e.currentTarget.files?.[0] ?? null;
             setPicked(f);
           }}
-          className="block w-full text-xs file:mr-2 file:rounded file:border-0 file:bg-neutral-900 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-white hover:file:bg-neutral-700"
+          className="block w-full min-w-0 cursor-pointer text-sm text-neutral-700 file:mr-3 file:inline-flex file:min-h-11 file:cursor-pointer file:items-center file:rounded-md file:border-0 file:bg-neutral-900 file:px-4 file:text-sm file:font-medium file:text-white hover:file:bg-neutral-700 sm:max-w-[14rem]"
         />
         <button
           type="submit"
           disabled={submitting || picked === null}
-          className="rounded border border-neutral-300 px-3 py-1.5 text-xs font-medium hover:bg-neutral-100 disabled:opacity-50"
+          className="inline-flex min-h-11 w-full cursor-pointer items-center justify-center rounded-md border border-neutral-300 px-4 text-sm font-medium transition-colors hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           {submitting ? 'Uploading…' : 'Upload'}
         </button>
