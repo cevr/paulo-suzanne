@@ -6,6 +6,10 @@ import { Auth } from '~/services/Auth';
 
 export const meta = () => [{ name: 'robots', content: 'noindex, nofollow' }];
 
+export const headers = () => ({
+  'Cache-Control': 'private, no-store, max-age=0',
+});
+
 export const loader = routeHandler(function* () {
   const { request } = yield* ReactRouterContext;
   const auth = yield* Auth;
