@@ -4,6 +4,8 @@ import { ReactRouterContext } from '~/lib/effect/router-context';
 import { routeHandler } from '~/lib/effect/route';
 import { Auth } from '~/services/Auth';
 
+export const meta = () => [{ name: 'robots', content: 'noindex, nofollow' }];
+
 export const loader = routeHandler(function* () {
   const { request } = yield* ReactRouterContext;
   const auth = yield* Auth;
