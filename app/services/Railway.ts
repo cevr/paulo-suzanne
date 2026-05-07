@@ -1,3 +1,20 @@
+/**
+ * Railway redeploy trigger.
+ *
+ * Required env on the deployed Railway service (paulo-suzanne, production):
+ *   RAILWAY_API_TOKEN       Project access token, scope: deploy. Never log or
+ *                           expose. Rotate via Railway dashboard if leaked.
+ *   RAILWAY_SERVICE_ID      The paulo-suzanne service id (UUID).
+ *   RAILWAY_ENVIRONMENT_ID  The production environment id (UUID).
+ *
+ * If any of the three are missing the service stays "disabled" and Save in
+ * /admin/content writes the bucket without triggering a build.
+ *
+ * Mutation: serviceInstanceDeployV2(serviceId, environmentId) — equivalent to
+ * clicking "Deploy" in the dashboard, which rebuilds from the latest source on
+ * main. The build step then reads content/site.json from the bucket and bakes
+ * it into the prerendered HTML.
+ */
 import { Config, Context, Effect, Layer, Option, Redacted, Schema } from 'effect';
 
 export class RailwayDisabled extends Schema.TaggedErrorClass<RailwayDisabled>()(
