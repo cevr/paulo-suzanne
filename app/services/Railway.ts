@@ -87,7 +87,7 @@ export class Railway extends Context.Service<
               const res = await fetch(ENDPOINT, {
                 method: 'POST',
                 headers: {
-                  'Project-Access-Token': token,
+                  Authorization: `Bearer ${token}`,
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
