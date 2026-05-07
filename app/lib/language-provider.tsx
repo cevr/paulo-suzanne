@@ -2,9 +2,9 @@ import React, { type ReactNode } from 'react';
 
 import type { SiteContent } from '~/content/schema';
 
-type Language = 'en' | 'fr';
+import type { Lang } from './language';
 
-const LanguageContext = React.createContext<Language | undefined>(undefined);
+const LanguageContext = React.createContext<Lang | undefined>(undefined);
 const ContentContext = React.createContext<SiteContent | undefined>(undefined);
 
 export function LanguageProvider({
@@ -13,7 +13,7 @@ export function LanguageProvider({
   content,
 }: {
   children: ReactNode;
-  initialLanguage: Language;
+  initialLanguage: Lang;
   content: SiteContent;
 }) {
   return (

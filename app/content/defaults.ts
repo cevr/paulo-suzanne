@@ -330,6 +330,7 @@ export const defaultContent: SiteContent = SiteContent.make({
     followLabel: { en: 'Follow Us', fr: 'Suivez-nous' },
     socials: [
       {
+        kind: 'instagram',
         href: 'https://www.instagram.com/pauloetsuzanne_officiel/',
         ariaLabel: {
           en: 'Follow us on Instagram',
@@ -337,6 +338,7 @@ export const defaultContent: SiteContent = SiteContent.make({
         },
       },
       {
+        kind: 'facebook',
         href: 'https://www.facebook.com/pauloetsuzanne247/',
         ariaLabel: {
           en: 'Follow us on Facebook',

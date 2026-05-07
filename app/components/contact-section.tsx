@@ -1,5 +1,7 @@
 import { Mail, Phone } from 'lucide-react';
 
+import type { SocialKind } from '~/content/schema';
+
 import { useContent, useLanguage } from '../lib/language-provider';
 
 function Instagram(props: React.SVGProps<SVGSVGElement>) {
@@ -20,7 +22,10 @@ function Facebook(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-const SOCIAL_ICONS = [Instagram, Facebook];
+const SOCIAL_ICONS: Record<SocialKind, React.FC<React.SVGProps<SVGSVGElement>>> = {
+  instagram: Instagram,
+  facebook: Facebook,
+};
 
 export function ContactSection() {
   const lang = useLanguage();
@@ -81,8 +86,8 @@ export function ContactSection() {
                   {contact.followLabel[lang]}
                 </h4>
                 <div className="flex gap-4">
-                  {contact.socials.map((social, index) => {
-                    const Icon = SOCIAL_ICONS[index] ?? Instagram;
+                  {contact.socials.map((social) => {
+                    const Icon = SOCIAL_ICONS[social.kind];
                     return (
                       <a
                         key={social.href}

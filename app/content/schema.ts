@@ -6,8 +6,15 @@ export const Text = Schema.Struct({
 });
 export type Text = typeof Text.Type;
 
+const noLeadingSlash = Schema.makeFilter<string>(
+  (s) => (s.startsWith('/') ? 'must not start with "/"' : undefined),
+  { title: 'NoLeadingSlash' },
+);
+
+const NoLeadingSlash = Schema.NonEmptyString.check(noLeadingSlash);
+
 export const ImageRef = Schema.Struct({
-  key: Schema.NonEmptyString,
+  key: NoLeadingSlash,
   alt: Text,
   width: Schema.Int.check(Schema.isGreaterThan(0)),
   height: Schema.Int.check(Schema.isGreaterThan(0)),
@@ -97,7 +104,11 @@ const Location = Schema.Struct({
   hours: Schema.Array(HoursRow),
 });
 
+export const SocialKind = Schema.Literals(['instagram', 'facebook']);
+export type SocialKind = typeof SocialKind.Type;
+
 const ContactSocial = Schema.Struct({
+  kind: SocialKind,
   href: Schema.NonEmptyString,
   ariaLabel: Text,
 });
@@ -144,7 +155,7 @@ const JsonLd = Schema.Struct({
   name: Schema.NonEmptyString,
   telephone: Schema.NonEmptyString,
   email: Schema.NonEmptyString,
-  imageKey: Schema.NonEmptyString,
+  imageKey: NoLeadingSlash,
   menuPath: Schema.NonEmptyString,
   servesCuisine: Schema.Array(Schema.NonEmptyString),
   priceRange: Schema.NonEmptyString,
