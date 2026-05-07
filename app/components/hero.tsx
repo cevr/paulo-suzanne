@@ -1,10 +1,11 @@
 import { Link } from 'react-router';
 
-import { useTranslate } from '../lib/language-provider';
+import { useContent, useLanguage } from '../lib/language-provider';
 import { Button } from './ui/button';
 
 export function Hero() {
-  const t = useTranslate();
+  const lang = useLanguage();
+  const { hero } = useContent();
 
   return (
     <section className="bg-secondary relative overflow-hidden pt-10 pb-20 lg:pb-32">
@@ -14,16 +15,16 @@ export function Hero() {
           <Logo />
           <div className="neo-brutalist -mt-14 mb-6 inline-block -rotate-2 bg-white p-4">
             <p className="font-space-grotesk text-primary text-2xl font-black">
-              {t('SINCE 1980', 'DEPUIS 1980')}
+              {hero.since[lang]}
             </p>
           </div>
 
           <h1 className="font-space-grotesk mb-6 text-5xl font-black text-balance text-black lg:text-7xl">
-            {t('LEGENDARY POUTINE & BURGERS', 'POUTINE & BURGERS LÉGENDAIRES')}
+            {hero.headline[lang]}
           </h1>
 
           <p className="neo-brutalist mb-8 inline-block rotate-1 bg-white p-4 text-xl font-bold lg:text-2xl">
-            {t('The Original Casse-Croûte', "L'Original Casse-Croûte")}
+            {hero.tagline[lang]}
           </p>
 
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
@@ -34,8 +35,8 @@ export function Hero() {
               size="lg"
               className="text-lg"
             >
-              <Link to="#menu">
-                {t('View Menu', 'Voir le Menu')}
+              <Link to={hero.ctaPrimary.href}>
+                {hero.ctaPrimary.label[lang]}
               </Link>
             </Button>
             <Button
@@ -45,11 +46,11 @@ export function Hero() {
               className="text-lg"
             >
               <a
-                href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
+                href={hero.ctaSecondary.href}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {t('Order Online', 'Commander en ligne')}
+                {hero.ctaSecondary.label[lang]}
               </a>
             </Button>
           </div>

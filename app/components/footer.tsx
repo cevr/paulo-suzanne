@@ -1,9 +1,12 @@
 import { Link } from 'react-router';
 
-import { useTranslate } from '../lib/language-provider';
+import { imageSrc } from '~/content/schema';
+
+import { useContent, useLanguage } from '../lib/language-provider';
 
 export function Footer() {
-  const t =useTranslate();
+  const lang = useLanguage();
+  const { footer, contact } = useContent();
 
   const currentYear = new Date().getFullYear();
 
@@ -17,102 +20,71 @@ export function Footer() {
               className="mb-4 inline-block"
             >
               <img
-                src="/images/logo-small.png"
-                alt="Paulo & Suzanne"
-                width={150}
-                height={75}
+                src={imageSrc(footer.logo)}
+                alt={footer.logo.alt[lang]}
+                width={footer.logo.width}
+                height={footer.logo.height}
                 loading="lazy"
                 className="h-16 w-auto"
               />
             </Link>
-            <p className="text-gray-400">
-              {t(
-                "Serving Quebec's favorite comfort food since 1980",
-                'Servant la cuisine réconfortante préférée du Québec depuis 1980',
-              )}
-            </p>
+            <p className="text-gray-400">{footer.tagline[lang]}</p>
           </div>
 
           <div>
             <h2 className="font-space-grotesk mb-4 text-xl font-bold">
-              {t('Quick Links', 'Liens Rapides')}
+              {footer.quickLinksHeading[lang]}
             </h2>
             <ul className="space-y-2">
-              <li>
-                <Link
-                  to="#menu"
-                  className="hover:text-primary transition-colors"
-                >
-                  {t('Menu', 'Menu')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#about"
-                  className="hover:text-primary transition-colors"
-                >
-                  {t('About', 'À propos')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#location"
-                  className="hover:text-primary transition-colors"
-                >
-                  {t('Location', 'Emplacement')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#contact"
-                  className="hover:text-primary transition-colors"
-                >
-                  {t('Contact', 'Contact')}
-                </Link>
-              </li>
+              {footer.quickLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    to={link.href}
+                    className="hover:text-primary transition-colors"
+                  >
+                    {link.label[lang]}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
             <h2 className="font-space-grotesk mb-4 text-xl font-bold">
-              {t('Contact Info', 'Coordonnées')}
+              {footer.contactInfoHeading[lang]}
             </h2>
             <address className="flex flex-col gap-2 text-gray-400 not-italic">
-              <p>5501 Boul Gouin O</p>
-              <p>Montréal, QC H4J 1C8</p>
-              <p>Canada</p>
+              {footer.contactInfoLines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
               <a
-                href="tel:+15143365561"
+                href={`tel:${contact.phoneTel}`}
                 className="text-white"
               >
-                (514) 336-5561
+                {contact.phoneDisplay}
               </a>
               <a
-                href="mailto:info@pauloetsuzanne.com"
+                href={`mailto:${contact.emailAddress}`}
                 className="text-white"
               >
-                info@pauloetsuzanne.com
+                {contact.emailAddress}
               </a>
             </address>
           </div>
 
           <div>
             <h2 className="font-space-grotesk mb-4 text-xl font-bold">
-              {t('Hours', "Heures d'ouverture")}
+              {footer.hoursHeading[lang]}
             </h2>
             <p className="font-space-grotesk text-secondary text-xl font-bold uppercase">
-              {t(
-                'Weekdays 10am-3am, Weekends 24/7',
-                'En semaine 10h-3h, Fins de semaine 24/7',
-              )}
+              {footer.hoursSummary[lang]}
             </p>
           </div>
         </div>
 
         <div className="mt-12 border-t border-gray-800 pt-8 text-center text-gray-500">
           <p>
-            © {currentYear} Paulo & Suzanne.{' '}
-            {t('All rights reserved.', 'Tous droits réservés.')}
+            © {currentYear} Paulo & Suzanne. {footer.rightsLine[lang]}
           </p>
         </div>
       </div>

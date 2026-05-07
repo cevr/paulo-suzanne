@@ -14,6 +14,8 @@ export const ImageRef = Schema.Struct({
 });
 export type ImageRef = typeof ImageRef.Type;
 
+export const imageSrc = (ref: ImageRef): string => `/${ref.key}`;
+
 const NavLink = Schema.Struct({
   href: Schema.NonEmptyString,
   label: Text,

@@ -3,37 +3,20 @@ import { useState, useTransition } from 'react';
 import { Link } from 'react-router';
 
 import { Button } from '~/components/ui/button';
+import { imageSrc } from '~/content/schema';
 
-import { useTranslate } from '../lib/language-provider';
+import { useContent, useLanguage } from '../lib/language-provider';
 import { LanguageSwitcher } from './language-switcher';
 
 export function Header() {
   const [_, startTransition] = useTransition();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const t = useTranslate();
+  const lang = useLanguage();
+  const { header } = useContent();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-
-  const navItems = [
-    {
-      href: '#menu',
-      label: t('Menu', 'Menu'),
-    },
-    {
-      href: '#about',
-      label: t('About', 'À propos'),
-    },
-    {
-      href: '#location',
-      label: t('Location', 'Emplacement'),
-    },
-    {
-      href: '#contact',
-      label: t('Contact', 'Contact'),
-    },
-  ];
 
   return (
     <header className="border-primary dark sticky top-0 z-50 border-b-4 bg-black text-white">
@@ -45,10 +28,10 @@ export function Header() {
               className="flex items-center"
             >
               <img
-                src="/images/logo-small.png"
-                alt="Paulo & Suzanne"
-                width={60}
-                height={60}
+                src={imageSrc(header.logo)}
+                alt={header.logo.alt[lang]}
+                width={header.logo.width}
+                height={header.logo.height}
                 className="h-12 w-auto"
               />
             </Link>
@@ -57,13 +40,13 @@ export function Header() {
 
           <div className="flex items-center gap-4">
             <div className="hidden items-center gap-6 lg:flex">
-              {navItems.map((item) => (
+              {header.navLinks.map((item) => (
                 <Link
                   key={item.href}
                   to={item.href}
                   className="font-space-grotesk hover:text-primary text-lg font-bold transition-colors"
                 >
-                  {item.label}
+                  {item.label[lang]}
                 </Link>
               ))}
             </div>
@@ -76,11 +59,11 @@ export function Header() {
               className="hidden text-xl lg:flex"
             >
               <a
-                href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
+                href={header.orderOnlineUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {t('Order Online', 'Commander en ligne')}
+                {header.orderLong[lang]}
               </a>
             </Button>
 
@@ -92,11 +75,11 @@ export function Header() {
               className="px-2 py-1 text-lg lg:hidden"
             >
               <a
-                href="https://order2.silverwarepos.com/app/PauloSuzanne#!/menu"
+                href={header.orderOnlineUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {t('Order', 'Commander')}
+                {header.orderShort[lang]}
               </a>
             </Button>
 
@@ -107,7 +90,9 @@ export function Header() {
                 startTransition(() => toggleMenu());
               }}
               className="lg:hidden bg-transparent"
-              aria-label={isMenuOpen ? t('Close menu', 'Fermer le menu') : t('Open menu', 'Ouvrir le menu')}
+              aria-label={
+                isMenuOpen ? header.closeMenuLabel[lang] : header.openMenuLabel[lang]
+              }
               aria-expanded={isMenuOpen}
             >
               {isMenuOpen ? (
@@ -127,14 +112,14 @@ export function Header() {
       >
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col gap-4">
-            {navItems.map((item) => (
+            {header.navLinks.map((item) => (
               <Link
                 key={item.href}
                 to={item.href}
                 className="font-space-grotesk hover:text-primary py-2 text-xl font-bold transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {item.label}
+                {item.label[lang]}
               </Link>
             ))}
           </div>
