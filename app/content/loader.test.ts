@@ -1,70 +1,153 @@
-import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'effect-bun-test';
+import { ConfigProvider, DateTime, Effect, Layer } from 'effect';
 
 import { defaultContent } from './defaults';
-import { loadContent } from './loader';
+import { Content, loadAdminContent, loadContent } from './loader';
+import type { SiteContent } from './schema';
+import { Storage } from '~/services/Storage';
 
-const ENV_KEYS = [
-  'BUCKET_ENDPOINT',
-  'BUCKET_ACCESS_KEY',
-  'BUCKET_SECRET_KEY',
-  'BUCKET_NAME',
-  'BUCKET_REGION',
-  'ALLOW_DEFAULT_CONTENT',
-] as const;
-
-let saved: Record<string, string | undefined>;
-
-beforeEach(() => {
-  saved = {};
-  for (const k of ENV_KEYS) saved[k] = process.env[k];
+const emptyConfig = ConfigProvider.fromUnknown({});
+const allowDefaultsConfig = ConfigProvider.fromUnknown({
+  ALLOW_DEFAULT_CONTENT: '1',
+});
+const disallowDefaultsConfig = ConfigProvider.fromUnknown({
+  ALLOW_DEFAULT_CONTENT: '0',
 });
 
-afterEach(() => {
-  for (const k of ENV_KEYS) {
-    if (saved[k] === undefined) delete process.env[k];
-    else process.env[k] = saved[k];
-  }
-});
+const date = (iso: string): Date => DateTime.toDateUtc(DateTime.makeUnsafe(iso));
 
-function clearBucketEnv() {
-  delete process.env.BUCKET_ENDPOINT;
-  delete process.env.BUCKET_ACCESS_KEY;
-  delete process.env.BUCKET_SECRET_KEY;
-  delete process.env.BUCKET_NAME;
-  delete process.env.BUCKET_REGION;
+function expectFailureCause(exit: { readonly _tag: string; readonly cause?: unknown }): string {
+  expect(exit._tag).toBe('Failure');
+  return String(exit.cause);
 }
 
 describe('loadContent', () => {
-  it('returns bundled defaults when bucket env is unset and ALLOW_DEFAULT_CONTENT=1', async () => {
-    clearBucketEnv();
-    process.env.ALLOW_DEFAULT_CONTENT = '1';
-    const content = await loadContent();
-    expect(content).toEqual(defaultContent);
+  it.effect('returns bundled defaults when bucket env is unset and ALLOW_DEFAULT_CONTENT=1', () =>
+    Effect.gen(function* () {
+      const content = yield* loadContent;
+      expect(content).toEqual(defaultContent);
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(Content.layer, ConfigProvider.layer(allowDefaultsConfig)),
+      ),
+    ),
+  );
+
+  it.effect('throws when bucket env is unset and ALLOW_DEFAULT_CONTENT is unset', () =>
+    Effect.gen(function* () {
+      const exit = yield* Effect.exit(loadContent);
+      const cause = expectFailureCause(exit);
+      expect(cause).toContain('bucket env not set');
+      expect(cause).toContain('refusing to ship defaults');
+    }).pipe(
+      Effect.provide(Layer.mergeAll(Content.layer, ConfigProvider.layer(emptyConfig))),
+    ),
+  );
+
+  it.effect('throws when ALLOW_DEFAULT_CONTENT is "0" (anything other than "1")', () =>
+    Effect.gen(function* () {
+      const exit = yield* Effect.exit(loadContent);
+      expectFailureCause(exit);
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(Content.layer, ConfigProvider.layer(disallowDefaultsConfig)),
+      ),
+    ),
+  );
+});
+
+function contentWithHeroTagline(tagline: string): SiteContent {
+  return {
+    ...defaultContent,
+    hero: {
+      ...defaultContent.hero,
+      tagline: {
+        en: tagline,
+        fr: defaultContent.hero.tagline.fr,
+      },
+    },
+  };
+}
+
+describe('loadAdminContentFromStorage', () => {
+  it.effect('prefers draft content when a draft exists', () => {
+    const published = defaultContent;
+    const draft = contentWithHeroTagline('Draft tagline');
+    const draftModified = date('2026-05-06T12:00:00.000Z');
+
+    return Effect.gen(function* () {
+      const result = yield* loadAdminContent;
+
+      expect(result.source).toBe('draft');
+      expect(result.content.hero.tagline.en).toBe('Draft tagline');
+      expect(result.draftLastModified).toBe(draftModified.getTime());
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(
+          Content.layer,
+          Storage.layerTest({
+            'content/site.json': {
+              body: JSON.stringify(published),
+              lastModified: date('2026-05-05T12:00:00.000Z'),
+            },
+            'content/site.draft.json': {
+              body: JSON.stringify(draft),
+              lastModified: draftModified,
+            },
+          }),
+        ),
+      ),
+    );
   });
 
-  it('throws when bucket env is unset and ALLOW_DEFAULT_CONTENT is unset', async () => {
-    clearBucketEnv();
-    delete process.env.ALLOW_DEFAULT_CONTENT;
-    let threw = false;
-    try {
-      await loadContent();
-    } catch (e) {
-      threw = true;
-      expect(String(e)).toContain('bucket env not set');
-      expect(String(e)).toContain('refusing to ship defaults');
-    }
-    expect(threw).toBe(true);
+  it.effect('falls back to published content when no draft exists', () => {
+    const published = contentWithHeroTagline('Published tagline');
+
+    return Effect.gen(function* () {
+      const result = yield* loadAdminContent;
+
+      expect(result.source).toBe('published');
+      expect(result.content.hero.tagline.en).toBe('Published tagline');
+      expect(result.draftLastModified).toBe(null);
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(
+          Content.layer,
+          Storage.layerTest({
+            'content/site.json': {
+              body: JSON.stringify(published),
+              lastModified: date('2026-05-05T12:00:00.000Z'),
+            },
+          }),
+        ),
+      ),
+    );
   });
 
-  it('throws when ALLOW_DEFAULT_CONTENT is "0" (anything other than "1")', async () => {
-    clearBucketEnv();
-    process.env.ALLOW_DEFAULT_CONTENT = '0';
-    let threw = false;
-    try {
-      await loadContent();
-    } catch {
-      threw = true;
-    }
-    expect(threw).toBe(true);
-  });
+  it.effect('throws when draft content fails schema decoding', () =>
+    Effect.gen(function* () {
+      const exit = yield* Effect.exit(loadAdminContent);
+      const cause = expectFailureCause(exit);
+      expect(cause).toContain('failed to decode content/site.draft.json');
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(
+          Content.layer,
+          Storage.layerTest({
+            'content/site.json': {
+              body: JSON.stringify(defaultContent),
+              lastModified: date('2026-05-05T12:00:00.000Z'),
+            },
+            'content/site.draft.json': {
+              body: JSON.stringify({
+                ...defaultContent,
+                hero: { ...defaultContent.hero, tagline: { en: '', fr: '' } },
+              }),
+              lastModified: date('2026-05-06T12:00:00.000Z'),
+            },
+          }),
+        ),
+      ),
+    ),
+  );
 });

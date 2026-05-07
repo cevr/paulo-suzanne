@@ -1,4 +1,4 @@
-import { Effect } from 'effect';
+import { Effect, Schema } from 'effect';
 import { Form, redirect, useActionData } from 'react-router';
 
 import { adminMeta, adminSecurityHeaders } from '~/lib/admin-headers';
@@ -34,7 +34,7 @@ export const action = routeAction(function* () {
           headers: { 'Set-Cookie': auth.cookieHeader(token) },
         }),
       onFailure: (e) =>
-        e instanceof BadPassword
+        Schema.is(BadPassword)(e)
           ? Response.json({ error: 'Wrong password' }, { status: 401 })
           : Response.json({ error: 'Login failed' }, { status: 500 }),
     }),

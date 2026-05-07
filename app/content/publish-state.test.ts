@@ -1,15 +1,16 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'effect-bun-test';
+import { Effect } from 'effect';
 
 import { defaultContent } from './defaults';
 import { hashContent } from './publish-state';
 import type { SiteContent } from './schema';
 
 describe('hashContent', () => {
-  it('is stable across runs', () => {
+  it.effect('is stable across runs', () => Effect.sync(() => {
     expect(hashContent(defaultContent)).toBe(hashContent(defaultContent));
-  });
+  }));
 
-  it('is invariant to top-level key order', () => {
+  it.effect('is invariant to top-level key order', () => Effect.sync(() => {
     const reordered = {
       jsonLd: defaultContent.jsonLd,
       footer: defaultContent.footer,
@@ -22,9 +23,9 @@ describe('hashContent', () => {
       meta: defaultContent.meta,
     } as SiteContent;
     expect(hashContent(reordered)).toBe(hashContent(defaultContent));
-  });
+  }));
 
-  it('is invariant to nested key order', () => {
+  it.effect('is invariant to nested key order', () => Effect.sync(() => {
     const tweaked: SiteContent = {
       ...defaultContent,
       meta: {
@@ -35,9 +36,9 @@ describe('hashContent', () => {
       },
     };
     expect(hashContent(tweaked)).toBe(hashContent(defaultContent));
-  });
+  }));
 
-  it('changes when a leaf string changes', () => {
+  it.effect('changes when a leaf string changes', () => Effect.sync(() => {
     const tweaked: SiteContent = {
       ...defaultContent,
       meta: {
@@ -46,9 +47,9 @@ describe('hashContent', () => {
       },
     };
     expect(hashContent(tweaked)).not.toBe(hashContent(defaultContent));
-  });
+  }));
 
-  it('changes when array order changes', () => {
+  it.effect('changes when array order changes', () => Effect.sync(() => {
     const reordered: SiteContent = {
       ...defaultContent,
       contact: {
@@ -60,10 +61,10 @@ describe('hashContent', () => {
       },
     };
     expect(hashContent(reordered)).not.toBe(hashContent(defaultContent));
-  });
+  }));
 
-  it('returns a hex string of stable length', () => {
+  it.effect('returns a hex string of stable length', () => Effect.sync(() => {
     const h = hashContent(defaultContent);
     expect(h).toMatch(/^[0-9a-f]{64}$/);
-  });
+  }));
 });

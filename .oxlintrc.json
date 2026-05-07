@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "jsPlugins": ["./lint/no-promise-control-flow-in-tests.ts"],
+  "rules": {
+    "paulo-suzanne/no-promise-control-flow-in-tests": "error"
+  },
+  "ignorePatterns": [
+    "**/build/**",
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/*.d.ts",
+    "**/scripts/**"
+  ]
+}

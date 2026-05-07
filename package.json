@@ -5,6 +5,7 @@
   "scripts": {
     "build": "bun --bun ./node_modules/@react-router/dev/bin.js build",
     "dev": "bun --hot ./server.ts",
+    "lint": "oxlint",
     "start": "bun ./server.ts",
     "typecheck": "react-router typegen && tsgo --noEmit",
     "test": "bun test",
@@ -33,6 +34,8 @@
     "@typescript/native-preview": "7.0.0-dev.20260412.1",
     "effect": "4.0.0-beta.60",
     "effect-bun-test": "0.3.0",
+    "oxlint": "^1.63.0",
+    "oxlint-tsgolint": "^0.22.1",
     "tailwindcss": "^4.2.4",
     "typescript": "^6.0.3",
     "vite": "^8.0.10"

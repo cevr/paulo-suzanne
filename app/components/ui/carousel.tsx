@@ -73,6 +73,7 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
+        if (entry === undefined) return;
         setIsInViewport(entry.isIntersecting);
       },
       {
@@ -184,17 +185,21 @@ export function CarouselContent({
   }, [itemCount]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (touch === undefined) return;
     e.preventDefault();
     setIsDragging(true);
-    setStartX(e.touches[0].clientX);
+    setStartX(touch.clientX);
     setDragOffset(0);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging) return;
+    const touch = e.touches[0];
+    if (touch === undefined) return;
 
     e.preventDefault();
-    const currentX = e.touches[0].clientX;
+    const currentX = touch.clientX;
     const diff = currentX - startX;
     const containerWidth = containerRef.current?.offsetWidth || 0;
 
@@ -363,7 +368,11 @@ export function CarouselItem({
   className,
   ...props
 }: CarouselItemProps) {
-  return <div {...props}>{children}</div>;
+  return (
+    <div className={className} {...props}>
+      {children}
+    </div>
+  );
 }
 
 export function CarouselPrevious({

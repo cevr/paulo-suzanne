@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'effect-bun-test';
 import { Effect, Schema } from 'effect';
 
 import { defaultContent } from './defaults';
@@ -17,129 +17,172 @@ const validImage = {
 };
 
 describe('AssetKey', () => {
-  it('accepts plain relative paths', async () => {
-    expect(await Effect.runPromise(decodeAssetKey('indoor.avif'))).toBe(
-      'indoor.avif',
-    );
-    expect(await Effect.runPromise(decodeAssetKey('images/food/x.avif'))).toBe(
-      'images/food/x.avif',
-    );
-  });
+  it.effect('accepts plain relative paths', () =>
+    Effect.gen(function* () {
+      expect(yield* decodeAssetKey('indoor.avif')).toBe('indoor.avif');
+      expect(yield* decodeAssetKey('images/food/x.avif')).toBe(
+        'images/food/x.avif',
+      );
+    }),
+  );
 
-  it('rejects leading slash', async () => {
-    const exit = await Effect.runPromiseExit(decodeAssetKey('/indoor.avif'));
-    expect(exit._tag).toBe('Failure');
-  });
-
-  it('rejects URL schemes', async () => {
-    for (const v of [
-      'http://example.com/x.png',
-      'https://x.png',
-      'data:image/png;base64,xx',
-      'javascript:alert(1)',
-    ]) {
-      const exit = await Effect.runPromiseExit(decodeAssetKey(v));
+  it.effect('rejects leading slash', () =>
+    Effect.gen(function* () {
+      const exit = yield* Effect.exit(decodeAssetKey('/indoor.avif'));
       expect(exit._tag).toBe('Failure');
-    }
-  });
+    }),
+  );
 
-  it('rejects traversal segments', async () => {
-    for (const v of ['../foo.png', 'a/../b.png', './foo.png', 'a//b.png']) {
-      const exit = await Effect.runPromiseExit(decodeAssetKey(v));
+  it.effect('rejects URL schemes', () =>
+    Effect.gen(function* () {
+      for (const v of [
+        'http://example.com/x.png',
+        'https://x.png',
+        'data:image/png;base64,xx',
+        'javascript:alert(1)',
+      ]) {
+        const exit = yield* Effect.exit(decodeAssetKey(v));
+        expect(exit._tag).toBe('Failure');
+      }
+    }),
+  );
+
+  it.effect('rejects traversal segments', () =>
+    Effect.gen(function* () {
+      for (const v of ['../foo.png', 'a/../b.png', './foo.png', 'a//b.png']) {
+        const exit = yield* Effect.exit(decodeAssetKey(v));
+        expect(exit._tag).toBe('Failure');
+      }
+    }),
+  );
+
+  it.effect('rejects empty string', () =>
+    Effect.gen(function* () {
+      const exit = yield* Effect.exit(decodeAssetKey(''));
       expect(exit._tag).toBe('Failure');
-    }
-  });
-
-  it('rejects empty string', async () => {
-    const exit = await Effect.runPromiseExit(decodeAssetKey(''));
-    expect(exit._tag).toBe('Failure');
-  });
+    }),
+  );
 });
 
 describe('ImageRef', () => {
-  it('accepts a fully-formed ref', async () => {
-    const r = await Effect.runPromise(decodeImageRef(validImage));
-    expect(r.key).toBe('images/logo.png');
-  });
+  it.effect('accepts a fully-formed ref', () =>
+    Effect.gen(function* () {
+      const r = yield* decodeImageRef(validImage);
+      expect(r.key).toBe('images/logo.png');
+    }),
+  );
 
-  it('rejects non-positive dimensions', async () => {
-    const exit = await Effect.runPromiseExit(
-      decodeImageRef({ ...validImage, width: 0 }),
-    );
-    expect(exit._tag).toBe('Failure');
-  });
+  it.effect('rejects non-positive dimensions', () =>
+    Effect.gen(function* () {
+      const exit = yield* Effect.exit(decodeImageRef({ ...validImage, width: 0 }));
+      expect(exit._tag).toBe('Failure');
+    }),
+  );
 
-  it('rejects missing alt translations', async () => {
-    const exit = await Effect.runPromiseExit(
-      decodeImageRef({ ...validImage, alt: { en: 'Logo' } }),
-    );
-    expect(exit._tag).toBe('Failure');
-  });
+  it.effect('rejects missing alt translations', () =>
+    Effect.gen(function* () {
+      const exit = yield* Effect.exit(
+        decodeImageRef({ ...validImage, alt: { en: 'Logo' } }),
+      );
+      expect(exit._tag).toBe('Failure');
+    }),
+  );
 });
 
 describe('SocialKind', () => {
-  it('accepts known kinds', async () => {
-    expect(await Effect.runPromise(decodeSocialKind('instagram'))).toBe(
-      'instagram',
-    );
-    expect(await Effect.runPromise(decodeSocialKind('facebook'))).toBe(
-      'facebook',
-    );
-  });
+  it.effect('accepts known kinds', () =>
+    Effect.gen(function* () {
+      expect(yield* decodeSocialKind('instagram')).toBe('instagram');
+      expect(yield* decodeSocialKind('facebook')).toBe('facebook');
+    }),
+  );
 
-  it('rejects unknown kinds', async () => {
-    const exit = await Effect.runPromiseExit(decodeSocialKind('twitter'));
-    expect(exit._tag).toBe('Failure');
-  });
+  it.effect('rejects unknown kinds', () =>
+    Effect.gen(function* () {
+      const exit = yield* Effect.exit(decodeSocialKind('twitter'));
+      expect(exit._tag).toBe('Failure');
+    }),
+  );
 });
 
 describe('SiteContent', () => {
-  it('round-trips bundled defaults through encode/decode', async () => {
-    const encoded = JSON.parse(JSON.stringify(defaultContent));
-    const decoded = await Effect.runPromise(decodeSiteContent(encoded));
-    expect(decoded.contact.socials.length).toBe(2);
-    expect(decoded.contact.socials[0]?.kind).toBe('instagram');
-  });
+  it.effect('round-trips bundled defaults through encode/decode', () =>
+    Effect.gen(function* () {
+      const decoded = yield* decodeSiteContent(defaultContent);
+      expect(decoded.contact.socials.length).toBe(2);
+      expect(decoded.contact.socials[0]?.kind).toBe('instagram');
+    }),
+  );
 
-  it('rejects empty navLinks', async () => {
-    const broken = JSON.parse(JSON.stringify(defaultContent));
-    broken.header.navLinks = [];
-    const exit = await Effect.runPromiseExit(decodeSiteContent(broken));
-    expect(exit._tag).toBe('Failure');
-  });
+  it.effect('rejects empty navLinks', () =>
+    Effect.gen(function* () {
+      const broken = {
+        ...defaultContent,
+        header: { ...defaultContent.header, navLinks: [] },
+      };
+      const exit = yield* Effect.exit(decodeSiteContent(broken));
+      expect(exit._tag).toBe('Failure');
+    }),
+  );
 
-  it('rejects empty carousel', async () => {
-    const broken = JSON.parse(JSON.stringify(defaultContent));
-    broken.menu.carousel = [];
-    const exit = await Effect.runPromiseExit(decodeSiteContent(broken));
-    expect(exit._tag).toBe('Failure');
-  });
+  it.effect('rejects empty carousel', () =>
+    Effect.gen(function* () {
+      const broken = {
+        ...defaultContent,
+        menu: { ...defaultContent.menu, carousel: [] },
+      };
+      const exit = yield* Effect.exit(decodeSiteContent(broken));
+      expect(exit._tag).toBe('Failure');
+    }),
+  );
 
-  it('rejects empty hours', async () => {
-    const broken = JSON.parse(JSON.stringify(defaultContent));
-    broken.location.hours = [];
-    const exit = await Effect.runPromiseExit(decodeSiteContent(broken));
-    expect(exit._tag).toBe('Failure');
-  });
+  it.effect('rejects empty hours', () =>
+    Effect.gen(function* () {
+      const broken = {
+        ...defaultContent,
+        location: { ...defaultContent.location, hours: [] },
+      };
+      const exit = yield* Effect.exit(decodeSiteContent(broken));
+      expect(exit._tag).toBe('Failure');
+    }),
+  );
 
-  it('rejects empty socials', async () => {
-    const broken = JSON.parse(JSON.stringify(defaultContent));
-    broken.contact.socials = [];
-    const exit = await Effect.runPromiseExit(decodeSiteContent(broken));
-    expect(exit._tag).toBe('Failure');
-  });
+  it.effect('rejects empty socials', () =>
+    Effect.gen(function* () {
+      const broken = {
+        ...defaultContent,
+        contact: { ...defaultContent.contact, socials: [] },
+      };
+      const exit = yield* Effect.exit(decodeSiteContent(broken));
+      expect(exit._tag).toBe('Failure');
+    }),
+  );
 
-  it('rejects ImageRef with leading slash anywhere in the tree', async () => {
-    const broken = JSON.parse(JSON.stringify(defaultContent));
-    broken.meta.ogImage.key = '/indoor.avif';
-    const exit = await Effect.runPromiseExit(decodeSiteContent(broken));
-    expect(exit._tag).toBe('Failure');
-  });
+  it.effect('rejects ImageRef with leading slash anywhere in the tree', () =>
+    Effect.gen(function* () {
+      const broken = {
+        ...defaultContent,
+        meta: {
+          ...defaultContent.meta,
+          ogImage: { ...defaultContent.meta.ogImage, key: '/indoor.avif' },
+        },
+      };
+      const exit = yield* Effect.exit(decodeSiteContent(broken));
+      expect(exit._tag).toBe('Failure');
+    }),
+  );
 
-  it('rejects jsonLd.imageKey with URL scheme', async () => {
-    const broken = JSON.parse(JSON.stringify(defaultContent));
-    broken.jsonLd.imageKey = 'https://example.com/x.png';
-    const exit = await Effect.runPromiseExit(decodeSiteContent(broken));
-    expect(exit._tag).toBe('Failure');
-  });
+  it.effect('rejects jsonLd.imageKey with URL scheme', () =>
+    Effect.gen(function* () {
+      const broken = {
+        ...defaultContent,
+        jsonLd: {
+          ...defaultContent.jsonLd,
+          imageKey: 'https://example.com/x.png',
+        },
+      };
+      const exit = yield* Effect.exit(decodeSiteContent(broken));
+      expect(exit._tag).toBe('Failure');
+    }),
+  );
 });

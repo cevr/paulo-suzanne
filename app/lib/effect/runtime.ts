@@ -1,35 +1,51 @@
-import { Cause, Effect, Exit, Layer, ManagedRuntime } from 'effect';
+import { Cause, Effect, Exit, Layer, ManagedRuntime, Schema } from 'effect';
+import { FetchHttpClient } from 'effect/unstable/http';
 import { redirect } from 'react-router';
 
+import { Content, ContentLoadError } from '~/content/loader';
 import { Auth, Unauthorized } from '~/services/Auth';
-import { Railway } from '~/services/Railway';
+import { Railway, RailwayDisabled, RailwayError } from '~/services/Railway';
 import { NotFound, Storage, StorageError } from '~/services/Storage';
 
 import { ReactRouterContext, type RouteArgs } from './router-context';
 
-export type AppServices = Storage | Auth | Railway;
+export type AppServices = Storage | Auth | Railway | Content;
+export type AppError =
+  | Response
+  | Unauthorized
+  | NotFound
+  | StorageError
+  | RailwayDisabled
+  | RailwayError
+  | ContentLoadError;
 
-const AppLayer = Layer.mergeAll(Storage.layer, Auth.layer, Railway.layer);
+const RailwayLayer = Railway.layer.pipe(Layer.provideMerge(FetchHttpClient.layer));
+
+const AppLayer = Layer.mergeAll(
+  Storage.layer,
+  Auth.layer,
+  RailwayLayer,
+  Content.layer,
+);
 const AppRuntime = ManagedRuntime.make(AppLayer);
 
 const isResponse = (v: unknown): v is Response =>
   typeof v === 'object' && v !== null && v instanceof Response;
 
 const reportServerError = (cause: Cause.Cause<unknown>): void => {
-  // oxlint-disable-next-line no-console
-  console.error('[paulo-suzanne] Effect error:', Cause.pretty(cause));
+  Bun.stderr.write(`[paulo-suzanne] Effect error: ${Cause.pretty(cause)}\n`);
 };
 
 const throwHttpError = (error: unknown): never => {
   if (isResponse(error)) throw error;
 
-  if (error instanceof Unauthorized) {
+  if (Schema.is(Unauthorized)(error)) {
     throw redirect('/admin/login');
   }
-  if (error instanceof NotFound) {
+  if (Schema.is(NotFound)(error)) {
     throw new Response('Not Found', { status: 404 });
   }
-  if (error instanceof StorageError) {
+  if (Schema.is(StorageError)(error)) {
     reportServerError(Cause.fail(error));
     throw new Response(JSON.stringify({ message: 'Storage error', op: error.op }), {
       status: 502,
@@ -58,7 +74,7 @@ export type RequestRuntime = {
   ) => Promise<A>;
 };
 
-const runWithContext = async <A, E, R extends AppServices | ReactRouterContext>(
+const runWithContext = <A, E, R extends AppServices | ReactRouterContext>(
   args: RouteArgs,
   effect: Effect.Effect<A, E, R>,
 ): Promise<A> => {
@@ -67,10 +83,10 @@ const runWithContext = async <A, E, R extends AppServices | ReactRouterContext>(
     E,
     AppServices
   >;
-  const exit = await AppRuntime.runPromiseExit(provided);
-
-  if (Exit.isSuccess(exit)) return exit.value;
-  return throwCauseError(exit.cause);
+  return AppRuntime.runPromiseExit(provided).then((exit) => {
+    if (Exit.isSuccess(exit)) return exit.value;
+    return throwCauseError(exit.cause);
+  });
 };
 
 export const makeRequestRuntime = (): RequestRuntime => ({

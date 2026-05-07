@@ -12,7 +12,7 @@ import {
 
 import type { Route } from './+types/root';
 import { Toaster } from './components/ui/sonner';
-import { loadContent } from './content/loader';
+import { runLoadContent } from './content/loader';
 import type { SiteContent } from './content/schema';
 import { LanguageProvider } from './lib/language-provider';
 import type { Lang } from './lib/language';
@@ -65,12 +65,12 @@ function buildJsonLd(jsonLd: SiteContent['jsonLd']) {
   };
 }
 
-export const loader = async ({ request }: Route.LoaderArgs) => {
-  const url = new URL(request.url);
-  const lang: Lang = url.pathname.startsWith('/en') ? 'en' : 'fr';
-  const content = await loadContent();
-  return { lang, content };
-};
+export const loader = ({ request }: Route.LoaderArgs) =>
+  runLoadContent().then((content) => {
+    const url = new URL(request.url);
+    const lang: Lang = url.pathname.startsWith('/en') ? 'en' : 'fr';
+    return { lang, content };
+  });
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const matches = useMatches();

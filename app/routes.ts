@@ -12,7 +12,6 @@ export default [
   route('/admin/logout', 'routes/admin/logout.tsx'),
   layout('routes/admin/_layout.tsx', [
     route('/admin', 'routes/admin/_index.tsx'),
-    route('/admin/content', 'routes/admin/content.tsx'),
   ]),
   route('/:lang', 'routes/catchall-lang.tsx'),
 ] satisfies RouteConfig;

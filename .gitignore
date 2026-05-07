@@ -5,3 +5,6 @@
 /.react-router/
 /build/
 .env
+
+# Claude Code
+/.claude/

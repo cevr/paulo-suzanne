@@ -18,8 +18,8 @@ declare module 'react-router' {
   }
 }
 
-const isDev = process.env.NODE_ENV !== 'production';
-const PORT = Number(process.env.PORT) || 3000;
+const isDev = Bun.env.NODE_ENV !== 'production';
+const PORT = Number(Bun.env['PORT']) || 3000;
 const BUILD_PATH = './build/server/index.js';
 const CLIENT_PATH = './build/client';
 
@@ -43,8 +43,10 @@ const BUCKETED_EXACT = [
   '/retro-diner-red-booths.avif',
 ] as const;
 
-class FileMissing extends Data.TaggedError('FileMissing')<{ readonly path: string }> {}
-class ViteUnhandled extends Data.TaggedError('ViteUnhandled')<{}> {}
+class FileMissing extends Data.TaggedError('paulo-suzanne/server/FileMissing')<{
+  readonly path: string;
+}> {}
+class ViteUnhandled extends Data.TaggedError('paulo-suzanne/server/ViteUnhandled')<{}> {}
 
 const mimeFor = (pathname: string): string => {
   if (pathname.endsWith('.js')) return 'application/javascript';
@@ -66,7 +68,7 @@ const fileResponse = Effect.fn('fileResponse')(function* (
 ) {
   const file = Bun.file(filePath);
   const exists = yield* Effect.promise(() => file.exists());
-  if (!exists) return yield* Effect.fail(new FileMissing({ path: filePath }));
+  if (!exists) return yield* new FileMissing({ path: filePath });
   const buf = yield* Effect.promise(() => file.arrayBuffer());
   return HttpServerResponse.uint8Array(new Uint8Array(buf), {
     contentType,
@@ -89,10 +91,10 @@ const bucketResponse = Effect.fn('bucketResponse')(function* (key: string) {
 
 const bucketAsset = (pathname: string) =>
   bucketResponse(pathname.replace(/^\//, '')).pipe(
-    Effect.catchTag('@paulo-suzanne/services/Storage/NotFound', () =>
+    Effect.catchTag('paulo-suzanne/services/Storage/NotFound', () =>
       Effect.succeed(HttpServerResponse.empty({ status: 404 })),
     ),
-    Effect.catchTag('@paulo-suzanne/services/Storage/StorageError', (e) =>
+    Effect.catchTag('paulo-suzanne/services/Storage/StorageError', (e) =>
       Effect.logError('storage error', e).pipe(
         Effect.as(HttpServerResponse.empty({ status: 502 })),
       ),
@@ -115,7 +117,7 @@ const reactRouterFallback = Effect.fn('reactRouterFallback')(function* () {
 });
 
 const viteAssetResponse = Effect.fn('viteAsset')(function* () {
-  if (vite === null || dev === null) return yield* Effect.fail(new ViteUnhandled());
+  if (vite === null || dev === null) return yield* new ViteUnhandled();
   const request = yield* HttpServerRequest.HttpServerRequest;
   const webRequest = yield* HttpServerRequest.toWeb(request);
   const url = new URL(webRequest.url);
@@ -123,10 +125,10 @@ const viteAssetResponse = Effect.fn('viteAsset')(function* () {
     return HttpServerResponse.empty({ status: 404 });
   }
   if (request.method !== 'GET' || !dev.looksLikeViteAsset(url.pathname)) {
-    return yield* Effect.fail(new ViteUnhandled());
+    return yield* new ViteUnhandled();
   }
   const result = yield* Effect.promise(() => dev.runViteMiddleware(vite, webRequest));
-  if (result === null) return yield* Effect.fail(new ViteUnhandled());
+  if (result === null) return yield* new ViteUnhandled();
   return HttpServerResponse.raw(result.body, {
     status: result.status,
     statusText: result.statusText,
@@ -146,7 +148,7 @@ const HashedAssetsRoute = HttpRouter.add('GET', '/assets/*', (request) => {
     mimeFor(path),
     'public, max-age=31536000, immutable',
   ).pipe(
-    Effect.catchTag('FileMissing', () =>
+    Effect.catchTag('paulo-suzanne/server/FileMissing', () =>
       Effect.succeed(HttpServerResponse.empty({ status: 404 })),
     ),
   );
@@ -164,19 +166,21 @@ const BucketedExactRoutes = Layer.mergeAll(BucketedFirst!, ...BucketedRest);
 const PrerenderedRoutes = Layer.mergeAll(
   HttpRouter.add('GET', '/', () =>
     fileResponse(PRERENDERED['/']!, 'text/html; charset=utf-8', 'public, max-age=3600').pipe(
-      Effect.catchTag('FileMissing', () => reactRouterFallback()),
+      Effect.catchTag('paulo-suzanne/server/FileMissing', () => reactRouterFallback()),
     ),
   ),
   HttpRouter.add('GET', '/en', () =>
     fileResponse(PRERENDERED['/en']!, 'text/html; charset=utf-8', 'public, max-age=3600').pipe(
-      Effect.catchTag('FileMissing', () => reactRouterFallback()),
+      Effect.catchTag('paulo-suzanne/server/FileMissing', () => reactRouterFallback()),
     ),
   ),
 );
 
 const FallbackRoute = HttpRouter.add('*', '*', () =>
   isDev ?
-    viteAssetResponse().pipe(Effect.catchTag('ViteUnhandled', () => reactRouterFallback()))
+    viteAssetResponse().pipe(
+      Effect.catchTag('paulo-suzanne/server/ViteUnhandled', () => reactRouterFallback()),
+    )
   : reactRouterFallback(),
 );
 

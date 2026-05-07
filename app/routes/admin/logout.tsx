@@ -1,3 +1,4 @@
+import { Effect } from 'effect';
 import { redirect } from 'react-router';
 
 import { adminSecurityHeaders } from '~/lib/admin-headers';
@@ -14,5 +15,6 @@ export const action = routeAction(function* () {
 });
 
 export const loader = routeHandler(function* () {
+  yield* Effect.void;
   return redirect('/admin');
 });

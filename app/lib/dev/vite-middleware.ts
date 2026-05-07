@@ -1,3 +1,4 @@
+import { Effect, Schema } from 'effect';
 import { createServer as createViteServer, type ViteDevServer } from 'vite';
 
 export const SERVER_BUILD_ID = 'virtual:react-router/server-build';
@@ -8,11 +9,16 @@ export const createDevVite = (): Promise<ViteDevServer> =>
     appType: 'custom',
   });
 
-export const runViteMiddleware = (
+class ViteMiddlewareError extends Schema.TaggedErrorClass<ViteMiddlewareError>()(
+  'paulo-suzanne/lib/dev/vite-middleware/ViteMiddlewareError',
+  { message: Schema.String },
+) {}
+
+const runViteMiddlewareEffect = (
   vite: ViteDevServer,
   req: Request,
-): Promise<Response | null> =>
-  new Promise((resolve, reject) => {
+): Effect.Effect<Response | null, ViteMiddlewareError> =>
+  Effect.callback((resume) => {
     const url = new URL(req.url);
     const headers: Record<string, string | string[]> = {};
     req.headers.forEach((value, key) => {
@@ -102,7 +108,7 @@ export const runViteMiddleware = (
         for (const [k, v] of Object.entries(resHeaders)) {
           flatHeaders[k] = Array.isArray(v) ? v.join(', ') : v;
         }
-        resolve(new Response(body, { status: statusCode, headers: flatHeaders }));
+        resume(Effect.succeed(new Response(body, { status: statusCode, headers: flatHeaders })));
       },
       on: () => nodeRes,
       once: () => nodeRes,
@@ -114,12 +120,17 @@ export const runViteMiddleware = (
 
     vite.middlewares(nodeReq, nodeRes, (err?: unknown) => {
       if (err !== undefined) {
-        reject(err instanceof Error ? err : new Error(String(err)));
+        resume(Effect.fail(new ViteMiddlewareError({ message: String(err) })));
         return;
       }
-      resolve(null);
+      resume(Effect.succeed(null));
     });
   });
+
+export const runViteMiddleware = (
+  vite: ViteDevServer,
+  req: Request,
+): Promise<Response | null> => Effect.runPromise(runViteMiddlewareEffect(vite, req));
 
 export const looksLikeViteAsset = (pathname: string): boolean => {
   if (pathname.startsWith('/@') || pathname.startsWith('/node_modules/')) return true;

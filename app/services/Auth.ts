@@ -1,12 +1,12 @@
-import { Config, Context, Effect, Layer, Redacted, Schema } from 'effect';
+import { Clock, Config, Context, Effect, Layer, Redacted, Schema } from 'effect';
 
 export class BadPassword extends Schema.TaggedErrorClass<BadPassword>()(
-  '@paulo-suzanne/services/Auth/BadPassword',
+  'paulo-suzanne/services/Auth/BadPassword',
   {},
 ) {}
 
 export class Unauthorized extends Schema.TaggedErrorClass<Unauthorized>()(
-  '@paulo-suzanne/services/Auth/Unauthorized',
+  'paulo-suzanne/services/Auth/Unauthorized',
   {},
 ) {}
 
@@ -18,27 +18,25 @@ const toBase64Url = (bytes: Uint8Array): string => {
   return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 };
 
-const fromBase64Url = (s: string): Uint8Array => {
-  const pad = s.length % 4 === 0 ? '' : '='.repeat(4 - (s.length % 4));
-  const b64 = s.replace(/-/g, '+').replace(/_/g, '/') + pad;
-  return new Uint8Array(Buffer.from(b64, 'base64'));
-};
-
-const importKey = async (secret: string): Promise<CryptoKey> => {
-  return crypto.subtle.importKey(
+const importKey = (secret: string): Effect.Effect<CryptoKey> =>
+  Effect.promise(() =>
+    crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign', 'verify'],
+    ),
   );
-};
 
-const sign = async (secret: string, payload: string): Promise<string> => {
-  const key = await importKey(secret);
-  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload));
+const sign = (secret: string, payload: string): Effect.Effect<string> =>
+  Effect.gen(function* () {
+  const key = yield* importKey(secret);
+  const sig = yield* Effect.promise(() =>
+    crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload)),
+  );
   return toBase64Url(new Uint8Array(sig));
-};
+  });
 
 const constantTimeEqual = (a: Uint8Array, b: Uint8Array): boolean => {
   if (a.length !== b.length) return false;
@@ -47,10 +45,15 @@ const constantTimeEqual = (a: Uint8Array, b: Uint8Array): boolean => {
   return diff === 0;
 };
 
-const verifySig = async (secret: string, payload: string, sig: string): Promise<boolean> => {
-  const expected = await sign(secret, payload);
+const verifySig = (
+  secret: string,
+  payload: string,
+  sig: string,
+): Effect.Effect<boolean> =>
+  Effect.gen(function* () {
+  const expected = yield* sign(secret, payload);
   return constantTimeEqual(new TextEncoder().encode(expected), new TextEncoder().encode(sig));
-};
+  });
 
 const parseCookie = (header: string | null, name: string): string | null => {
   if (header === null) return null;
@@ -69,7 +72,7 @@ export class Auth extends Context.Service<
     readonly cookieHeader: (token: string) => string;
     readonly clearCookieHeader: () => string;
   }
->()('@paulo-suzanne/services/Auth') {
+>()('paulo-suzanne/services/Auth') {
   static layer = Layer.effect(
     Auth,
     Effect.gen(function* () {
@@ -82,27 +85,26 @@ export class Auth extends Context.Service<
       const secret = Redacted.value(cookieSecret);
 
       const issueToken = (): Effect.Effect<string> =>
-        Effect.promise(async () => {
-          const issued = Math.floor(Date.now() / 1000);
+        Effect.gen(function* () {
+          const now = yield* Clock.currentTimeMillis;
+          const issued = Math.floor(now / 1000);
           const expires = issued + TOKEN_TTL_SECONDS;
           const payload = `${issued}.${expires}`;
-          const sig = await sign(secret, payload);
+          const sig = yield* sign(secret, payload);
           return `${payload}.${sig}`;
         });
 
       const validateToken = (token: string): Effect.Effect<void, Unauthorized> =>
-        Effect.tryPromise({
-          try: async () => {
-            const parts = token.split('.');
-            if (parts.length !== 3) throw new Error('shape');
-            const [issuedStr, expiresStr, sig] = parts as [string, string, string];
-            const expires = Number(expiresStr);
-            if (!Number.isFinite(expires)) throw new Error('expires');
-            if (expires < Math.floor(Date.now() / 1000)) throw new Error('expired');
-            const ok = await verifySig(secret, `${issuedStr}.${expiresStr}`, sig);
-            if (!ok) throw new Error('sig');
-          },
-          catch: () => new Unauthorized(),
+        Effect.gen(function* () {
+          const parts = token.split('.');
+          if (parts.length !== 3) return yield* new Unauthorized();
+          const [issuedStr, expiresStr, sig] = parts as [string, string, string];
+          const expires = Number(expiresStr);
+          if (!Number.isFinite(expires)) return yield* new Unauthorized();
+          const now = yield* Clock.currentTimeMillis;
+          if (expires < Math.floor(now / 1000)) return yield* new Unauthorized();
+          const ok = yield* verifySig(secret, `${issuedStr}.${expiresStr}`, sig);
+          if (!ok) return yield* new Unauthorized();
         });
 
       return Auth.of({

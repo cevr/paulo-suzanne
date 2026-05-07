@@ -1,3 +1,4 @@
+import { DateTime } from 'effect';
 import { Link } from 'react-router';
 
 import { imageSrc } from '~/content/schema';
@@ -8,7 +9,7 @@ export function Footer() {
   const lang = useLanguage();
   const { footer, contact, location } = useContent();
 
-  const currentYear = new Date().getFullYear();
+  const currentYear = DateTime.getPartUtc(DateTime.nowUnsafe(), 'year');
 
   return (
     <footer className="border-primary border-t-4 bg-black text-white">
