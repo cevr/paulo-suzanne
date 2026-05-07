@@ -41,56 +41,29 @@ export const links: Route.LinksFunction = () => [
   { rel: 'apple-touch-icon', href: '/favicon.ico' },
 ];
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Restaurant',
-  name: 'Paulo & Suzanne',
-  url: CANONICAL_URL,
-  telephone: '+1-514-336-5561',
-  email: 'info@pauloetsuzanne.com',
-  image: `${CANONICAL_URL}indoor.avif`,
-  menu: `${CANONICAL_URL}menu.pdf`,
-  servesCuisine: ['Poutine', 'Burgers', 'Québécoise'],
-  priceRange: '$$',
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: '5501 Boul Gouin O',
-    addressLocality: 'Montréal',
-    addressRegion: 'QC',
-    postalCode: 'H4J 1C8',
-    addressCountry: 'CA',
-  },
-  openingHoursSpecification: [
-    {
-      '@type': 'OpeningHoursSpecification',
-      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday'],
-      opens: '10:00',
-      closes: '03:00',
+function buildJsonLd(jsonLd: SiteContent['jsonLd']) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Restaurant',
+    name: jsonLd.name,
+    url: CANONICAL_URL,
+    telephone: jsonLd.telephone,
+    email: jsonLd.email,
+    image: `${CANONICAL_URL}${jsonLd.imageKey}`,
+    menu: `${CANONICAL_URL}${jsonLd.menuPath.replace(/^\//, '')}`,
+    servesCuisine: jsonLd.servesCuisine,
+    priceRange: jsonLd.priceRange,
+    address: {
+      '@type': 'PostalAddress',
+      ...jsonLd.address,
     },
-    {
+    openingHoursSpecification: jsonLd.openingHours.map((spec) => ({
       '@type': 'OpeningHoursSpecification',
-      dayOfWeek: 'Friday',
-      opens: '10:00',
-      closes: '23:59',
-    },
-    {
-      '@type': 'OpeningHoursSpecification',
-      dayOfWeek: 'Saturday',
-      opens: '00:00',
-      closes: '23:59',
-    },
-    {
-      '@type': 'OpeningHoursSpecification',
-      dayOfWeek: 'Sunday',
-      opens: '00:00',
-      closes: '03:00',
-    },
-  ],
-  sameAs: [
-    'https://www.instagram.com/pauloetsuzanne_officiel/',
-    'https://www.facebook.com/pauloetsuzanne247/',
-  ],
-};
+      ...spec,
+    })),
+    sameAs: jsonLd.sameAs,
+  };
+}
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
   const url = new URL(request.url);
@@ -105,6 +78,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     | { lang: Lang; content: SiteContent }
     | undefined;
   const lang = rootData?.lang ?? 'fr';
+  const jsonLd = rootData?.content ? buildJsonLd(rootData.content.jsonLd) : null;
 
   return (
     <html lang={lang}>
@@ -120,10 +94,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <Meta />
         <Links />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        {jsonLd && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+        )}
       </head>
       <body>
         {children}
