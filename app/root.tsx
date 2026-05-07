@@ -12,6 +12,8 @@ import {
 
 import type { Route } from './+types/root';
 import { Toaster } from './components/ui/sonner';
+import { loadContent } from './content/loader';
+import type { SiteContent } from './content/schema';
 import { LanguageProvider } from './lib/language-provider';
 import type { Lang } from './lib/language';
 
@@ -90,16 +92,17 @@ const jsonLd = {
   ],
 };
 
-export const loader = ({ request }: Route.LoaderArgs) => {
+export const loader = async ({ request }: Route.LoaderArgs) => {
   const url = new URL(request.url);
   const lang: Lang = url.pathname.startsWith('/en') ? 'en' : 'fr';
-  return { lang };
+  const content = await loadContent();
+  return { lang, content };
 };
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const matches = useMatches();
   const rootData = matches.find((m) => m.id === 'root')?.data as
-    | { lang: Lang }
+    | { lang: Lang; content: SiteContent }
     | undefined;
   const lang = rootData?.lang ?? 'fr';
 
@@ -132,9 +135,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  const { lang } = loaderData;
+  const { lang, content } = loaderData;
   return (
-    <LanguageProvider initialLanguage={lang}>
+    <LanguageProvider initialLanguage={lang} content={content}>
       <Outlet />
       <Toaster />
     </LanguageProvider>

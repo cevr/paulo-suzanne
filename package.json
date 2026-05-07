@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "react-router build",
+    "build": "bun --bun ./node_modules/@react-router/dev/bin.js build",
     "dev": "bun --hot ./server.ts",
     "start": "bun ./server.ts",
     "typecheck": "react-router typegen && tsgo --noEmit",
