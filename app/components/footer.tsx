@@ -6,7 +6,7 @@ import { useContent, useLanguage } from '../lib/language-provider';
 
 export function Footer() {
   const lang = useLanguage();
-  const { footer, contact } = useContent();
+  const { footer, contact, location } = useContent();
 
   const currentYear = new Date().getFullYear();
 
@@ -74,11 +74,19 @@ export function Footer() {
 
           <div>
             <h2 className="font-space-grotesk mb-4 text-xl font-bold">
-              {footer.hoursHeading[lang]}
+              {location.hoursHeading[lang]}
             </h2>
-            <p className="font-space-grotesk text-secondary text-xl font-bold uppercase">
-              {footer.hoursSummary[lang]}
-            </p>
+            <ul className="font-space-grotesk flex flex-col gap-1 text-gray-400">
+              {location.hours.map((row, index) => (
+                <li
+                  key={index}
+                  className="flex justify-between gap-4"
+                >
+                  <span className="font-medium">{row.day[lang]}</span>
+                  <span className="text-right">{row.hours[lang]}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 

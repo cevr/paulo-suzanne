@@ -141,8 +141,6 @@ const Footer = Schema.Struct({
   quickLinks: Schema.Array(NavLink),
   contactInfoHeading: Text,
   contactInfoLines: Schema.Array(Schema.NonEmptyString),
-  hoursHeading: Text,
-  hoursSummary: Text,
   rightsLine: Text,
 });
 

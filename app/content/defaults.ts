@@ -368,11 +368,6 @@ export const defaultContent: SiteContent = SiteContent.make({
     ],
     contactInfoHeading: { en: 'Contact Info', fr: 'Coordonnées' },
     contactInfoLines: ['5501 Boul Gouin O', 'Montréal, QC H4J 1C8', 'Canada'],
-    hoursHeading: { en: 'Hours', fr: "Heures d'ouverture" },
-    hoursSummary: {
-      en: 'Weekdays 10am-3am, Weekends 24/7',
-      fr: 'En semaine 10h-3h, Fins de semaine 24/7',
-    },
     rightsLine: { en: 'All rights reserved.', fr: 'Tous droits réservés.' },
   },
 
