@@ -1,30 +1,10 @@
 import { Clock, MapPin } from 'lucide-react';
 
-import { useTranslate } from '../lib/language-provider';
+import { useContent, useLanguage } from '../lib/language-provider';
 
 export function LocationSection() {
-  const t =useTranslate();
-  const hours = [
-    { day: t('Monday', 'Lundi'), hours: t('10am to 3am', '10h à 3h') },
-    { day: t('Tuesday', 'Mardi'), hours: t('10am to 3am', '10h à 3h') },
-    { day: t('Wednesday', 'Mercredi'), hours: t('10am to 3am', '10h à 3h') },
-    { day: t('Thursday', 'Jeudi'), hours: t('10am to 3am', '10h à 3h') },
-    {
-      day: t('Friday', 'Vendredi'),
-      hours: t(
-        'Opens at 10am (stays open overnight)',
-        'Ouvre à 10h (reste ouvert toute la nuit)',
-      ),
-    },
-    {
-      day: t('Saturday', 'Samedi'),
-      hours: t('Open 24 hours', 'Ouvert 24 heures'),
-    },
-    {
-      day: t('Sunday', 'Dimanche'),
-      hours: t('Open until 3am Monday', "Ouvert jusqu'à 3h lundi"),
-    },
-  ];
+  const lang = useLanguage();
+  const { location } = useContent();
 
   return (
     <section
@@ -34,7 +14,7 @@ export function LocationSection() {
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
           <h2 className="font-space-grotesk bg-secondary neo-brutalist mb-4 inline-block rotate-1 p-4 text-4xl font-black lg:text-5xl">
-            {t('FIND US', 'NOUS TROUVER')}
+            {location.heading[lang]}
           </h2>
         </div>
 
@@ -42,17 +22,14 @@ export function LocationSection() {
           <div>
             <div className="neo-brutalist h-[460px] overflow-hidden">
               <iframe
-                src="https://www.google.com/maps/embed/v1/place?q=5501+Boul+Gouin+O,+Montréal,+QC+H4J+1C8,+Canada&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
+                src={location.mapEmbedSrc}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title={t(
-                  'Paulo & Suzanne location map',
-                  "Carte de l'emplacement de Paulo & Suzanne",
-                )}
+                title={location.mapTitle[lang]}
               ></iframe>
             </div>
           </div>
@@ -63,15 +40,16 @@ export function LocationSection() {
                 <MapPin className="text-primary mt-1 h-6 w-6 shrink-0" />
                 <div>
                   <h3 className="font-space-grotesk mb-2 text-xl font-bold">
-                    {t('Address', 'Adresse')}
+                    {location.addressHeading[lang]}
                   </h3>
-                  <p className="text-lg">
-                    5501 Boul Gouin O
-                    <br />
-                    Montréal, QC H4J 1C8
-                    <br />
-                    Canada
-                  </p>
+                  <address className="text-lg not-italic">
+                    {location.addressLines.map((line, index) => (
+                      <span key={line}>
+                        {line}
+                        {index < location.addressLines.length - 1 && <br />}
+                      </span>
+                    ))}
+                  </address>
                 </div>
               </div>
             </div>
@@ -81,16 +59,16 @@ export function LocationSection() {
                 <Clock className="text-primary mt-1 h-6 w-6 shrink-0" />
                 <div className="flex flex-1 flex-col">
                   <h3 className="font-space-grotesk mb-2 text-xl font-bold">
-                    {t('Hours', "Heures d'ouverture")}
+                    {location.hoursHeading[lang]}
                   </h3>
                   <div className="gap-1">
-                    {hours.map((item, index) => (
+                    {location.hours.map((item, index) => (
                       <div
                         key={index}
                         className="flex justify-between"
                       >
-                        <span className="font-medium">{item.day}</span>
-                        <span className="text-right">{item.hours}</span>
+                        <span className="font-medium">{item.day[lang]}</span>
+                        <span className="text-right">{item.hours[lang]}</span>
                       </div>
                     ))}
                   </div>

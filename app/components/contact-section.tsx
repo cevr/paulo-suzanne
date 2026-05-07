@@ -1,5 +1,7 @@
 import { Mail, Phone } from 'lucide-react';
 
+import { useContent, useLanguage } from '../lib/language-provider';
+
 function Instagram(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -18,10 +20,11 @@ function Facebook(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-import { useTranslate } from '../lib/language-provider';
+const SOCIAL_ICONS = [Instagram, Facebook];
 
 export function ContactSection() {
-  const t =useTranslate();
+  const lang = useLanguage();
+  const { contact } = useContent();
 
   return (
     <section
@@ -32,14 +35,14 @@ export function ContactSection() {
       <div className="relative container mx-auto px-4">
         <div className="mb-12 text-center">
           <h2 className="font-space-grotesk neo-brutalist-red mb-4 inline-block -rotate-1 bg-white p-4 text-4xl font-black lg:text-5xl">
-            {t('CONTACT US', 'CONTACTEZ-NOUS')}
+            {contact.heading[lang]}
           </h2>
         </div>
 
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-12">
           <div className="neo-brutalist bg-white p-8 md:min-w-xl">
             <h3 className="font-space-grotesk mb-6 text-2xl font-bold">
-              {t('Get in Touch', 'Entrez en Contact')}
+              {contact.formHeading[lang]}
             </h3>
 
             <div className="space-y-6">
@@ -47,13 +50,13 @@ export function ContactSection() {
                 <Phone className="text-primary h-6 w-6" />
                 <div>
                   <h4 className="text-lg font-medium">
-                    {t('Phone', 'Téléphone')}
+                    {contact.phoneLabel[lang]}
                   </h4>
                   <a
-                    href="tel:+15143365561"
+                    href={`tel:${contact.phoneTel}`}
                     className="text-lg"
                   >
-                    (514) 336-5561
+                    {contact.phoneDisplay}
                   </a>
                 </div>
               </div>
@@ -62,40 +65,37 @@ export function ContactSection() {
                 <Mail className="text-primary h-6 w-6" />
                 <div>
                   <h4 className="text-lg font-medium">
-                    {t('Email', 'Courriel')}
+                    {contact.emailLabel[lang]}
                   </h4>
                   <a
-                    href="mailto:info@pauloetsuzanne.com"
+                    href={`mailto:${contact.emailAddress}`}
                     className="text-lg"
                   >
-                    info@pauloetsuzanne.com
+                    {contact.emailAddress}
                   </a>
                 </div>
               </div>
 
               <div className="pt-4">
                 <h4 className="mb-4 text-lg font-medium">
-                  {t('Follow Us', 'Suivez-nous')}
+                  {contact.followLabel[lang]}
                 </h4>
                 <div className="flex gap-4">
-                  <a
-                    href="https://www.instagram.com/pauloetsuzanne_officiel/"
-                    className="bg-primary neo-brutalist-sm btn-hover-effect-sm hover:bg-primary/90 rounded-full p-3 text-white transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={t('Follow us on Instagram', 'Suivez-nous sur Instagram')}
-                  >
-                    <Instagram className="h-6 w-6" aria-hidden="true" />
-                  </a>
-                  <a
-                    href="https://www.facebook.com/pauloetsuzanne247/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-primary neo-brutalist-sm btn-hover-effect-sm hover:bg-primary/90 rounded-full p-3 text-white transition-colors"
-                    aria-label={t('Follow us on Facebook', 'Suivez-nous sur Facebook')}
-                  >
-                    <Facebook className="h-6 w-6" aria-hidden="true" />
-                  </a>
+                  {contact.socials.map((social, index) => {
+                    const Icon = SOCIAL_ICONS[index] ?? Instagram;
+                    return (
+                      <a
+                        key={social.href}
+                        href={social.href}
+                        className="bg-primary neo-brutalist-sm btn-hover-effect-sm hover:bg-primary/90 rounded-full p-3 text-white transition-colors"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={social.ariaLabel[lang]}
+                      >
+                        <Icon className="h-6 w-6" aria-hidden="true" />
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
             </div>
