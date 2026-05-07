@@ -1,5 +1,5 @@
-import { Cause, Effect, Schema } from 'effect';
-import { useState } from 'react';
+import { Cause, Effect, Schema, SchemaIssue } from 'effect';
+import { useEffect, useRef, useState } from 'react';
 import { Form, redirect, useActionData, useLoaderData, useNavigation } from 'react-router';
 
 import { loadContent } from '~/content/loader';
@@ -55,11 +55,59 @@ const SECTIONS = [
 
 type SectionKey = (typeof SECTIONS)[number];
 
+type FieldErrors = Partial<Record<SectionKey, string[]>>;
+
 type ActionResult =
   | { ok: true; published: boolean; message: string }
-  | { ok: false; error: string; field?: SectionKey };
+  | {
+      ok: false;
+      error: string;
+      fieldErrors: FieldErrors;
+    };
 
 const decodeContent = Schema.decodeUnknownEffect(SiteContent);
+const formatIssue = SchemaIssue.makeFormatterStandardSchemaV1();
+
+function isSectionKey(key: PropertyKey): key is SectionKey {
+  return (SECTIONS as readonly PropertyKey[]).includes(key);
+}
+
+function pathSegmentKey(
+  segment: PropertyKey | { readonly key: PropertyKey },
+): PropertyKey {
+  return typeof segment === 'object' && segment !== null && 'key' in segment
+    ? segment.key
+    : segment;
+}
+
+/**
+ * Walks a Schema decode error and groups messages by top-level section. The
+ * Standard Schema V1 formatter flattens issue paths to dotted property keys
+ * (e.g. ["meta", "title", "en"]); we key by path[0] which is always one of
+ * the SECTIONS.
+ */
+function fieldErrorsFromIssue(issue: SchemaIssue.Issue): FieldErrors {
+  const result: FieldErrors = {};
+  const formatted = formatIssue(issue);
+  for (const entry of formatted.issues) {
+    const rawHead = entry.path?.[0];
+    if (rawHead === undefined) continue;
+    const head = pathSegmentKey(rawHead);
+    if (!isSectionKey(head)) continue;
+    const tail =
+      entry.path && entry.path.length > 1
+        ? entry.path
+            .slice(1)
+            .map((s) => String(pathSegmentKey(s)))
+            .join('.')
+        : '';
+    const suffix = tail ? ` (at ${tail})` : '';
+    const list = result[head] ?? [];
+    list.push(`${entry.message}${suffix}`);
+    result[head] = list;
+  }
+  return result;
+}
 
 export const loader = routeHandler(function* () {
   const content = yield* Effect.promise(() => loadContent());
@@ -86,35 +134,54 @@ export const action = routeAction(function* () {
 
   const form = yield* Effect.tryPromise(() => request.formData());
 
-  // Reassemble content from per-section JSON blobs.
+  // Reassemble content from per-section JSON blobs. Collect parse errors
+  // section-by-section so the editor can fix every broken textarea in one go.
   const draft: Record<string, unknown> = {};
+  const parseErrors: FieldErrors = {};
   for (const key of SECTIONS) {
     const raw = form.get(key);
     if (typeof raw !== 'string' || raw.trim() === '') {
-      const result: ActionResult = {
-        ok: false,
-        error: `Section "${key}" is empty`,
-        field: key,
-      };
-      return Response.json(result, { status: 400 });
+      parseErrors[key] = ['Section is empty.'];
+      continue;
     }
     try {
       draft[key] = JSON.parse(raw) as unknown;
     } catch (e) {
-      const result: ActionResult = {
-        ok: false,
-        error: `Section "${key}" is not valid JSON: ${String(e)}`,
-        field: key,
-      };
-      return Response.json(result, { status: 400 });
+      parseErrors[key] = [`Invalid JSON: ${String(e)}`];
     }
+  }
+  if (Object.keys(parseErrors).length > 0) {
+    const result: ActionResult = {
+      ok: false,
+      error: 'Some sections have invalid JSON.',
+      fieldErrors: parseErrors,
+    };
+    return Response.json(result, { status: 400 });
   }
 
   const decodeExit = yield* Effect.exit(decodeContent(draft));
   if (decodeExit._tag !== 'Success') {
+    // Walk the cause to find a SchemaIssue. SchemaError wraps it; otherwise
+    // fall back to a stringified cause in a synthetic top-level entry.
+    let issue: SchemaIssue.Issue | null = null;
+    for (const reason of decodeExit.cause.reasons) {
+      if (Cause.isFailReason(reason)) {
+        const err = reason.error as { issue?: unknown };
+        if (err && SchemaIssue.isIssue(err.issue)) {
+          issue = err.issue;
+          break;
+        }
+      }
+    }
+    const fieldErrors: FieldErrors = issue
+      ? fieldErrorsFromIssue(issue)
+      : {};
     const result: ActionResult = {
       ok: false,
-      error: `Schema validation failed: ${String(decodeExit.cause)}`,
+      error: issue
+        ? 'Schema validation failed. See per-section errors below.'
+        : `Schema validation failed: ${String(decodeExit.cause)}`,
+      fieldErrors,
     };
     return Response.json(result, { status: 400 });
   }
@@ -149,6 +216,7 @@ export const action = routeAction(function* () {
       ok: false,
       error:
         'Another publish is already in flight (started <90s ago). Wait for it to finish, then retry.',
+      fieldErrors: {},
     };
     return Response.json(result, { status: 409 });
   }
@@ -278,6 +346,26 @@ export default function AdminContent() {
       ? new URLSearchParams()
       : new URLSearchParams(window.location.search);
 
+  const fieldErrors: FieldErrors =
+    actionData && !actionData.ok ? actionData.fieldErrors : {};
+
+  const textareaRefs = useRef<Partial<Record<SectionKey, HTMLTextAreaElement>>>(
+    {},
+  );
+
+  // After a failed save, scroll the first invalid section into view and
+  // focus its textarea so the editor sees what to fix immediately.
+  useEffect(() => {
+    if (!actionData || actionData.ok) return;
+    const firstBroken = SECTIONS.find((k) => fieldErrors[k]?.length);
+    if (!firstBroken) return;
+    const ta = textareaRefs.current[firstBroken];
+    if (ta) {
+      ta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      ta.focus();
+    }
+  }, [actionData, fieldErrors]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -324,29 +412,62 @@ export default function AdminContent() {
       )}
 
       <Form method="post" className="space-y-4">
-        {SECTIONS.map((key) => (
-          <details
-            key={key}
-            open={key === 'meta' || key === 'header' || key === 'hero'}
-            className="rounded-lg border border-neutral-200 bg-white"
-          >
-            <summary className="cursor-pointer list-none p-4 text-sm font-medium hover:bg-neutral-50">
-              <span className="select-none text-neutral-500">▸</span> {key}
-            </summary>
-            <div className="border-t border-neutral-200 p-4">
-              <textarea
-                name={key}
-                value={drafts[key]}
-                onChange={(e) =>
-                  setDrafts((d) => ({ ...d, [key]: e.currentTarget.value }))
-                }
-                rows={Math.min(40, drafts[key].split('\n').length + 2)}
-                spellCheck={false}
-                className="block w-full rounded-md border border-neutral-300 bg-neutral-50 p-3 font-mono text-xs text-neutral-900 focus:border-neutral-900 focus:bg-white focus:outline-none"
-              />
-            </div>
-          </details>
-        ))}
+        {SECTIONS.map((key) => {
+          const errors = fieldErrors[key];
+          const hasError = !!errors?.length;
+          const defaultOpen =
+            key === 'meta' || key === 'header' || key === 'hero';
+          return (
+            <details
+              key={key}
+              open={hasError || defaultOpen}
+              className={`rounded-lg border bg-white ${
+                hasError ? 'border-rose-300' : 'border-neutral-200'
+              }`}
+            >
+              <summary className="cursor-pointer list-none p-4 text-sm font-medium hover:bg-neutral-50">
+                <span className="select-none text-neutral-500">▸</span> {key}
+                {hasError && (
+                  <span className="ml-2 inline-block rounded bg-rose-100 px-1.5 py-0.5 text-xs text-rose-800">
+                    {errors!.length} error{errors!.length === 1 ? '' : 's'}
+                  </span>
+                )}
+              </summary>
+              <div className="border-t border-neutral-200 p-4">
+                <textarea
+                  name={key}
+                  ref={(el) => {
+                    if (el) textareaRefs.current[key] = el;
+                    else delete textareaRefs.current[key];
+                  }}
+                  value={drafts[key]}
+                  onChange={(e) =>
+                    setDrafts((d) => ({ ...d, [key]: e.currentTarget.value }))
+                  }
+                  rows={Math.min(40, drafts[key].split('\n').length + 2)}
+                  spellCheck={false}
+                  aria-invalid={hasError || undefined}
+                  aria-describedby={hasError ? `${key}-errors` : undefined}
+                  className={`block w-full rounded-md border bg-neutral-50 p-3 font-mono text-xs text-neutral-900 focus:bg-white focus:outline-none ${
+                    hasError
+                      ? 'border-rose-400 focus:border-rose-600'
+                      : 'border-neutral-300 focus:border-neutral-900'
+                  }`}
+                />
+                {hasError && (
+                  <ul
+                    id={`${key}-errors`}
+                    className="mt-2 space-y-1 text-xs text-rose-800"
+                  >
+                    {errors!.map((msg, i) => (
+                      <li key={i}>• {msg}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </details>
+          );
+        })}
 
         <div className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-neutral-200 bg-white/95 py-3 backdrop-blur">
           <p className="text-xs text-neutral-500">
