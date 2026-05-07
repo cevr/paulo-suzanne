@@ -41,6 +41,7 @@ const BUCKETED_EXACT = [
   '/indoor.avif',
   '/outdoor.avif',
   '/retro-diner-red-booths.avif',
+  '/images/logo-small.png',
 ] as const;
 
 class FileMissing extends Data.TaggedError('paulo-suzanne/server/FileMissing')<{
