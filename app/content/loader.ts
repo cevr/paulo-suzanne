@@ -10,14 +10,17 @@ const decode = Schema.decodeUnknownEffect(Schema.fromJsonString(SiteContent));
 /**
  * Build-time content loader.
  *
- * Three outcomes:
- *  1. No bucket configured → return bundled defaults (dev / first-deploy ok)
- *  2. Bucket configured + key missing → return bundled defaults (no editor has
- *     hit Publish yet; legitimate first-deploy state)
- *  3. Bucket configured + S3 errors or decode fails → THROW. We don't silently
- *     bake defaults over a successfully-published payload — that would be a
- *     silent regression invisible to the editor. Make the build fail loud so
- *     Railway shows red and we re-run.
+ * Strict mode is the default. Set ALLOW_DEFAULT_CONTENT=1 (dev / bootstrap) to
+ * permit the bundled defaults fallback. In prod we want any of these to FAIL
+ * THE BUILD rather than silently ship defaults over previously-published
+ * content (`make-operations-idempotent`, `prove-it-works`):
+ *   - bucket env missing
+ *   - bucket key absent
+ *   - S3 read error
+ *   - decode error
+ *
+ * The first-deploy bootstrap problem (no key in bucket yet) is solved by
+ * setting ALLOW_DEFAULT_CONTENT=1 for that deploy only, then unsetting it.
  */
 export async function loadContent(): Promise<SiteContent> {
   const endpoint = process.env.BUCKET_ENDPOINT;
@@ -25,10 +28,20 @@ export async function loadContent(): Promise<SiteContent> {
   const secretAccessKey = process.env.BUCKET_SECRET_KEY;
   const bucket = process.env.BUCKET_NAME;
   const region = process.env.BUCKET_REGION ?? 'auto';
+  const allowDefaults = process.env.ALLOW_DEFAULT_CONTENT === '1';
+
+  const fallbackOrThrow = (reason: string): SiteContent => {
+    if (allowDefaults) {
+      console.info(`[content] ${reason} — using bundled defaults (ALLOW_DEFAULT_CONTENT=1)`);
+      return defaultContent;
+    }
+    throw new Error(
+      `[content] ${reason} — refusing to ship defaults. Set ALLOW_DEFAULT_CONTENT=1 to opt in (dev/bootstrap only).`,
+    );
+  };
 
   if (!endpoint || !accessKeyId || !secretAccessKey || !bucket) {
-    console.info('[content] bucket env not set — using bundled defaults');
-    return defaultContent;
+    return fallbackOrThrow('bucket env not set');
   }
 
   const client = new Bun.S3Client({
@@ -41,20 +54,33 @@ export async function loadContent(): Promise<SiteContent> {
 
   const file = client.file(CONTENT_KEY);
 
-  const exists = await file.exists();
-  if (!exists) {
-    console.info(
-      `[content] no ${CONTENT_KEY} in bucket — using bundled defaults`,
+  let exists: boolean;
+  try {
+    exists = await file.exists();
+  } catch (e) {
+    throw new Error(
+      `[content] S3 exists() failed for ${CONTENT_KEY} — refusing to ship defaults. Cause: ${String(e)}`,
     );
-    return defaultContent;
   }
 
-  const text = await file.text();
+  if (!exists) {
+    return fallbackOrThrow(`no ${CONTENT_KEY} in bucket`);
+  }
+
+  let text: string;
+  try {
+    text = await file.text();
+  } catch (e) {
+    throw new Error(
+      `[content] S3 read failed for ${CONTENT_KEY} — refusing to ship defaults. Cause: ${String(e)}`,
+    );
+  }
+
   const exit = await Effect.runPromiseExit(decode(text));
   if (exit._tag === 'Success') {
     return exit.value;
   }
   throw new Error(
-    `[content] failed to decode ${CONTENT_KEY} — refusing to silently regress to defaults. Cause: ${String(exit.cause)}`,
+    `[content] failed to decode ${CONTENT_KEY} — refusing to ship defaults. Cause: ${String(exit.cause)}`,
   );
 }

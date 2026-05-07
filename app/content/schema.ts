@@ -6,15 +6,24 @@ export const Text = Schema.Struct({
 });
 export type Text = typeof Text.Type;
 
-const noLeadingSlash = Schema.makeFilter<string>(
-  (s) => (s.startsWith('/') ? 'must not start with "/"' : undefined),
-  { title: 'NoLeadingSlash' },
+const assetKeyFilter = Schema.makeFilter<string>(
+  (s) => {
+    if (s.startsWith('/')) return 'must not start with "/"';
+    if (/^[a-z][a-z0-9+.-]*:/i.test(s)) return 'must not contain a URL scheme';
+    if (s.includes('//')) return 'must not contain "//"';
+    const segments = s.split('/');
+    if (segments.some((seg) => seg === '' || seg === '.' || seg === '..')) {
+      return 'must not contain empty, "." or ".." segments';
+    }
+    return undefined;
+  },
+  { title: 'AssetKey' },
 );
 
-const NoLeadingSlash = Schema.NonEmptyString.check(noLeadingSlash);
+export const AssetKey = Schema.NonEmptyString.check(assetKeyFilter);
 
 export const ImageRef = Schema.Struct({
-  key: NoLeadingSlash,
+  key: AssetKey,
   alt: Text,
   width: Schema.Int.check(Schema.isGreaterThan(0)),
   height: Schema.Int.check(Schema.isGreaterThan(0)),
@@ -46,7 +55,7 @@ const Meta = Schema.Struct({
 
 const Header = Schema.Struct({
   logo: ImageRef,
-  navLinks: Schema.Array(NavLink),
+  navLinks: Schema.NonEmptyArray(NavLink),
   orderOnlineUrl: Schema.NonEmptyString,
   orderLong: Text,
   orderShort: Text,
@@ -86,7 +95,7 @@ const About = Schema.Struct({
 const Menu = Schema.Struct({
   heading: Text,
   intro: Text,
-  carousel: Schema.Array(CarouselItem),
+  carousel: Schema.NonEmptyArray(CarouselItem),
   pdfHeading: Text,
   pdfBody: Text,
   pdfCta: Text,
@@ -101,7 +110,7 @@ const Location = Schema.Struct({
   addressHeading: Text,
   addressLines: Schema.Array(Schema.NonEmptyString),
   hoursHeading: Text,
-  hours: Schema.Array(HoursRow),
+  hours: Schema.NonEmptyArray(HoursRow),
 });
 
 export const SocialKind = Schema.Literals(['instagram', 'facebook']);
@@ -122,7 +131,7 @@ const Contact = Schema.Struct({
   emailLabel: Text,
   emailAddress: Schema.NonEmptyString,
   followLabel: Text,
-  socials: Schema.Array(ContactSocial),
+  socials: Schema.NonEmptyArray(ContactSocial),
 });
 
 const Footer = Schema.Struct({
@@ -155,7 +164,7 @@ const JsonLd = Schema.Struct({
   name: Schema.NonEmptyString,
   telephone: Schema.NonEmptyString,
   email: Schema.NonEmptyString,
-  imageKey: NoLeadingSlash,
+  imageKey: AssetKey,
   menuPath: Schema.NonEmptyString,
   servesCuisine: Schema.Array(Schema.NonEmptyString),
   priceRange: Schema.NonEmptyString,
