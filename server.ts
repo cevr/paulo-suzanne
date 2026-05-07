@@ -41,7 +41,6 @@ const BUCKETED_EXACT = [
   '/indoor.avif',
   '/outdoor.avif',
   '/retro-diner-red-booths.avif',
-  '/images/logo-small.png',
 ] as const;
 
 class FileMissing extends Data.TaggedError('paulo-suzanne/server/FileMissing')<{
@@ -137,6 +136,47 @@ const viteAssetResponse = Effect.fn('viteAsset')(function* () {
   });
 });
 
+const clientFilePath = (pathname: string): string | null => {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    return null;
+  }
+  if (
+    !decoded.startsWith('/') ||
+    decoded.includes('\0') ||
+    decoded.split('/').includes('..') ||
+    !/\.[A-Za-z0-9]+$/.test(decoded)
+  ) {
+    return null;
+  }
+  return `${CLIENT_PATH}${decoded}`;
+};
+
+const publicAssetFallback = Effect.fn('publicAssetFallback')(function* () {
+  const request = yield* HttpServerRequest.HttpServerRequest;
+  const webRequest = yield* HttpServerRequest.toWeb(request);
+  const url = new URL(webRequest.url);
+  const path = clientFilePath(url.pathname);
+  if (request.method !== 'GET' || path === null) {
+    return yield* new FileMissing({ path: url.pathname });
+  }
+
+  return yield* bucketResponse(url.pathname.replace(/^\//, '')).pipe(
+    Effect.catchTag('paulo-suzanne/services/Storage/NotFound', () =>
+      fileResponse(path, mimeFor(url.pathname), 'public, max-age=3600'),
+    ),
+    Effect.catchTag('paulo-suzanne/services/Storage/StorageError', (e) =>
+      Effect.logWarning('storage asset fallback', e).pipe(
+        Effect.flatMap(() =>
+          fileResponse(path, mimeFor(url.pathname), 'public, max-age=3600'),
+        ),
+      ),
+    ),
+  );
+});
+
 const stripQuery = (url: string): string => {
   const q = url.indexOf('?');
   return q === -1 ? url : url.slice(0, q);
@@ -182,7 +222,9 @@ const FallbackRoute = HttpRouter.add('*', '*', () =>
     viteAssetResponse().pipe(
       Effect.catchTag('paulo-suzanne/server/ViteUnhandled', () => reactRouterFallback()),
     )
-  : reactRouterFallback(),
+  : publicAssetFallback().pipe(
+      Effect.catchTag('paulo-suzanne/server/FileMissing', () => reactRouterFallback()),
+    ),
 );
 
 const ProdRoutes = Layer.mergeAll(
