@@ -7,6 +7,7 @@ import { defaultContent } from '~/content/defaults';
 import { SiteContent } from '~/content/schema';
 import { ReactRouterContext } from '~/lib/effect/router-context';
 import { routeAction, routeHandler } from '~/lib/effect/route';
+import { Auth } from '~/services/Auth';
 import { Railway, RailwayDisabled, RailwayError } from '~/services/Railway';
 import { Storage } from '~/services/Storage';
 
@@ -46,6 +47,9 @@ export const loader = routeHandler(function* () {
 
 export const action = routeAction(function* () {
   const { request } = yield* ReactRouterContext;
+  const auth = yield* Auth;
+  yield* auth.checkCookie(request.headers.get('cookie'));
+
   const storage = yield* Storage;
   const railway = yield* Railway;
 

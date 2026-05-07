@@ -5,6 +5,7 @@ import { Form, redirect, useLoaderData, useNavigation } from 'react-router';
 import { MANAGED_ASSETS, findAsset, type ManagedAsset } from '~/lib/managed-assets';
 import { ReactRouterContext } from '~/lib/effect/router-context';
 import { routeAction, routeHandler } from '~/lib/effect/route';
+import { Auth } from '~/services/Auth';
 import { Storage } from '~/services/Storage';
 
 type AssetState = {
@@ -50,6 +51,9 @@ export const loader = routeHandler(function* () {
 
 export const action = routeAction(function* () {
   const { request } = yield* ReactRouterContext;
+  const auth = yield* Auth;
+  yield* auth.checkCookie(request.headers.get('cookie'));
+
   const storage = yield* Storage;
 
   const form = yield* Effect.tryPromise(() => request.formData());
