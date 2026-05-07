@@ -35,11 +35,18 @@ mutation Deploy($serviceId: String!, $environmentId: String!) {
 }
 `.trim();
 
+export type DeployResult = {
+  readonly deploymentId: string;
+};
+
 export class Railway extends Context.Service<
   Railway,
   {
     readonly enabled: Effect.Effect<boolean>;
-    readonly triggerDeploy: Effect.Effect<void, RailwayDisabled | RailwayError>;
+    readonly triggerDeploy: Effect.Effect<
+      DeployResult,
+      RailwayDisabled | RailwayError
+    >;
   }
 >()('@paulo-suzanne/services/Railway') {
   static layer = Layer.effect(
@@ -75,7 +82,7 @@ export class Railway extends Context.Service<
           const serviceId = serviceIdOpt.value;
           const environmentId = environmentIdOpt.value;
 
-          const result = yield* Effect.tryPromise({
+          return yield* Effect.tryPromise({
             try: async () => {
               const res = await fetch(ENDPOINT, {
                 method: 'POST',
@@ -93,18 +100,22 @@ export class Railway extends Context.Service<
                 throw new Error(`HTTP ${res.status}: ${text}`);
               }
               const json = JSON.parse(text) as {
-                data?: unknown;
+                data?: { serviceInstanceDeployV2?: string };
                 errors?: Array<{ message: string }>;
               };
               if (json.errors && json.errors.length > 0) {
                 throw new Error(json.errors.map((e) => e.message).join('; '));
               }
-              return json.data;
+              const deploymentId = json.data?.serviceInstanceDeployV2;
+              if (typeof deploymentId !== 'string' || deploymentId === '') {
+                throw new Error(
+                  `serviceInstanceDeployV2 returned no deployment id: ${text}`,
+                );
+              }
+              return { deploymentId };
             },
             catch: (e) => new RailwayError({ message: String(e) }),
           });
-
-          void result;
         }),
       });
     }),

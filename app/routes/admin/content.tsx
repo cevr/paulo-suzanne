@@ -4,6 +4,12 @@ import { Form, redirect, useActionData, useLoaderData, useNavigation } from 'rea
 
 import { loadContent } from '~/content/loader';
 import { defaultContent } from '~/content/defaults';
+import {
+  hashContent,
+  IN_FLIGHT_TIMEOUT_MS,
+  PUBLISH_STATE_KEY,
+  PublishState,
+} from '~/content/publish-state';
 import { SiteContent } from '~/content/schema';
 import { ReactRouterContext } from '~/lib/effect/router-context';
 import { routeAction, routeHandler } from '~/lib/effect/route';
@@ -12,6 +18,28 @@ import { Railway, RailwayDisabled, RailwayError } from '~/services/Railway';
 import { Storage } from '~/services/Storage';
 
 const CONTENT_KEY = 'content/site.json';
+
+const decodePublishState = Schema.decodeUnknownEffect(
+  Schema.fromJsonString(PublishState),
+);
+const encodePublishState = (state: PublishState) =>
+  JSON.stringify(state, null, 2);
+
+const readPublishState = Effect.fn('readPublishState')(function* () {
+  const storage = yield* Storage;
+  const exit = yield* Effect.exit(
+    Effect.gen(function* () {
+      const obj = yield* storage.get(PUBLISH_STATE_KEY);
+      const text = yield* Effect.promise(() =>
+        new Response(obj.stream).text(),
+      );
+      return yield* decodePublishState(text);
+    }),
+  );
+  if (exit._tag === 'Success') return exit.value;
+  // Treat any failure (NotFound, parse error, schema mismatch) as "no state".
+  return null;
+});
 
 const SECTIONS = [
   'meta',
@@ -37,11 +65,14 @@ export const loader = routeHandler(function* () {
   const content = yield* Effect.promise(() => loadContent());
   const railway = yield* Railway;
   const railwayEnabled = yield* railway.enabled;
+  const publishState = yield* readPublishState();
   return {
     content,
     isUsingDefaults:
       JSON.stringify(content) === JSON.stringify(defaultContent),
     railwayEnabled,
+    lastDeploymentId: publishState?.lastDeploymentId ?? null,
+    lastPublishedAt: publishState?.lastPublishedAt ?? null,
   };
 });
 
@@ -89,38 +120,122 @@ export const action = routeAction(function* () {
   }
 
   const content = decodeExit.value;
+  const newHash = hashContent(content);
+
+  // Read existing publish-state to drive idempotency + best-effort lock.
+  const prevState = yield* readPublishState();
+  const now = Date.now();
+
+  // Idempotency: identical content → no rewrite, no redeploy.
+  if (prevState && prevState.contentHash === newHash) {
+    const idempotentMessage =
+      prevState.lastDeploymentId
+        ? `No changes — last deploy ${prevState.lastDeploymentId} still represents this content.`
+        : 'No changes — content already saved.';
+    return redirect(
+      `/admin/content?status=${encodeURIComponent(idempotentMessage)}&published=1${prevState.lastDeploymentId ? `&deploy=${encodeURIComponent(prevState.lastDeploymentId)}` : ''}`,
+    );
+  }
+
+  // Best-effort concurrency guard: if another publish is in flight (within
+  // IN_FLIGHT_TIMEOUT_MS), reject. Past the timeout we assume that publish
+  // crashed and let this one proceed.
+  if (
+    prevState &&
+    prevState.inFlight &&
+    now - prevState.inFlight.startedAt < IN_FLIGHT_TIMEOUT_MS
+  ) {
+    const result: ActionResult = {
+      ok: false,
+      error:
+        'Another publish is already in flight (started <90s ago). Wait for it to finish, then retry.',
+    };
+    return Response.json(result, { status: 409 });
+  }
+
+  // Mark publish as in-flight before we touch anything else. If we crash
+  // between here and the final state write, the next publish past the
+  // timeout window converges.
+  const inFlightState: PublishState = {
+    contentHash: prevState?.contentHash ?? null,
+    lastDeploymentId: prevState?.lastDeploymentId ?? null,
+    lastPublishedAt: prevState?.lastPublishedAt ?? null,
+    inFlight: { hash: newHash, startedAt: now },
+  };
+  yield* storage.put(
+    PUBLISH_STATE_KEY,
+    encodePublishState(inFlightState),
+    'application/json',
+  );
+
+  // Write content. Build will pick this up on the next deploy.
   const json = JSON.stringify(content, null, 2);
   yield* storage.put(CONTENT_KEY, json, 'application/json');
 
   // Trigger redeploy. If Railway isn't configured, treat as save-only.
   const deployExit = yield* Effect.exit(railway.triggerDeploy);
+  let deploymentId: string | null = null;
+  let message: string;
   let published = false;
-  let message = 'Saved to bucket.';
   if (deployExit._tag === 'Success') {
+    deploymentId = deployExit.value.deploymentId;
     published = true;
-    message = 'Saved and deploy triggered. New site live in ~60s.';
+    message = `Saved and deploy ${deploymentId} queued. New site live in ~60s.`;
   } else {
-    const cause = deployExit.cause;
-    for (const reason of cause.reasons) {
+    let detail = 'unknown error';
+    for (const reason of deployExit.cause.reasons) {
       if (Cause.isFailReason(reason)) {
         const err = reason.error as unknown;
         if (err instanceof RailwayDisabled) {
-          message = 'Saved to bucket. Railway not configured — no redeploy.';
+          detail = 'Railway not configured — no redeploy.';
         } else if (err instanceof RailwayError) {
-          message = `Saved to bucket, but redeploy failed: ${err.message}`;
+          detail = `redeploy failed: ${err.message}`;
         }
       }
     }
+    message = `Saved to bucket. ${detail}`;
   }
 
-  return redirect(
-    `/admin/content?status=${encodeURIComponent(message)}&published=${published ? '1' : '0'}`,
+  // Final state: only stamp contentHash if Railway succeeded OR Railway is
+  // disabled. If Railway errored we keep prevState.contentHash so the editor
+  // can retry; clearing inFlight either way unblocks the next publish.
+  const railwaySucceededOrDisabled =
+    deployExit._tag === 'Success' ||
+    (deployExit._tag === 'Failure' &&
+      [...deployExit.cause.reasons].some(
+        (r) =>
+          Cause.isFailReason(r) &&
+          (r.error as unknown) instanceof RailwayDisabled,
+      ));
+
+  const finalState: PublishState = {
+    contentHash: railwaySucceededOrDisabled
+      ? newHash
+      : (prevState?.contentHash ?? null),
+    lastDeploymentId: deploymentId ?? prevState?.lastDeploymentId ?? null,
+    lastPublishedAt: railwaySucceededOrDisabled
+      ? now
+      : (prevState?.lastPublishedAt ?? null),
+    inFlight: null,
+  };
+  yield* storage.put(
+    PUBLISH_STATE_KEY,
+    encodePublishState(finalState),
+    'application/json',
   );
+
+  const params = new URLSearchParams({
+    status: message,
+    published: published ? '1' : '0',
+  });
+  if (deploymentId) params.set('deploy', deploymentId);
+  return redirect(`/admin/content?${params.toString()}`);
 });
 
 function StatusBanner({ search }: { search: URLSearchParams }) {
   const status = search.get('status');
   const published = search.get('published') === '1';
+  const deploy = search.get('deploy');
   if (status === null) return null;
   return (
     <div
@@ -131,13 +246,23 @@ function StatusBanner({ search }: { search: URLSearchParams }) {
       }`}
     >
       {status}
+      {deploy && (
+        <span className="ml-2 inline-block rounded bg-emerald-100 px-1.5 py-0.5 font-mono text-xs">
+          deploy {deploy}
+        </span>
+      )}
     </div>
   );
 }
 
 export default function AdminContent() {
-  const { content, isUsingDefaults, railwayEnabled } =
-    useLoaderData<typeof loader>();
+  const {
+    content,
+    isUsingDefaults,
+    railwayEnabled,
+    lastDeploymentId,
+    lastPublishedAt,
+  } = useLoaderData<typeof loader>();
   const actionData = useActionData<ActionResult>();
   const navigation = useNavigation();
   const submitting = navigation.state === 'submitting';
@@ -171,6 +296,21 @@ export default function AdminContent() {
         {!railwayEnabled && (
           <p className="mt-2 inline-block rounded bg-amber-50 px-2 py-1 text-xs text-amber-800">
             Railway redeploy not configured. Saving will write the bucket only.
+          </p>
+        )}
+        {lastDeploymentId && (
+          <p className="mt-2 text-xs text-neutral-500">
+            Last deploy:{' '}
+            <span className="font-mono text-neutral-700">{lastDeploymentId}</span>
+            {lastPublishedAt && (
+              <>
+                {' '}
+                at{' '}
+                <span className="font-mono text-neutral-700">
+                  {new Date(lastPublishedAt).toISOString()}
+                </span>
+              </>
+            )}
           </p>
         )}
       </div>
