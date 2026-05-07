@@ -2,13 +2,14 @@ import { Cause, Effect, Exit, Layer, ManagedRuntime } from 'effect';
 import { redirect } from 'react-router';
 
 import { Auth, Unauthorized } from '~/services/Auth';
+import { Railway } from '~/services/Railway';
 import { NotFound, Storage, StorageError } from '~/services/Storage';
 
 import { ReactRouterContext, type RouteArgs } from './router-context';
 
-export type AppServices = Storage | Auth;
+export type AppServices = Storage | Auth | Railway;
 
-const AppLayer = Layer.mergeAll(Storage.layer, Auth.layer);
+const AppLayer = Layer.mergeAll(Storage.layer, Auth.layer, Railway.layer);
 const AppRuntime = ManagedRuntime.make(AppLayer);
 
 const isResponse = (v: unknown): v is Response =>

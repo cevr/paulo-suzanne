@@ -1,4 +1,4 @@
-import { Form, Link, Outlet } from 'react-router';
+import { Form, Link, NavLink, Outlet } from 'react-router';
 
 import { adminMeta, adminSecurityHeaders } from '~/lib/admin-headers';
 import { ReactRouterContext } from '~/lib/effect/router-context';
@@ -20,10 +20,39 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-neutral-50">
       <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
-          <Link to="/admin" className="text-lg font-semibold">
-            Admin
-          </Link>
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-center gap-6">
+            <Link to="/admin" className="text-lg font-semibold">
+              Admin
+            </Link>
+            <nav className="flex items-center gap-1 text-sm">
+              <NavLink
+                to="/admin"
+                end
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-1.5 transition-colors ${
+                    isActive
+                      ? 'bg-neutral-900 text-white'
+                      : 'text-neutral-700 hover:bg-neutral-100'
+                  }`
+                }
+              >
+                Assets
+              </NavLink>
+              <NavLink
+                to="/admin/content"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-1.5 transition-colors ${
+                    isActive
+                      ? 'bg-neutral-900 text-white'
+                      : 'text-neutral-700 hover:bg-neutral-100'
+                  }`
+                }
+              >
+                Content
+              </NavLink>
+            </nav>
+          </div>
           <Form method="post" action="/admin/logout">
             <button
               type="submit"
