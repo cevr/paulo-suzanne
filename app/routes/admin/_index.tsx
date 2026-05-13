@@ -1,8 +1,14 @@
 import { Cause, Clock, DateTime, Effect, Schema, SchemaIssue } from 'effect';
+import { Upload } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Form, redirect, useActionData, useLoaderData, useNavigation } from 'react-router';
 
 import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import {
+  deriveLockedAssetFields,
+  deriveLockedSiteContentAssets,
+} from '~/content/derived-assets';
 import { loadAdminContent } from '~/content/loader';
 import { defaultContent } from '~/content/defaults';
 import {
@@ -12,8 +18,21 @@ import {
   PublishState,
 } from '~/content/publish-state';
 import { SiteContent } from '~/content/schema';
+import {
+  ADMIN_IMAGE_UPLOAD_MAX_EDGE,
+  processAdminImageUpload,
+} from '~/lib/admin-image-upload';
 import { ReactRouterContext } from '~/lib/effect/router-context';
-import { findAsset, MANAGED_ASSETS } from '~/lib/managed-assets';
+import {
+  findAsset,
+  MANAGED_ASSETS,
+  MENU_PDF_ASSET_KEY,
+} from '~/lib/managed-assets';
+import {
+  ADMIN_IMAGE_UPLOAD_ACCEPT,
+  ADMIN_IMAGE_UPLOAD_CONTENT_TYPE,
+  isAcceptedAdminImageType,
+} from '~/lib/uploaded-image-assets';
 import { routeAction, routeHandler } from '~/lib/effect/route';
 import { Auth } from '~/services/Auth';
 import { Railway, RailwayDisabled, RailwayError } from '~/services/Railway';
@@ -92,7 +111,12 @@ type ActionResult =
 const decodeContent = Schema.decodeUnknownEffect(SiteContent);
 const formatIssue = SchemaIssue.makeFormatterStandardSchemaV1();
 
-type SubmitIntent = 'save-draft' | 'publish' | 'discard-draft' | 'upload-menu-pdf';
+type SubmitIntent =
+  | 'save-draft'
+  | 'publish'
+  | 'discard-draft'
+  | 'upload-menu-pdf'
+  | 'upload-image';
 
 function coerceFormValue(path: readonly string[], value: string): unknown {
   const leaf = path[path.length - 1];
@@ -229,8 +253,9 @@ export const loader = routeHandler(function* () {
           .map((item) => item.key)
           .filter((key) => !key.startsWith('content/'))
       : MANAGED_ASSETS.map((asset) => asset.key);
+  const content = deriveLockedSiteContentAssets(contentLoad.content);
   return {
-    content: contentLoad.content,
+    content,
     contentSource: contentLoad.source,
     draftLastModified: contentLoad.draftLastModified,
     assetOptions:
@@ -240,7 +265,7 @@ export const loader = routeHandler(function* () {
     assetListFailed: assetListExit._tag !== 'Success',
     isUsingDefaults:
       contentLoad.source === 'defaults' ||
-      JSON.stringify(contentLoad.content) === JSON.stringify(defaultContent),
+      JSON.stringify(content) === JSON.stringify(defaultContent),
     railwayEnabled,
     lastDeploymentId: publishState?.lastDeploymentId ?? null,
     lastPublishedAt: publishState?.lastPublishedAt ?? null,
@@ -258,9 +283,51 @@ export const action = routeAction(function* () {
   const form = yield* Effect.tryPromise(() => request.formData());
   const intent = String(form.get('intent') ?? 'save-draft') as SubmitIntent;
 
+  if (intent === 'upload-image') {
+    const file = form.get('file');
+    if (!(file instanceof File) || file.size === 0) {
+      return Response.json({ error: 'Choose an image before uploading.' }, { status: 400 });
+    }
+    if (!isAcceptedAdminImageType(file.type)) {
+      return Response.json(
+        { error: 'Upload a JPEG, PNG, WebP, GIF, or AVIF image.' },
+        { status: 400 },
+      );
+    }
+
+    const now = yield* Clock.currentTimeMillis;
+    const processed = yield* processAdminImageUpload(file, now).pipe(
+      Effect.catch((error) =>
+        Effect.succeed(
+          Response.json(
+            { error: `Image processing failed: ${error.message}` },
+            { status: 400 },
+          ),
+        ),
+      ),
+    );
+    if (processed instanceof Response) return processed;
+
+    yield* storage.put(
+      processed.key,
+      processed.bytes,
+      ADMIN_IMAGE_UPLOAD_CONTENT_TYPE,
+    );
+    yield* storage.put(
+      processed.thumbnailKey,
+      processed.thumbnailBytes,
+      ADMIN_IMAGE_UPLOAD_CONTENT_TYPE,
+    );
+    const params = new URLSearchParams({
+      status: `Image uploaded: ${processed.key} (${processed.width}x${processed.height}); thumbnail ${processed.thumbnailKey} (${processed.thumbnailWidth}x${processed.thumbnailHeight})`,
+      published: '0',
+    });
+    return redirect(`/admin?${params.toString()}`);
+  }
+
   if (intent === 'upload-menu-pdf') {
     const file = form.get('file');
-    const asset = findAsset('menu.pdf');
+    const asset = findAsset(MENU_PDF_ASSET_KEY);
     if (asset === undefined) {
       return Response.json({ error: 'Menu PDF asset is not configured.' }, { status: 500 });
     }
@@ -290,7 +357,7 @@ export const action = routeAction(function* () {
     return Response.json(result, { status: 400 });
   }
 
-  const draft = assembleFromFormData(form);
+  const draft = deriveLockedAssetFields(assembleFromFormData(form));
   const decodeExit = yield* Effect.exit(decodeContent(draft));
   if (decodeExit._tag !== 'Success') {
     // Walk the cause to find a SchemaIssue. SchemaError wraps it; otherwise
@@ -504,6 +571,50 @@ function DraftBanner({
   );
 }
 
+function ImageUploadForm({ submitting }: { readonly submitting: boolean }) {
+  return (
+    <Form
+      method="post"
+      encType="multipart/form-data"
+      className="rounded-md border border-neutral-200 bg-white p-4"
+    >
+      <input type="hidden" name="intent" value="upload-image" />
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-1.5">
+          <label
+            htmlFor="admin-image-upload"
+            className="block text-sm font-medium text-neutral-900"
+          >
+            Image upload
+          </label>
+          <p className="text-xs text-neutral-500">
+            Converts to WebP up to {ADMIN_IMAGE_UPLOAD_MAX_EDGE}px and writes a thumbnail.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Input
+            id="admin-image-upload"
+            type="file"
+            name="file"
+            accept={ADMIN_IMAGE_UPLOAD_ACCEPT}
+            required
+            className="cursor-pointer sm:max-w-[22rem]"
+          />
+          <Button
+            type="submit"
+            variant="outline"
+            disabled={submitting}
+            className="w-full sm:w-auto"
+          >
+            <Upload className="size-4" aria-hidden />
+            Upload image
+          </Button>
+        </div>
+      </div>
+    </Form>
+  );
+}
+
 function renderSection({
   section,
   content,
@@ -666,6 +777,8 @@ export default function AdminContent() {
           <strong>Save failed:</strong> {actionData.error}
         </div>
       )}
+
+      <ImageUploadForm submitting={submitting} />
 
       <Form
         id={MENU_PDF_UPLOAD_FORM_ID}

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import type { ImageRef, SiteContent, SocialKind, Text } from '~/content/schema';
+import { MENU_PDF_PUBLIC_HREF } from '~/lib/managed-assets';
 
 import {
   type AssetOption,
@@ -38,6 +39,38 @@ const socialOptions: readonly { value: SocialKind; label: string }[] = [
   { value: 'instagram', label: 'Instagram' },
   { value: 'facebook', label: 'Facebook' },
 ];
+
+function LockedAssetGroup({ children }: { readonly children: ReactNode }) {
+  return (
+    <StructField label="Locked asset URLs">
+      <div className="grid gap-3 sm:grid-cols-2">{children}</div>
+    </StructField>
+  );
+}
+
+function LockedAssetItem({
+  label,
+  value,
+}: {
+  readonly label: string;
+  readonly value: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <span className="block text-sm font-medium text-neutral-700">
+        {label}
+      </span>
+      <span className="block rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 font-mono text-sm text-neutral-700">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+const LockedAsset = {
+  Group: LockedAssetGroup,
+  Item: LockedAssetItem,
+};
 
 const expectMenuFieldsHandled = (
   _value: Record<keyof SiteContent['menu'], true>,
@@ -105,24 +138,18 @@ function HoursRowFields({
   );
 }
 
-function MenuPdfUploadField({
-  name,
-  href,
-}: {
-  readonly name: string;
-  readonly href: string;
-}) {
+function MenuPdfUploadField({ storedHref }: { readonly storedHref: string }) {
   const [picked, setPicked] = useState<File | null>(null);
-  const publicHref = href.startsWith('/') ? href : `/${href}`;
+  const publicHref = MENU_PDF_PUBLIC_HREF;
 
   return (
     <StructField label="Menu PDF">
-      <input type="hidden" name={name} value={href} />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <a
           href={publicHref}
           target="_blank"
           rel="noopener noreferrer"
+          title={`Stored path is locked to ${storedHref}`}
           className="text-sm font-medium text-neutral-700 underline-offset-4 hover:underline"
         >
           Open current PDF
@@ -364,7 +391,7 @@ export function MenuPdfSection({
       />
       <TextField name={`${name}.pdfBody`} defaultValue={pdfBody} label="PDF body" multiline />
       <TextField name={`${name}.pdfCta`} defaultValue={pdfCta} label="PDF CTA" />
-      <MenuPdfUploadField name={`${name}.pdfHref`} href={pdfHref} />
+      <MenuPdfUploadField storedHref={pdfHref} />
       <TextField
         name={`${name}.disclaimer`}
         defaultValue={disclaimer}
@@ -608,8 +635,10 @@ export function JsonLdSection({
       <StringField name={`${name}.name`} defaultValue={restaurantName} label="Name" />
       <StringField name={`${name}.telephone`} defaultValue={telephone} label="Telephone" />
       <StringField name={`${name}.email`} defaultValue={email} label="Email" type="email" />
-      <StringField name={`${name}.imageKey`} defaultValue={imageKey} label="Image key" />
-      <StringField name={`${name}.menuPath`} defaultValue={menuPath} label="Menu path" />
+      <LockedAsset.Group>
+        <LockedAsset.Item label="Image key" value={imageKey} />
+        <LockedAsset.Item label="Menu path" value={menuPath} />
+      </LockedAsset.Group>
       <ArrayField
         name={`${name}.servesCuisine`}
         defaultValue={servesCuisine}

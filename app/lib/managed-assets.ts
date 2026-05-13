@@ -5,8 +5,11 @@ export type ManagedAsset = {
   readonly accept: string;
 };
 
+export const MENU_PDF_ASSET_KEY = 'menu.pdf';
+export const MENU_PDF_PUBLIC_HREF = `/${MENU_PDF_ASSET_KEY}`;
+
 export const MANAGED_ASSETS: readonly ManagedAsset[] = [
-  { key: 'menu.pdf', label: 'Menu PDF', group: 'menu', accept: 'application/pdf' },
+  { key: MENU_PDF_ASSET_KEY, label: 'Menu PDF', group: 'menu', accept: 'application/pdf' },
 
   { key: 'indoor.avif', label: 'Indoor photo', group: 'atmosphere', accept: 'image/avif,image/jpeg,image/png' },
   { key: 'outdoor.avif', label: 'Outdoor photo', group: 'atmosphere', accept: 'image/avif,image/jpeg,image/png' },

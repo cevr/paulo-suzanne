@@ -12,10 +12,12 @@ import {
 
 import type { Route } from './+types/root';
 import { Toaster } from './components/ui/sonner';
+import { deriveLockedSiteContentAssets } from './content/derived-assets';
 import { runLoadContent } from './content/loader';
 import type { SiteContent } from './content/schema';
 import { LanguageProvider } from './lib/language-provider';
 import type { Lang } from './lib/language';
+import { MENU_PDF_PUBLIC_HREF } from './lib/managed-assets';
 
 const CANONICAL_URL = 'https://pauloetsuzanne.com/';
 
@@ -41,7 +43,9 @@ export const links: Route.LinksFunction = () => [
   { rel: 'apple-touch-icon', href: '/favicon.ico' },
 ];
 
-function buildJsonLd(jsonLd: SiteContent['jsonLd']) {
+function buildJsonLd(content: SiteContent) {
+  const lockedContent = deriveLockedSiteContentAssets(content);
+  const { jsonLd } = lockedContent;
   return {
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
@@ -49,8 +53,8 @@ function buildJsonLd(jsonLd: SiteContent['jsonLd']) {
     url: CANONICAL_URL,
     telephone: jsonLd.telephone,
     email: jsonLd.email,
-    image: `${CANONICAL_URL}${jsonLd.imageKey}`,
-    menu: `${CANONICAL_URL}${jsonLd.menuPath.replace(/^\//, '')}`,
+    image: `${CANONICAL_URL}${lockedContent.jsonLd.imageKey}`,
+    menu: `${CANONICAL_URL}${MENU_PDF_PUBLIC_HREF.replace(/^\//, '')}`,
     servesCuisine: jsonLd.servesCuisine,
     priceRange: jsonLd.priceRange,
     address: {
@@ -78,7 +82,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     | { lang: Lang; content: SiteContent }
     | undefined;
   const lang = rootData?.lang ?? 'fr';
-  const jsonLd = rootData?.content ? buildJsonLd(rootData.content.jsonLd) : null;
+  const jsonLd = rootData?.content ? buildJsonLd(rootData.content) : null;
 
   return (
     <html lang={lang}>

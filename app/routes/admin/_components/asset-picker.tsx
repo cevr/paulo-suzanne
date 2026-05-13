@@ -3,6 +3,11 @@ import { useState } from 'react';
 
 import { Button } from '~/components/ui/button';
 import type { ImageRef } from '~/content/schema';
+import {
+  ADMIN_IMAGE_UPLOAD_PREFIX,
+  ADMIN_IMAGE_UPLOAD_THUMBNAIL_MARKER,
+  thumbnailKeyForImage,
+} from '~/lib/uploaded-image-assets';
 import { MANAGED_ASSETS } from '~/lib/managed-assets';
 
 import { TextField } from './form-fields';
@@ -27,6 +32,7 @@ export const assetOptionsFromKeys = (
 ): readonly AssetOption[] =>
   [...keys]
     .filter((key) => !key.startsWith('content/'))
+    .filter((key) => !key.toLowerCase().includes(ADMIN_IMAGE_UPLOAD_THUMBNAIL_MARKER))
     .filter((key) =>
       IMAGE_EXTENSIONS.some((extension) =>
         key.toLowerCase().endsWith(extension),
@@ -40,6 +46,31 @@ export const assetOptionsFromKeys = (
 
 function imageUrl(key: string): string {
   return `/${key}`;
+}
+
+function previewImageUrl(key: string): string {
+  if (key.startsWith(`${ADMIN_IMAGE_UPLOAD_PREFIX}/`)) {
+    return imageUrl(thumbnailKeyForImage(key));
+  }
+  return imageUrl(key);
+}
+
+function isFullAssetImage(
+  image: HTMLImageElement,
+  key: string,
+  baseUrl: string,
+): boolean {
+  return image.currentSrc === new URL(imageUrl(key), baseUrl).href;
+}
+
+function imageDimensions(image: HTMLImageElement): {
+  readonly width: number;
+  readonly height: number;
+} {
+  return {
+    width: image.naturalWidth,
+    height: image.naturalHeight,
+  };
 }
 
 export function ImageRefField({
@@ -79,6 +110,18 @@ export function ImageRefField({
           src={imageUrl(selected.key)}
           alt=""
           loading="lazy"
+          onLoad={(event) => {
+            const nextDimensions = imageDimensions(event.currentTarget);
+            setDimensions((current) => ({
+              ...current,
+              [selected.key]: nextDimensions,
+            }));
+            setSelected((current) =>
+              current.key === selected.key
+                ? { key: selected.key, ...nextDimensions }
+                : current,
+            );
+          }}
           className="h-28 w-32 rounded-md border border-neutral-200 bg-neutral-100 object-cover"
         />
         <div className="space-y-3">
@@ -156,21 +199,33 @@ export function ImageRefField({
                   className="group cursor-pointer overflow-hidden rounded-md border border-neutral-200 bg-white text-left transition-colors hover:border-neutral-900"
                 >
                   <img
-                    src={imageUrl(asset.key)}
+                    src={previewImageUrl(asset.key)}
                     alt=""
                     loading="lazy"
                     onLoad={(event) => {
-                      const image = event.currentTarget;
-                      const nextDimensions = {
-                        width: image.naturalWidth,
-                        height: image.naturalHeight,
-                      };
+                      if (
+                        !isFullAssetImage(
+                          event.currentTarget,
+                          asset.key,
+                          window.location.href,
+                        )
+                      ) {
+                        return;
+                      }
+                      const nextDimensions = imageDimensions(event.currentTarget);
                       setDimensions((current) => ({
                         ...current,
                         [asset.key]: nextDimensions,
                       }));
                       if (selected.key === asset.key) {
                         setSelected({ key: asset.key, ...nextDimensions });
+                      }
+                    }}
+                    onError={(event) => {
+                      const image = event.currentTarget;
+                      const fallback = imageUrl(asset.key);
+                      if (!isFullAssetImage(image, asset.key, window.location.href)) {
+                        image.src = fallback;
                       }
                     }}
                     className="aspect-square w-full bg-neutral-100 object-cover"
