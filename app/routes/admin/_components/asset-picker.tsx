@@ -1,9 +1,12 @@
-import { Image as ImageIcon, X } from 'lucide-react';
+import { Image as ImageIcon, Upload, X } from 'lucide-react';
 import { useState } from 'react';
+import { useSearchParams } from 'react-router';
 
 import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
 import type { ImageRef } from '~/content/schema';
 import {
+  ADMIN_IMAGE_UPLOAD_ACCEPT,
   ADMIN_IMAGE_UPLOAD_PREFIX,
   ADMIN_IMAGE_UPLOAD_THUMBNAIL_MARKER,
   thumbnailKeyForImage,
@@ -13,6 +16,7 @@ import { MANAGED_ASSETS } from '~/lib/managed-assets';
 import { TextField } from './form-fields';
 
 const IMAGE_EXTENSIONS = ['.avif', '.gif', '.jpg', '.jpeg', '.png', '.webp'];
+export const IMAGE_UPLOAD_INTENT_PREFIX = 'upload-image:';
 
 export type AssetOption = {
   readonly key: string;
@@ -73,6 +77,19 @@ function imageDimensions(image: HTMLImageElement): {
   };
 }
 
+function uploadedImageSelection(
+  params: URLSearchParams,
+  fieldName: string,
+): { readonly key: string; readonly width: number; readonly height: number } | null {
+  if (params.get('uploadedField') !== fieldName) return null;
+  const key = params.get('uploadedKey');
+  const width = Number(params.get('uploadedWidth'));
+  const height = Number(params.get('uploadedHeight'));
+  if (!key || !Number.isFinite(width) || !Number.isFinite(height)) return null;
+  if (width <= 0 || height <= 0) return null;
+  return { key, width, height };
+}
+
 export function ImageRefField({
   name,
   defaultValue,
@@ -84,10 +101,12 @@ export function ImageRefField({
   readonly label: string;
   readonly assets: readonly AssetOption[];
 }) {
+  const [searchParams] = useSearchParams();
+  const uploadedSelection = uploadedImageSelection(searchParams, name);
   const [selected, setSelected] = useState({
-    key: defaultValue.key,
-    width: defaultValue.width,
-    height: defaultValue.height,
+    key: uploadedSelection?.key ?? defaultValue.key,
+    width: uploadedSelection?.width ?? defaultValue.width,
+    height: uploadedSelection?.height ?? defaultValue.height,
   });
   const [dimensions, setDimensions] = useState<
     Readonly<Record<string, { readonly width: number; readonly height: number }>>
@@ -96,8 +115,17 @@ export function ImageRefField({
       width: defaultValue.width,
       height: defaultValue.height,
     },
+    ...(uploadedSelection === null
+      ? {}
+      : {
+          [uploadedSelection.key]: {
+            width: uploadedSelection.width,
+            height: uploadedSelection.height,
+          },
+        }),
   });
   const [open, setOpen] = useState(false);
+  const [picked, setPicked] = useState<File | null>(null);
 
   return (
     <fieldset className="space-y-3 rounded-md border border-neutral-200 p-4">
@@ -137,6 +165,28 @@ export function ImageRefField({
             <span className="break-all font-mono text-xs text-neutral-500">
               {selected.key}
             </span>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Input
+              type="file"
+              name={`${name}.__file`}
+              accept={ADMIN_IMAGE_UPLOAD_ACCEPT}
+              onChange={(event) => {
+                setPicked(event.currentTarget.files?.[0] ?? null);
+              }}
+              className="cursor-pointer sm:max-w-[18rem]"
+            />
+            <Button
+              type="submit"
+              name="intent"
+              value={`${IMAGE_UPLOAD_INTENT_PREFIX}${name}`}
+              variant="outline"
+              disabled={picked === null}
+              className="w-full sm:w-auto"
+            >
+              <Upload className="size-4" aria-hidden />
+              Upload
+            </Button>
           </div>
           <input type="hidden" name={`${name}.key`} value={selected.key} />
           <input type="hidden" name={`${name}.width`} value={selected.width} />

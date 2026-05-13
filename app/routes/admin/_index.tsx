@@ -1,10 +1,8 @@
 import { Cause, Clock, DateTime, Effect, Schema, SchemaIssue } from 'effect';
-import { Upload } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Form, redirect, useActionData, useLoaderData, useNavigation } from 'react-router';
 
 import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
 import {
   deriveLockedAssetFields,
   deriveLockedSiteContentAssets,
@@ -18,10 +16,7 @@ import {
   PublishState,
 } from '~/content/publish-state';
 import { SiteContent } from '~/content/schema';
-import {
-  ADMIN_IMAGE_UPLOAD_MAX_EDGE,
-  processAdminImageUpload,
-} from '~/lib/admin-image-upload';
+import { processAdminImageUpload } from '~/lib/admin-image-upload';
 import { ReactRouterContext } from '~/lib/effect/router-context';
 import {
   findAsset,
@@ -29,7 +24,6 @@ import {
   MENU_PDF_ASSET_KEY,
 } from '~/lib/managed-assets';
 import {
-  ADMIN_IMAGE_UPLOAD_ACCEPT,
   ADMIN_IMAGE_UPLOAD_CONTENT_TYPE,
   isAcceptedAdminImageType,
 } from '~/lib/uploaded-image-assets';
@@ -41,6 +35,7 @@ import { Storage } from '~/services/Storage';
 import {
   assetOptionsFromKeys,
   fallbackImageAssets,
+  IMAGE_UPLOAD_INTENT_PREFIX,
   type AssetOption,
 } from './_components/asset-picker';
 import {
@@ -111,12 +106,11 @@ type ActionResult =
 const decodeContent = Schema.decodeUnknownEffect(SiteContent);
 const formatIssue = SchemaIssue.makeFormatterStandardSchemaV1();
 
-type SubmitIntent =
-  | 'save-draft'
-  | 'publish'
-  | 'discard-draft'
-  | 'upload-menu-pdf'
-  | 'upload-image';
+function imageUploadFieldFromIntent(intent: string): string | null {
+  if (!intent.startsWith(IMAGE_UPLOAD_INTENT_PREFIX)) return null;
+  const fieldName = intent.slice(IMAGE_UPLOAD_INTENT_PREFIX.length);
+  return fieldName.length > 0 ? fieldName : null;
+}
 
 function coerceFormValue(path: readonly string[], value: string): unknown {
   const leaf = path[path.length - 1];
@@ -281,10 +275,11 @@ export const action = routeAction(function* () {
   const railway = yield* Railway;
 
   const form = yield* Effect.tryPromise(() => request.formData());
-  const intent = String(form.get('intent') ?? 'save-draft') as SubmitIntent;
+  const intent = String(form.get('intent') ?? 'save-draft');
+  const imageUploadField = imageUploadFieldFromIntent(intent);
 
-  if (intent === 'upload-image') {
-    const file = form.get('file');
+  if (imageUploadField !== null) {
+    const file = form.get(`${imageUploadField}.__file`);
     if (!(file instanceof File) || file.size === 0) {
       return Response.json({ error: 'Choose an image before uploading.' }, { status: 400 });
     }
@@ -321,6 +316,10 @@ export const action = routeAction(function* () {
     const params = new URLSearchParams({
       status: `Image uploaded: ${processed.key} (${processed.width}x${processed.height}); thumbnail ${processed.thumbnailKey} (${processed.thumbnailWidth}x${processed.thumbnailHeight})`,
       published: '0',
+      uploadedField: imageUploadField,
+      uploadedKey: processed.key,
+      uploadedWidth: String(processed.width),
+      uploadedHeight: String(processed.height),
     });
     return redirect(`/admin?${params.toString()}`);
   }
@@ -571,50 +570,6 @@ function DraftBanner({
   );
 }
 
-function ImageUploadForm({ submitting }: { readonly submitting: boolean }) {
-  return (
-    <Form
-      method="post"
-      encType="multipart/form-data"
-      className="rounded-md border border-neutral-200 bg-white p-4"
-    >
-      <input type="hidden" name="intent" value="upload-image" />
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-1.5">
-          <label
-            htmlFor="admin-image-upload"
-            className="block text-sm font-medium text-neutral-900"
-          >
-            Image upload
-          </label>
-          <p className="text-xs text-neutral-500">
-            Converts to WebP up to {ADMIN_IMAGE_UPLOAD_MAX_EDGE}px and writes a thumbnail.
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <Input
-            id="admin-image-upload"
-            type="file"
-            name="file"
-            accept={ADMIN_IMAGE_UPLOAD_ACCEPT}
-            required
-            className="cursor-pointer sm:max-w-[22rem]"
-          />
-          <Button
-            type="submit"
-            variant="outline"
-            disabled={submitting}
-            className="w-full sm:w-auto"
-          >
-            <Upload className="size-4" aria-hidden />
-            Upload image
-          </Button>
-        </div>
-      </div>
-    </Form>
-  );
-}
-
 function renderSection({
   section,
   content,
@@ -778,8 +733,6 @@ export default function AdminContent() {
         </div>
       )}
 
-      <ImageUploadForm submitting={submitting} />
-
       <Form
         id={MENU_PDF_UPLOAD_FORM_ID}
         method="post"
@@ -789,7 +742,7 @@ export default function AdminContent() {
         <input type="hidden" name="intent" value="upload-menu-pdf" />
       </Form>
 
-      <Form method="post" className="space-y-4">
+      <Form method="post" encType="multipart/form-data" className="space-y-4">
         {SECTIONS.map((key) => {
           const errors = fieldErrors[key];
           const hasError = !!errors?.length;
