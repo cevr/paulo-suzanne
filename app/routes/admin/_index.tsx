@@ -47,10 +47,6 @@ import { routeAction, routeHandler } from '~/lib/effect/route';
 import { cn } from '~/lib/utils';
 import { Auth } from '~/services/Auth';
 
-import {
-  assetOptionsFromKeys,
-  fallbackImageAssets,
-} from './_components/asset-picker';
 import { editorSections } from './_components/editor-sections';
 import { MENU_PDF_UPLOAD_FORM_ID } from './_components/sections';
 
@@ -101,13 +97,7 @@ function mutationResponse(
 }
 
 export const loader = routeHandler(function* () {
-  const model = yield* loadEditor();
-  return {
-    ...model,
-    assetOptions: model.assetListFailed
-      ? fallbackImageAssets()
-      : assetOptionsFromKeys(model.assetKeys),
-  };
+  return yield* loadEditor();
 });
 
 export const action = routeAction(function* () {
@@ -271,8 +261,8 @@ export default function AdminContent() {
     content,
     contentSource,
     draftLastModified,
-    assetOptions,
-    assetListFailed,
+    assets,
+    assetCatalogStatus,
     isUsingDefaults,
   } = useLoaderData<typeof loader>();
   const actionData = useActionData<ActionResult>();
@@ -410,7 +400,7 @@ export default function AdminContent() {
         </Alert>
       )}
 
-      {(isUsingDefaults || assetListFailed) && (
+      {(isUsingDefaults || assetCatalogStatus === 'fallback') && (
         <Alert>
           <Info />
           <AlertTitle>
@@ -530,7 +520,7 @@ export default function AdminContent() {
                     hasError ? `${section.key}-errors` : undefined
                   }
                 >
-                  {section.render(content, assetOptions)}
+                  {section.render(content, assets)}
                   {hasError && (
                     <Alert id={`${section.key}-errors`} variant="destructive">
                       <AlertCircle />

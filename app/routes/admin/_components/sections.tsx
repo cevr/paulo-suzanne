@@ -2,10 +2,11 @@ import { useState, type ReactNode } from 'react';
 
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
+import type { EditorAsset } from '~/content/editor';
 import type { ImageRef, SiteContent, SocialKind, Text } from '~/content/schema';
 import { MENU_PDF_PUBLIC_HREF } from '~/lib/managed-assets';
 
-import { type AssetOption, ImageRefField } from './asset-picker';
+import { ImageRefField } from './asset-picker';
 import {
   ArrayField,
   SelectField,
@@ -17,7 +18,7 @@ import {
 type SectionProps<K extends keyof SiteContent> = {
   readonly name: string;
   readonly defaultValue: SiteContent[K];
-  readonly assets: readonly AssetOption[];
+  readonly assets: readonly EditorAsset[];
 };
 
 const expectNoFields = (_value: Record<PropertyKey, never>): void => {};

@@ -2,9 +2,9 @@ import {
   EDITOR_SECTION_KEYS,
   type EditorSectionKey,
 } from '~/content/editor-sections';
+import type { EditorAsset } from '~/content/editor';
 import type { SiteContent } from '~/content/schema';
 
-import type { AssetOption } from './asset-picker';
 import {
   AboutSection,
   ContactSection,
@@ -25,7 +25,7 @@ type EditorSection = {
   readonly defaultOpen: boolean;
   readonly render: (
     content: SiteContent,
-    assets: readonly AssetOption[],
+    assets: readonly EditorAsset[],
   ) => React.ReactNode;
 };
 
@@ -34,7 +34,8 @@ type EditorSectionDefinition = Omit<EditorSection, 'key'>;
 const editorSectionDefinitions = {
   meta: {
     label: 'Search & sharing',
-    description: 'Page title, summary, and the image shown when the site is shared.',
+    description:
+      'Page title, summary, and the image shown when the site is shared.',
     defaultOpen: true,
     render: (content, assets) => (
       <MetaSection name="meta" defaultValue={content.meta} assets={assets} />
@@ -45,7 +46,11 @@ const editorSectionDefinitions = {
     description: 'Logo, page links, ordering link, and menu labels.',
     defaultOpen: true,
     render: (content, assets) => (
-      <HeaderSection name="header" defaultValue={content.header} assets={assets} />
+      <HeaderSection
+        name="header"
+        defaultValue={content.header}
+        assets={assets}
+      />
     ),
   },
   hero: {
@@ -85,7 +90,11 @@ const editorSectionDefinitions = {
     description: 'Address, map, and opening hours.',
     defaultOpen: false,
     render: (content, assets) => (
-      <LocationSection name="location" defaultValue={content.location} assets={assets} />
+      <LocationSection
+        name="location"
+        defaultValue={content.location}
+        assets={assets}
+      />
     ),
   },
   contact: {
@@ -93,7 +102,11 @@ const editorSectionDefinitions = {
     description: 'Phone, email, and social profiles.',
     defaultOpen: false,
     render: (content, assets) => (
-      <ContactSection name="contact" defaultValue={content.contact} assets={assets} />
+      <ContactSection
+        name="contact"
+        defaultValue={content.contact}
+        assets={assets}
+      />
     ),
   },
   footer: {
@@ -101,7 +114,11 @@ const editorSectionDefinitions = {
     description: 'Closing message, quick links, and contact details.',
     defaultOpen: false,
     render: (content, assets) => (
-      <FooterSection name="footer" defaultValue={content.footer} assets={assets} />
+      <FooterSection
+        name="footer"
+        defaultValue={content.footer}
+        assets={assets}
+      />
     ),
   },
   jsonLd: {
@@ -109,7 +126,11 @@ const editorSectionDefinitions = {
     description: 'Structured information used by search engines.',
     defaultOpen: false,
     render: (content, assets) => (
-      <JsonLdSection name="jsonLd" defaultValue={content.jsonLd} assets={assets} />
+      <JsonLdSection
+        name="jsonLd"
+        defaultValue={content.jsonLd}
+        assets={assets}
+      />
     ),
   },
 } satisfies Record<EditorSectionKey, EditorSectionDefinition>;

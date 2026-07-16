@@ -10,51 +10,15 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 import { Input } from '~/components/ui/input';
+import { imageUploadIntent, type EditorAsset } from '~/content/editor';
 import type { ImageRef } from '~/content/schema';
 import {
   ADMIN_IMAGE_UPLOAD_ACCEPT,
   ADMIN_IMAGE_UPLOAD_PREFIX,
-  ADMIN_IMAGE_UPLOAD_THUMBNAIL_MARKER,
   thumbnailKeyForImage,
 } from '~/lib/admin-image-upload';
-import { MANAGED_ASSETS } from '~/lib/managed-assets';
 
 import { TextField } from './form-fields';
-
-const IMAGE_EXTENSIONS = ['.avif', '.gif', '.jpg', '.jpeg', '.png', '.webp'];
-export const IMAGE_UPLOAD_INTENT_PREFIX = 'upload-image:';
-
-export type AssetOption = {
-  readonly key: string;
-  readonly label: string;
-};
-
-export const fallbackImageAssets = (): readonly AssetOption[] =>
-  MANAGED_ASSETS.filter((asset) => asset.accept.startsWith('image/')).map(
-    (asset) => ({
-      key: asset.key,
-      label: asset.label,
-    }),
-  );
-
-export const assetOptionsFromKeys = (
-  keys: readonly string[],
-): readonly AssetOption[] =>
-  [...keys]
-    .filter((key) => !key.startsWith('content/'))
-    .filter(
-      (key) => !key.toLowerCase().includes(ADMIN_IMAGE_UPLOAD_THUMBNAIL_MARKER),
-    )
-    .filter((key) =>
-      IMAGE_EXTENSIONS.some((extension) =>
-        key.toLowerCase().endsWith(extension),
-      ),
-    )
-    .map((key) => ({
-      key,
-      label: MANAGED_ASSETS.find((asset) => asset.key === key)?.label ?? key,
-    }))
-    .sort((a: AssetOption, b: AssetOption) => a.key.localeCompare(b.key));
 
 function imageUrl(key: string): string {
   return `/${key}`;
@@ -94,7 +58,7 @@ export function ImageRefField({
   readonly name: string;
   readonly defaultValue: ImageRef;
   readonly label: string;
-  readonly assets: readonly AssetOption[];
+  readonly assets: readonly EditorAsset[];
 }) {
   const [selected, setSelected] = useState({
     key: defaultValue.key,
@@ -172,7 +136,7 @@ export function ImageRefField({
             <Button
               type="submit"
               name="intent"
-              value={`${IMAGE_UPLOAD_INTENT_PREFIX}${name}`}
+              value={imageUploadIntent(name)}
               variant="outline"
               disabled={picked === null}
               className="w-full sm:w-auto"

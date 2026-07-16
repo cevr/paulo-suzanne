@@ -1,6 +1,7 @@
 import { Cause, Clock, Effect, Schema, SchemaIssue } from 'effect';
 
 import {
+  ADMIN_IMAGE_UPLOAD_THUMBNAIL_MARKER,
   AdminImageUploadError,
   ingestAdminImage,
 } from '~/lib/admin-image-upload';
@@ -41,12 +42,17 @@ type PublishState = typeof PublishState.Type;
 
 export type EditorFieldErrors = Partial<Record<EditorSectionKey, string[]>>;
 
+export type EditorAsset = {
+  readonly key: string;
+  readonly label: string;
+};
+
 export type EditorModel = {
   readonly content: SiteContent;
   readonly contentSource: 'draft' | 'published' | 'defaults';
   readonly draftLastModified: number | null;
-  readonly assetKeys: readonly string[];
-  readonly assetListFailed: boolean;
+  readonly assets: readonly EditorAsset[];
+  readonly assetCatalogStatus: 'available' | 'fallback';
   readonly isUsingDefaults: boolean;
   readonly railwayEnabled: boolean;
   readonly lastDeploymentId: string | null;
@@ -80,7 +86,9 @@ const readPublishState = Effect.fn('Content.readPublishState')(function* () {
   const exit = yield* Effect.exit(
     Effect.gen(function* () {
       const object = yield* storage.get(PUBLISH_STATE_KEY);
-      const text = yield* Effect.promise(() => new Response(object.stream).text());
+      const text = yield* Effect.promise(() =>
+        new Response(object.stream).text(),
+      );
       return yield* decodePublishState(text);
     }),
   );
@@ -120,7 +128,9 @@ function recordAt(parent: MutableRecord, key: string): MutableRecord {
 }
 
 function deriveLockedAssetFields(input: unknown): MutableRecord {
-  const content = isRecord(input) ? (structuredClone(input) as MutableRecord) : {};
+  const content = isRecord(input)
+    ? (structuredClone(input) as MutableRecord)
+    : {};
   const menu = recordAt(content, 'menu');
   const jsonLd = recordAt(content, 'jsonLd');
   const meta = recordAt(content, 'meta');
@@ -137,15 +147,47 @@ function deriveLockedAssetFields(input: unknown): MutableRecord {
 }
 
 function imageUploadFieldFromIntent(intent: string): string | null {
-  const prefix = 'upload-image:';
-  if (!intent.startsWith(prefix)) return null;
-  const fieldName = intent.slice(prefix.length);
+  if (!intent.startsWith(IMAGE_UPLOAD_INTENT_PREFIX)) return null;
+  const fieldName = intent.slice(IMAGE_UPLOAD_INTENT_PREFIX.length);
   return fieldName.length > 0 ? fieldName : null;
+}
+
+const IMAGE_UPLOAD_INTENT_PREFIX = 'upload-image:';
+
+export function imageUploadIntent(fieldName: string): string {
+  return `${IMAGE_UPLOAD_INTENT_PREFIX}${fieldName}`;
+}
+
+const IMAGE_EXTENSIONS = ['.avif', '.gif', '.jpg', '.jpeg', '.png', '.webp'];
+
+function editorAssets(keys: readonly string[]): readonly EditorAsset[] {
+  return [...keys]
+    .filter((key) => !key.startsWith('content/'))
+    .filter(
+      (key) => !key.toLowerCase().includes(ADMIN_IMAGE_UPLOAD_THUMBNAIL_MARKER),
+    )
+    .filter((key) =>
+      IMAGE_EXTENSIONS.some((extension) =>
+        key.toLowerCase().endsWith(extension),
+      ),
+    )
+    .map((key) => ({
+      key,
+      label: MANAGED_ASSETS.find((asset) => asset.key === key)?.label ?? key,
+    }))
+    .sort((a, b) => a.key.localeCompare(b.key));
+}
+
+function fallbackEditorAssets(): readonly EditorAsset[] {
+  return MANAGED_ASSETS.filter((asset) =>
+    asset.accept.startsWith('image/'),
+  ).map(({ key, label }) => ({ key, label }));
 }
 
 function coerceFormValue(path: readonly string[], value: string): unknown {
   const leaf = path[path.length - 1];
-  if (leaf === 'width' || leaf === 'height') return value === '' ? value : Number(value);
+  if (leaf === 'width' || leaf === 'height')
+    return value === '' ? value : Number(value);
   return value;
 }
 
@@ -160,15 +202,23 @@ function ensureContainer(
 ): Record<string, unknown> | unknown[] {
   const key = Array.isArray(parent) ? Number(segment) : segment;
   const existing = parent[key as keyof typeof parent];
-  if (Array.isArray(existing) || (typeof existing === 'object' && existing !== null)) {
+  if (
+    Array.isArray(existing) ||
+    (typeof existing === 'object' && existing !== null)
+  ) {
     return existing as Record<string, unknown> | unknown[];
   }
-  const next = nextSegment !== undefined && isNumericSegment(nextSegment) ? [] : {};
+  const next =
+    nextSegment !== undefined && isNumericSegment(nextSegment) ? [] : {};
   (parent as Record<string, unknown>)[String(key)] = next;
   return next;
 }
 
-function setPath(root: Record<string, unknown>, path: readonly string[], value: unknown): void {
+function setPath(
+  root: Record<string, unknown>,
+  path: readonly string[],
+  value: unknown,
+): void {
   if (path.length === 0) return;
   let cursor: Record<string, unknown> | unknown[] = root;
   for (let index = 0; index < path.length - 1; index += 1) {
@@ -193,7 +243,8 @@ function assembleFromFormData(form: FormData): unknown {
     }
   }
   for (const [name, value] of form.entries()) {
-    if (typeof value !== 'string' || name.startsWith('_') || name === 'intent') continue;
+    if (typeof value !== 'string' || name.startsWith('_') || name === 'intent')
+      continue;
     const path = name.split('.');
     setPath(root, path, coerceFormValue(path, value));
   }
@@ -217,12 +268,17 @@ function fieldErrorsFromIssue(issue: SchemaIssue.Issue): EditorFieldErrors {
     const head = pathSegmentKey(rawHead);
     if (!(head in defaultContent)) continue;
     const rawTailHead = entry.path?.[1];
-    const tailHead = rawTailHead === undefined ? undefined : pathSegmentKey(rawTailHead);
+    const tailHead =
+      rawTailHead === undefined ? undefined : pathSegmentKey(rawTailHead);
     const section = editorSectionForContentPath(
       head as keyof SiteContent,
       tailHead,
     );
-    const tail = entry.path?.slice(1).map((part) => String(pathSegmentKey(part))).join('.') ?? '';
+    const tail =
+      entry.path
+        ?.slice(1)
+        .map((part) => String(pathSegmentKey(part)))
+        .join('.') ?? '';
     const list = result[section] ?? [];
     list.push(tail ? `${entry.message} (at ${tail})` : entry.message);
     result[section] = list;
@@ -230,7 +286,9 @@ function fieldErrorsFromIssue(issue: SchemaIssue.Issue): EditorFieldErrors {
   return result;
 }
 
-function schemaIssueFromCause(cause: Cause.Cause<unknown>): SchemaIssue.Issue | null {
+function schemaIssueFromCause(
+  cause: Cause.Cause<unknown>,
+): SchemaIssue.Issue | null {
   for (const reason of cause.reasons) {
     if (!Cause.isFailReason(reason)) continue;
     const error = reason.error;
@@ -249,20 +307,19 @@ export const loadEditor = Effect.fn('Content.loadEditor')(function* () {
   const railwayEnabled = yield* railway.enabled;
   const publishState = yield* readPublishState();
   const assetListExit = yield* Effect.exit(storage.list());
-  const assetKeys =
+  const assets =
     assetListExit._tag === 'Success'
-      ? assetListExit.value
-          .map((item) => item.key)
-          .filter((key) => !key.startsWith('content/'))
-      : MANAGED_ASSETS.map((asset) => asset.key);
+      ? editorAssets(assetListExit.value.map((item) => item.key))
+      : fallbackEditorAssets();
   const content = normalizeSiteContentAssets(contentLoad.content);
 
   return {
     content,
     contentSource: contentLoad.source,
     draftLastModified: contentLoad.draftLastModified,
-    assetKeys,
-    assetListFailed: assetListExit._tag !== 'Success',
+    assets,
+    assetCatalogStatus:
+      assetListExit._tag === 'Success' ? 'available' : 'fallback',
     isUsingDefaults:
       contentLoad.source === 'defaults' ||
       JSON.stringify(content) === JSON.stringify(defaultContent),
@@ -278,7 +335,9 @@ const rejected = (
   fieldErrors: EditorFieldErrors = {},
 ): EditorRejected => ({ _tag: 'Rejected', status, error, fieldErrors });
 
-export const submitEditor = Effect.fn('Content.submitEditor')(function* (form: FormData) {
+export const submitEditor = Effect.fn('Content.submitEditor')(function* (
+  form: FormData,
+) {
   const storage = yield* Storage;
   const railway = yield* Railway;
   const intent = String(form.get('intent') ?? 'save-draft');
@@ -293,7 +352,10 @@ export const submitEditor = Effect.fn('Content.submitEditor')(function* (form: F
     const imageExit = yield* Effect.exit(ingestAdminImage(file, now));
     if (imageExit._tag === 'Failure') {
       for (const reason of imageExit.cause.reasons) {
-        if (Cause.isFailReason(reason) && Schema.is(AdminImageUploadError)(reason.error)) {
+        if (
+          Cause.isFailReason(reason) &&
+          Schema.is(AdminImageUploadError)(reason.error)
+        ) {
           return rejected(400, reason.error.message);
         }
       }
@@ -301,9 +363,21 @@ export const submitEditor = Effect.fn('Content.submitEditor')(function* (form: F
     }
 
     const draftInput = deriveLockedAssetFields(assembleFromFormData(form));
-    setPath(draftInput, `${imageUploadField}.key`.split('.'), imageExit.value.key);
-    setPath(draftInput, `${imageUploadField}.width`.split('.'), imageExit.value.width);
-    setPath(draftInput, `${imageUploadField}.height`.split('.'), imageExit.value.height);
+    setPath(
+      draftInput,
+      `${imageUploadField}.key`.split('.'),
+      imageExit.value.key,
+    );
+    setPath(
+      draftInput,
+      `${imageUploadField}.width`.split('.'),
+      imageExit.value.width,
+    );
+    setPath(
+      draftInput,
+      `${imageUploadField}.height`.split('.'),
+      imageExit.value.height,
+    );
     const decodeExit = yield* Effect.exit(decodeContent(draftInput));
     if (decodeExit._tag === 'Failure') {
       const issue = schemaIssueFromCause(decodeExit.cause);
@@ -330,12 +404,17 @@ export const submitEditor = Effect.fn('Content.submitEditor')(function* (form: F
   if (intent === 'upload-menu-pdf') {
     const file = form.get('file');
     const asset = findAsset(MENU_PDF_ASSET_KEY);
-    if (asset === undefined) return rejected(500, 'Menu PDF asset is not configured.');
+    if (asset === undefined)
+      return rejected(500, 'Menu PDF asset is not configured.');
     if (!(file instanceof File) || file.size === 0) {
       return rejected(400, 'Choose a PDF before uploading.');
     }
     const buffer = yield* Effect.tryPromise(() => file.arrayBuffer());
-    yield* storage.put(asset.key, new Uint8Array(buffer), file.type || asset.accept);
+    yield* storage.put(
+      asset.key,
+      new Uint8Array(buffer),
+      file.type || asset.accept,
+    );
     return {
       _tag: 'Redirect',
       status: 'Menu PDF uploaded.',
@@ -344,7 +423,9 @@ export const submitEditor = Effect.fn('Content.submitEditor')(function* (form: F
   }
 
   if (intent === 'discard-draft') {
-    yield* storage.delete(DRAFT_CONTENT_KEY).pipe(Effect.catch(() => Effect.void));
+    yield* storage
+      .delete(DRAFT_CONTENT_KEY)
+      .pipe(Effect.catch(() => Effect.void));
     return {
       _tag: 'Redirect',
       status: 'Draft discarded.',
@@ -372,7 +453,11 @@ export const submitEditor = Effect.fn('Content.submitEditor')(function* (form: F
 
   const content = decodeExit.value;
   if (intent === 'save-draft') {
-    yield* storage.put(DRAFT_CONTENT_KEY, JSON.stringify(content, null, 2), 'application/json');
+    yield* storage.put(
+      DRAFT_CONTENT_KEY,
+      JSON.stringify(content, null, 2),
+      'application/json',
+    );
     return {
       _tag: 'Redirect',
       status: 'Draft saved.',
@@ -385,7 +470,9 @@ export const submitEditor = Effect.fn('Content.submitEditor')(function* (form: F
   const now = yield* Clock.currentTimeMillis;
 
   if (previous?.contentHash === newHash) {
-    yield* storage.delete(DRAFT_CONTENT_KEY).pipe(Effect.catch(() => Effect.void));
+    yield* storage
+      .delete(DRAFT_CONTENT_KEY)
+      .pipe(Effect.catch(() => Effect.void));
     return {
       _tag: 'Redirect',
       status: previous.lastDeploymentId
@@ -402,7 +489,10 @@ export const submitEditor = Effect.fn('Content.submitEditor')(function* (form: F
     previous?.inFlight &&
     now - previous.inFlight.startedAt < IN_FLIGHT_TIMEOUT_MS
   ) {
-    return rejected(409, 'Publishing is already underway. Wait a moment, then try again.');
+    return rejected(
+      409,
+      'Publishing is already underway. Wait a moment, then try again.',
+    );
   }
 
   const inFlightState: PublishState = {
@@ -411,8 +501,16 @@ export const submitEditor = Effect.fn('Content.submitEditor')(function* (form: F
     lastPublishedAt: previous?.lastPublishedAt ?? null,
     inFlight: { hash: newHash, startedAt: now },
   };
-  yield* storage.put(PUBLISH_STATE_KEY, JSON.stringify(inFlightState, null, 2), 'application/json');
-  yield* storage.put(CONTENT_KEY, JSON.stringify(content, null, 2), 'application/json');
+  yield* storage.put(
+    PUBLISH_STATE_KEY,
+    JSON.stringify(inFlightState, null, 2),
+    'application/json',
+  );
+  yield* storage.put(
+    CONTENT_KEY,
+    JSON.stringify(content, null, 2),
+    'application/json',
+  );
 
   const deployExit = yield* Effect.exit(railway.triggerDeploy);
   let deploymentId: string | null = null;
@@ -438,7 +536,8 @@ export const submitEditor = Effect.fn('Content.submitEditor')(function* (form: F
     (deployExit._tag === 'Failure' &&
       [...deployExit.cause.reasons].some(
         (reason) =>
-          Cause.isFailReason(reason) && Schema.is(RailwayDisabled)(reason.error),
+          Cause.isFailReason(reason) &&
+          Schema.is(RailwayDisabled)(reason.error),
       ));
   const finalState: PublishState = {
     contentHash: railwaySucceededOrDisabled
@@ -450,8 +549,14 @@ export const submitEditor = Effect.fn('Content.submitEditor')(function* (form: F
       : (previous?.lastPublishedAt ?? null),
     inFlight: null,
   };
-  yield* storage.put(PUBLISH_STATE_KEY, JSON.stringify(finalState, null, 2), 'application/json');
-  yield* storage.delete(DRAFT_CONTENT_KEY).pipe(Effect.catch(() => Effect.void));
+  yield* storage.put(
+    PUBLISH_STATE_KEY,
+    JSON.stringify(finalState, null, 2),
+    'application/json',
+  );
+  yield* storage
+    .delete(DRAFT_CONTENT_KEY)
+    .pipe(Effect.catch(() => Effect.void));
 
   return {
     _tag: 'Redirect',
