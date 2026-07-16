@@ -12,7 +12,7 @@ import {
 
 import type { Route } from './+types/root';
 import { Toaster } from './components/ui/sonner';
-import { deriveLockedSiteContentAssets } from './content/derived-assets';
+import { normalizeSiteContentAssets } from './content/editor';
 import { runLoadContent } from './content/loader';
 import type { SiteContent } from './content/schema';
 import { LanguageProvider } from './lib/language-provider';
@@ -44,7 +44,7 @@ export const links: Route.LinksFunction = () => [
 ];
 
 function buildJsonLd(content: SiteContent) {
-  const lockedContent = deriveLockedSiteContentAssets(content);
+  const lockedContent = normalizeSiteContentAssets(content);
   const { jsonLd } = lockedContent;
   return {
     '@context': 'https://schema.org',
