@@ -8,8 +8,8 @@ import {
   submitEditor,
   type EditorFieldErrors,
   type EditorMutation,
-  type EditorSectionKey,
 } from '~/content/editor';
+import type { EditorSectionKey } from '~/content/editor-sections';
 import { ReactRouterContext } from '~/lib/effect/router-context';
 import { routeAction, routeHandler } from '~/lib/effect/route';
 import { Auth } from '~/services/Auth';

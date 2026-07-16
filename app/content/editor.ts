@@ -14,6 +14,10 @@ import { Railway, RailwayDisabled, RailwayError } from '~/services/Railway';
 import { Storage } from '~/services/Storage';
 
 import { defaultContent } from './defaults';
+import {
+  editorSectionForContentPath,
+  type EditorSectionKey,
+} from './editor-sections';
 import { loadAdminContent, normalizeSiteContentAssets } from './loader';
 import { SiteContent } from './schema';
 
@@ -35,20 +39,6 @@ const PublishState = Schema.Struct({
 });
 type PublishState = typeof PublishState.Type;
 
-export const EDITOR_SECTION_KEYS = [
-  'meta',
-  'header',
-  'hero',
-  'about',
-  'menu',
-  'menuPdf',
-  'location',
-  'contact',
-  'footer',
-  'jsonLd',
-] as const;
-
-export type EditorSectionKey = (typeof EDITOR_SECTION_KEYS)[number];
 export type EditorFieldErrors = Partial<Record<EditorSectionKey, string[]>>;
 
 export type EditorModel = {
@@ -218,23 +208,6 @@ function pathSegmentKey(
     : segment;
 }
 
-function sectionKeyFromIssuePath(
-  head: keyof SiteContent,
-  tailHead: PropertyKey | undefined,
-): EditorSectionKey {
-  if (
-    head === 'menu' &&
-    (tailHead === 'pdfHeading' ||
-      tailHead === 'pdfBody' ||
-      tailHead === 'pdfCta' ||
-      tailHead === 'pdfHref' ||
-      tailHead === 'disclaimer')
-  ) {
-    return 'menuPdf';
-  }
-  return head;
-}
-
 function fieldErrorsFromIssue(issue: SchemaIssue.Issue): EditorFieldErrors {
   const result: EditorFieldErrors = {};
   const formatted = formatIssue(issue);
@@ -245,7 +218,10 @@ function fieldErrorsFromIssue(issue: SchemaIssue.Issue): EditorFieldErrors {
     if (!(head in defaultContent)) continue;
     const rawTailHead = entry.path?.[1];
     const tailHead = rawTailHead === undefined ? undefined : pathSegmentKey(rawTailHead);
-    const section = sectionKeyFromIssuePath(head as keyof SiteContent, tailHead);
+    const section = editorSectionForContentPath(
+      head as keyof SiteContent,
+      tailHead,
+    );
     const tail = entry.path?.slice(1).map((part) => String(pathSegmentKey(part))).join('.') ?? '';
     const list = result[section] ?? [];
     list.push(tail ? `${entry.message} (at ${tail})` : entry.message);

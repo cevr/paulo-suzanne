@@ -1,4 +1,7 @@
-import type { EditorSectionKey } from '~/content/editor';
+import {
+  EDITOR_SECTION_KEYS,
+  type EditorSectionKey,
+} from '~/content/editor-sections';
 import type { SiteContent } from '~/content/schema';
 
 import type { AssetOption } from './asset-picker';
@@ -26,9 +29,10 @@ type EditorSection = {
   ) => React.ReactNode;
 };
 
-export const editorSections: readonly EditorSection[] = [
-  {
-    key: 'meta',
+type EditorSectionDefinition = Omit<EditorSection, 'key'>;
+
+const editorSectionDefinitions = {
+  meta: {
     label: 'Search & sharing',
     description: 'Page title, summary, and the image shown when the site is shared.',
     defaultOpen: true,
@@ -36,8 +40,7 @@ export const editorSections: readonly EditorSection[] = [
       <MetaSection name="meta" defaultValue={content.meta} assets={assets} />
     ),
   },
-  {
-    key: 'header',
+  header: {
     label: 'Header & navigation',
     description: 'Logo, page links, ordering link, and menu labels.',
     defaultOpen: true,
@@ -45,8 +48,7 @@ export const editorSections: readonly EditorSection[] = [
       <HeaderSection name="header" defaultValue={content.header} assets={assets} />
     ),
   },
-  {
-    key: 'hero',
+  hero: {
     label: 'Main banner',
     description: 'The first message and actions visitors see.',
     defaultOpen: true,
@@ -54,8 +56,7 @@ export const editorSections: readonly EditorSection[] = [
       <HeroSection name="hero" defaultValue={content.hero} assets={assets} />
     ),
   },
-  {
-    key: 'about',
+  about: {
     label: 'Our story',
     description: 'Restaurant story, highlights, and featured image.',
     defaultOpen: false,
@@ -63,8 +64,7 @@ export const editorSections: readonly EditorSection[] = [
       <AboutSection name="about" defaultValue={content.about} assets={assets} />
     ),
   },
-  {
-    key: 'menu',
+  menu: {
     label: 'Menu photos',
     description: 'Menu introduction and the photo carousel.',
     defaultOpen: false,
@@ -72,8 +72,7 @@ export const editorSections: readonly EditorSection[] = [
       <MenuSection name="menu" defaultValue={content.menu} assets={assets} />
     ),
   },
-  {
-    key: 'menuPdf',
+  menuPdf: {
     label: 'Menu PDF',
     description: 'Download copy, menu document, and disclaimer.',
     defaultOpen: false,
@@ -81,8 +80,7 @@ export const editorSections: readonly EditorSection[] = [
       <MenuPdfSection name="menu" defaultValue={content.menu} assets={assets} />
     ),
   },
-  {
-    key: 'location',
+  location: {
     label: 'Location & hours',
     description: 'Address, map, and opening hours.',
     defaultOpen: false,
@@ -90,8 +88,7 @@ export const editorSections: readonly EditorSection[] = [
       <LocationSection name="location" defaultValue={content.location} assets={assets} />
     ),
   },
-  {
-    key: 'contact',
+  contact: {
     label: 'Contact & social links',
     description: 'Phone, email, and social profiles.',
     defaultOpen: false,
@@ -99,8 +96,7 @@ export const editorSections: readonly EditorSection[] = [
       <ContactSection name="contact" defaultValue={content.contact} assets={assets} />
     ),
   },
-  {
-    key: 'footer',
+  footer: {
     label: 'Footer',
     description: 'Closing message, quick links, and contact details.',
     defaultOpen: false,
@@ -108,8 +104,7 @@ export const editorSections: readonly EditorSection[] = [
       <FooterSection name="footer" defaultValue={content.footer} assets={assets} />
     ),
   },
-  {
-    key: 'jsonLd',
+  jsonLd: {
     label: 'Business details',
     description: 'Structured information used by search engines.',
     defaultOpen: false,
@@ -117,4 +112,8 @@ export const editorSections: readonly EditorSection[] = [
       <JsonLdSection name="jsonLd" defaultValue={content.jsonLd} assets={assets} />
     ),
   },
-] as const;
+} satisfies Record<EditorSectionKey, EditorSectionDefinition>;
+
+export const editorSections: readonly EditorSection[] = EDITOR_SECTION_KEYS.map(
+  (key) => ({ key, ...editorSectionDefinitions[key] }),
+);

@@ -192,4 +192,23 @@ describe('Content editor', () => {
       ),
     ),
   );
+
+  it.effect('assigns menu document errors to the Menu PDF editorial section', () =>
+    Effect.gen(function* () {
+      const form = contentForm(defaultContent, 'save-draft');
+      form.set('menu.pdfHeading.en', '');
+
+      const result = yield* submitEditor(form);
+
+      expect(result._tag).toBe('Rejected');
+      if (result._tag === 'Rejected') {
+        expect(result.fieldErrors.menuPdf?.length).toBeGreaterThan(0);
+        expect(result.fieldErrors.menu).toBeUndefined();
+      }
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(Storage.layerTest(), railwayTest(() => 'unused')),
+      ),
+    ),
+  );
 });
