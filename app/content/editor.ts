@@ -15,7 +15,7 @@ import { Railway, RailwayDisabled, RailwayError } from '~/services/Railway';
 import { Storage } from '~/services/Storage';
 
 import { defaultContent } from './defaults';
-import { loadAdminContent } from './loader';
+import { loadAdminContent, normalizeSiteContentAssets } from './loader';
 import { SiteContent } from './schema';
 
 const CONTENT_KEY = 'content/site.json';
@@ -149,18 +149,6 @@ function deriveLockedAssetFields(input: unknown): MutableRecord {
       : defaultContent.jsonLd.imageKey;
   jsonLd['menuPath'] = MENU_PDF_PUBLIC_HREF;
   return content;
-}
-
-export function normalizeSiteContentAssets(content: SiteContent): SiteContent {
-  return {
-    ...content,
-    menu: { ...content.menu, pdfHref: MENU_PDF_PUBLIC_HREF },
-    jsonLd: {
-      ...content.jsonLd,
-      imageKey: content.meta.ogImage.key,
-      menuPath: MENU_PDF_PUBLIC_HREF,
-    },
-  };
 }
 
 function imageUploadFieldFromIntent(intent: string): string | null {

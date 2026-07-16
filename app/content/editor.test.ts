@@ -6,10 +6,8 @@ import { Railway } from '~/services/Railway';
 import { Storage } from '~/services/Storage';
 
 import { defaultContent } from './defaults';
-import {
-  normalizeSiteContentAssets,
-  submitEditor,
-} from './editor';
+import { submitEditor } from './editor';
+import { normalizeSiteContentAssets } from './loader';
 import type { SiteContent } from './schema';
 
 function appendFormValue(form: FormData, path: string, value: unknown): void {

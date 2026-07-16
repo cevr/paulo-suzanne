@@ -4,14 +4,12 @@ import { Form, redirect, useActionData, useLoaderData, useNavigation } from 'rea
 
 import { Button } from '~/components/ui/button';
 import {
-  EDITOR_SECTION_KEYS,
   loadEditor,
   submitEditor,
   type EditorFieldErrors,
   type EditorMutation,
   type EditorSectionKey,
 } from '~/content/editor';
-import { SiteContent } from '~/content/schema';
 import { ReactRouterContext } from '~/lib/effect/router-context';
 import { routeAction, routeHandler } from '~/lib/effect/route';
 import { Auth } from '~/services/Auth';
@@ -19,23 +17,11 @@ import { Auth } from '~/services/Auth';
 import {
   assetOptionsFromKeys,
   fallbackImageAssets,
-  type AssetOption,
 } from './_components/asset-picker';
-import {
-  AboutSection,
-  ContactSection,
-  FooterSection,
-  HeaderSection,
-  HeroSection,
-  JsonLdSection,
-  LocationSection,
-  MENU_PDF_UPLOAD_FORM_ID,
-  MenuPdfSection,
-  MenuSection,
-  MetaSection,
-} from './_components/sections';
+import { editorSections } from './_components/editor-sections';
+import { MENU_PDF_UPLOAD_FORM_ID } from './_components/sections';
 
-const SECTIONS = EDITOR_SECTION_KEYS;
+const SECTIONS = editorSections.map((section) => section.key);
 type SectionKey = EditorSectionKey;
 type FieldErrors = EditorFieldErrors;
 
@@ -149,76 +135,6 @@ function DraftBanner({
   );
 }
 
-function renderSection({
-  section,
-  content,
-  assetOptions,
-}: {
-  readonly section: SectionKey;
-  readonly content: SiteContent;
-  readonly assetOptions: readonly AssetOption[];
-}) {
-  switch (section) {
-    case 'meta':
-      return <MetaSection name={section} defaultValue={content.meta} assets={assetOptions} />;
-    case 'header':
-      return (
-        <HeaderSection name={section} defaultValue={content.header} assets={assetOptions} />
-      );
-    case 'hero':
-      return <HeroSection name={section} defaultValue={content.hero} assets={assetOptions} />;
-    case 'about':
-      return (
-        <AboutSection name={section} defaultValue={content.about} assets={assetOptions} />
-      );
-    case 'menu':
-      return <MenuSection name={section} defaultValue={content.menu} assets={assetOptions} />;
-    case 'menuPdf':
-      return <MenuPdfSection name="menu" defaultValue={content.menu} assets={assetOptions} />;
-    case 'location':
-      return (
-        <LocationSection
-          name={section}
-          defaultValue={content.location}
-          assets={assetOptions}
-        />
-      );
-    case 'contact':
-      return (
-        <ContactSection
-          name={section}
-          defaultValue={content.contact}
-          assets={assetOptions}
-        />
-      );
-    case 'footer':
-      return (
-        <FooterSection name={section} defaultValue={content.footer} assets={assetOptions} />
-      );
-    case 'jsonLd':
-      return (
-        <JsonLdSection
-          name={section}
-          defaultValue={content.jsonLd}
-          assets={assetOptions}
-        />
-      );
-  }
-}
-
-const sectionLabels: Record<SectionKey, string> = {
-  meta: 'meta',
-  header: 'header',
-  hero: 'hero',
-  about: 'about',
-  menu: 'menu carousel',
-  menuPdf: 'menu PDF',
-  location: 'location',
-  contact: 'contact',
-  footer: 'footer',
-  jsonLd: 'jsonLd',
-};
-
 export default function AdminContent() {
   const {
     content,
@@ -322,11 +238,10 @@ export default function AdminContent() {
       </Form>
 
       <Form method="post" encType="multipart/form-data" className="space-y-4">
-        {SECTIONS.map((key) => {
+        {editorSections.map((section) => {
+          const key = section.key;
           const errors = fieldErrors[key];
           const hasError = !!errors?.length;
-          const defaultOpen =
-            key === 'meta' || key === 'header' || key === 'hero';
           return (
             <details
               key={key}
@@ -334,14 +249,17 @@ export default function AdminContent() {
                 if (el) detailsRefs.current[key] = el;
                 else delete detailsRefs.current[key];
               }}
-              open={hasError || defaultOpen}
+              open={hasError || section.defaultOpen}
               className={`rounded-lg border bg-white ${
                 hasError ? 'border-rose-300' : 'border-neutral-200'
               }`}
             >
               <summary className="cursor-pointer list-none p-4 text-sm font-medium hover:bg-neutral-50">
                 <span className="select-none text-neutral-500">▸</span>{' '}
-                {sectionLabels[key]}
+                <span>{section.label}</span>
+                <span className="ml-2 font-normal text-neutral-500">
+                  {section.description}
+                </span>
                 {hasError && (
                   <span className="ml-2 inline-block rounded bg-rose-100 px-1.5 py-0.5 text-xs text-rose-800">
                     {errors!.length} error{errors!.length === 1 ? '' : 's'}
@@ -353,7 +271,7 @@ export default function AdminContent() {
                 aria-invalid={hasError || undefined}
                 aria-describedby={hasError ? `${key}-errors` : undefined}
               >
-                {renderSection({ section: key, content, assetOptions })}
+                {section.render(content, assetOptions)}
                 {hasError && (
                   <ul
                     id={`${key}-errors`}

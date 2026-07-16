@@ -1,6 +1,7 @@
 import { Config, Context, Effect, Layer, ManagedRuntime, Option, Schema } from 'effect';
 
 import { NotFound, Storage, StorageError } from '~/services/Storage';
+import { MENU_PDF_PUBLIC_HREF } from '~/lib/managed-assets';
 
 import { defaultContent } from './defaults';
 import { SiteContent } from './schema';
@@ -256,13 +257,25 @@ export class Content extends Context.Service<
 
 export const loadContent = Effect.gen(function* () {
   const content = yield* Content;
-  return yield* content.loadContent;
+  return normalizeSiteContentAssets(yield* content.loadContent);
 });
 
 export const loadAdminContent = Effect.gen(function* () {
   const content = yield* Content;
   return yield* content.loadAdminContent;
 });
+
+export function normalizeSiteContentAssets(content: SiteContent): SiteContent {
+  return {
+    ...content,
+    menu: { ...content.menu, pdfHref: MENU_PDF_PUBLIC_HREF },
+    jsonLd: {
+      ...content.jsonLd,
+      imageKey: content.meta.ogImage.key,
+      menuPath: MENU_PDF_PUBLIC_HREF,
+    },
+  };
+}
 
 const ContentRuntime = ManagedRuntime.make(Content.layer);
 

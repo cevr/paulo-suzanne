@@ -12,7 +12,6 @@ import {
 
 import type { Route } from './+types/root';
 import { Toaster } from './components/ui/sonner';
-import { normalizeSiteContentAssets } from './content/editor';
 import { runLoadContent } from './content/loader';
 import type { SiteContent } from './content/schema';
 import { LanguageProvider } from './lib/language-provider';
@@ -44,8 +43,7 @@ export const links: Route.LinksFunction = () => [
 ];
 
 function buildJsonLd(content: SiteContent) {
-  const lockedContent = normalizeSiteContentAssets(content);
-  const { jsonLd } = lockedContent;
+  const { jsonLd } = content;
   return {
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
@@ -53,7 +51,7 @@ function buildJsonLd(content: SiteContent) {
     url: CANONICAL_URL,
     telephone: jsonLd.telephone,
     email: jsonLd.email,
-    image: `${CANONICAL_URL}${lockedContent.jsonLd.imageKey}`,
+    image: `${CANONICAL_URL}${jsonLd.imageKey}`,
     menu: `${CANONICAL_URL}${MENU_PDF_PUBLIC_HREF.replace(/^\//, '')}`,
     servesCuisine: jsonLd.servesCuisine,
     priceRange: jsonLd.priceRange,
