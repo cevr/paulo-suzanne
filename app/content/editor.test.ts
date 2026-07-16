@@ -94,6 +94,46 @@ describe('Content editor', () => {
     );
   });
 
+  it.effect('keeps unsaved edits when an Asset is uploaded and attached to the Draft', () =>
+    Effect.gen(function* () {
+      const edited: SiteContent = {
+        ...defaultContent,
+        hero: {
+          ...defaultContent.hero,
+          tagline: { ...defaultContent.hero.tagline, en: 'Keep this edit' },
+        },
+      };
+      const form = contentForm(edited, 'save-draft');
+      form.set('intent', 'upload-image:meta.ogImage');
+      const source = Bun.file('public/images/logo-small.png');
+      const buffer = yield* Effect.promise(() => source.arrayBuffer());
+      form.set(
+        'meta.ogImage.__file',
+        new File([buffer], 'Fresh Cover.PNG', { type: 'image/png' }),
+      );
+
+      const result = yield* submitEditor(form);
+      const storage = yield* Storage;
+      const stored = yield* storage.get('content/site.draft.json');
+      const draft = yield* Effect.promise(() =>
+        new Response(stored.stream).json() as Promise<SiteContent>,
+      );
+
+      expect(result).toMatchObject({
+        _tag: 'Redirect',
+        status: 'Image uploaded and Draft saved.',
+      });
+      expect(draft.hero.tagline.en).toBe('Keep this edit');
+      expect(draft.meta.ogImage.key).toMatch(
+        /^images\/uploads\/fresh-cover-.*\.webp$/,
+      );
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(Storage.layerTest(), railwayTest(() => 'unused')),
+      ),
+    ),
+  );
+
   it.effect('publishes changed Site content once and treats a repeat as up to date', () => {
     let deployments = 0;
     const published: SiteContent = {

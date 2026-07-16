@@ -3,7 +3,6 @@ import { Cause, Clock, Effect, Schema, SchemaIssue } from 'effect';
 import {
   AdminImageUploadError,
   ingestAdminImage,
-  type IngestedAdminImage,
 } from '~/lib/admin-image-upload';
 import {
   findAsset,
@@ -69,10 +68,6 @@ type EditorRedirect = {
   readonly status: string;
   readonly published: boolean;
   readonly deploymentId?: string;
-  readonly uploaded?: {
-    readonly field: string;
-    readonly image: IngestedAdminImage;
-  };
 };
 
 type EditorRejected = {
@@ -328,11 +323,31 @@ export const submitEditor = Effect.fn('Content.submitEditor')(function* (form: F
       }
       return yield* Effect.failCause(imageExit.cause);
     }
+
+    const draftInput = deriveLockedAssetFields(assembleFromFormData(form));
+    setPath(draftInput, `${imageUploadField}.key`.split('.'), imageExit.value.key);
+    setPath(draftInput, `${imageUploadField}.width`.split('.'), imageExit.value.width);
+    setPath(draftInput, `${imageUploadField}.height`.split('.'), imageExit.value.height);
+    const decodeExit = yield* Effect.exit(decodeContent(draftInput));
+    if (decodeExit._tag === 'Failure') {
+      const issue = schemaIssueFromCause(decodeExit.cause);
+      return rejected(
+        400,
+        issue
+          ? 'The image was uploaded, but some fields need attention before the Draft can be saved.'
+          : `Content validation failed: ${String(decodeExit.cause)}`,
+        issue ? fieldErrorsFromIssue(issue) : {},
+      );
+    }
+    yield* storage.put(
+      DRAFT_CONTENT_KEY,
+      JSON.stringify(decodeExit.value, null, 2),
+      'application/json',
+    );
     return {
       _tag: 'Redirect',
-      status: `Image uploaded: ${imageExit.value.key}`,
+      status: 'Image uploaded and Draft saved.',
       published: false,
-      uploaded: { field: imageUploadField, image: imageExit.value },
     } satisfies EditorRedirect;
   }
 

@@ -48,12 +48,6 @@ function mutationResponse(result: EditorMutation): Response {
   if (result.deploymentId !== undefined) {
     params.set('deploy', result.deploymentId);
   }
-  if (result.uploaded !== undefined) {
-    params.set('uploadedField', result.uploaded.field);
-    params.set('uploadedKey', result.uploaded.image.key);
-    params.set('uploadedWidth', String(result.uploaded.image.width));
-    params.set('uploadedHeight', String(result.uploaded.image.height));
-  }
   return redirect(`/admin?${params.toString()}`);
 }
 

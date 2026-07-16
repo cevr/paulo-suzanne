@@ -1,6 +1,5 @@
 import { Image as ImageIcon, Upload, X } from 'lucide-react';
 import { useState } from 'react';
-import { useSearchParams } from 'react-router';
 
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
@@ -77,19 +76,6 @@ function imageDimensions(image: HTMLImageElement): {
   };
 }
 
-function uploadedImageSelection(
-  params: URLSearchParams,
-  fieldName: string,
-): { readonly key: string; readonly width: number; readonly height: number } | null {
-  if (params.get('uploadedField') !== fieldName) return null;
-  const key = params.get('uploadedKey');
-  const width = Number(params.get('uploadedWidth'));
-  const height = Number(params.get('uploadedHeight'));
-  if (!key || !Number.isFinite(width) || !Number.isFinite(height)) return null;
-  if (width <= 0 || height <= 0) return null;
-  return { key, width, height };
-}
-
 export function ImageRefField({
   name,
   defaultValue,
@@ -101,12 +87,10 @@ export function ImageRefField({
   readonly label: string;
   readonly assets: readonly AssetOption[];
 }) {
-  const [searchParams] = useSearchParams();
-  const uploadedSelection = uploadedImageSelection(searchParams, name);
   const [selected, setSelected] = useState({
-    key: uploadedSelection?.key ?? defaultValue.key,
-    width: uploadedSelection?.width ?? defaultValue.width,
-    height: uploadedSelection?.height ?? defaultValue.height,
+    key: defaultValue.key,
+    width: defaultValue.width,
+    height: defaultValue.height,
   });
   const [dimensions, setDimensions] = useState<
     Readonly<Record<string, { readonly width: number; readonly height: number }>>
@@ -115,14 +99,6 @@ export function ImageRefField({
       width: defaultValue.width,
       height: defaultValue.height,
     },
-    ...(uploadedSelection === null
-      ? {}
-      : {
-          [uploadedSelection.key]: {
-            width: uploadedSelection.width,
-            height: uploadedSelection.height,
-          },
-        }),
   });
   const [open, setOpen] = useState(false);
   const [picked, setPicked] = useState<File | null>(null);
