@@ -47,7 +47,10 @@ import { routeAction, routeHandler } from '~/lib/effect/route';
 import { cn } from '~/lib/utils';
 import { Auth } from '~/services/Auth';
 
-import { editorSections } from './_components/editor-sections';
+import {
+  editorSectionGroups,
+  editorSections,
+} from './_components/editor-sections';
 import { MENU_PDF_UPLOAD_FORM_ID } from './_components/sections';
 
 type FieldErrors = EditorFieldErrors;
@@ -59,17 +62,6 @@ type ActionResult = {
 };
 
 const DEFAULT_SECTION: EditorSectionKey = 'hero';
-const CONTENT_SECTION_KEYS: readonly EditorSectionKey[] = [
-  'hero',
-  'header',
-  'about',
-  'menu',
-  'menuPdf',
-  'location',
-  'contact',
-  'footer',
-];
-const SETTINGS_SECTION_KEYS: readonly EditorSectionKey[] = ['meta', 'jsonLd'];
 
 function isEditorSection(value: string | null): value is EditorSectionKey {
   return EDITOR_SECTION_KEYS.some((section) => section === value);
@@ -211,27 +203,22 @@ function SectionNavigation({
   readonly fieldErrors: FieldErrors;
   readonly onSelect: (section: EditorSectionKey) => void;
 }) {
-  const sectionByKey = new Map(
-    editorSections.map((section) => [section.key, section]),
-  );
-  const renderGroup = (label: string, keys: readonly EditorSectionKey[]) => (
+  const renderGroup = (group: (typeof editorSectionGroups)[number]) => (
     <div className="flex flex-col gap-1">
       <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-neutral-500">
-        {label}
+        {group.label}
       </p>
-      {keys.map((key) => {
-        const section = sectionByKey.get(key);
-        if (section === undefined) return null;
-        const errorCount = fieldErrors[key]?.length ?? 0;
+      {group.sections.map((section) => {
+        const errorCount = fieldErrors[section.key]?.length ?? 0;
         return (
           <button
-            key={key}
+            key={section.key}
             type="button"
-            onClick={() => onSelect(key)}
-            aria-current={activeSection === key ? 'page' : undefined}
+            onClick={() => onSelect(section.key)}
+            aria-current={activeSection === section.key ? 'page' : undefined}
             className={cn(
               'flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900',
-              activeSection === key
+              activeSection === section.key
                 ? 'bg-neutral-900 text-white'
                 : 'text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950',
             )}
@@ -250,8 +237,9 @@ function SectionNavigation({
 
   return (
     <nav aria-label="Website sections" className="flex flex-col gap-6">
-      {renderGroup('Website content', CONTENT_SECTION_KEYS)}
-      {renderGroup('Search settings', SETTINGS_SECTION_KEYS)}
+      {editorSectionGroups.map((group) => (
+        <div key={group.key}>{renderGroup(group)}</div>
+      ))}
     </nav>
   );
 }
@@ -461,26 +449,15 @@ export default function AdminContent() {
               }
               className="h-11 rounded-lg border border-neutral-300 bg-white px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900"
             >
-              <optgroup label="Website content">
-                {CONTENT_SECTION_KEYS.map((key) => (
-                  <option key={key} value={key}>
-                    {
-                      editorSections.find((section) => section.key === key)
-                        ?.label
-                    }
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="Search settings">
-                {SETTINGS_SECTION_KEYS.map((key) => (
-                  <option key={key} value={key}>
-                    {
-                      editorSections.find((section) => section.key === key)
-                        ?.label
-                    }
-                  </option>
-                ))}
-              </optgroup>
+              {editorSectionGroups.map((group) => (
+                <optgroup key={group.key} label={group.label}>
+                  {group.sections.map((section) => (
+                    <option key={section.key} value={section.key}>
+                      {section.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
             </select>
           </label>
 

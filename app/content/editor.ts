@@ -16,6 +16,10 @@ import { Storage } from '~/services/Storage';
 
 import { defaultContent } from './defaults';
 import {
+  imageUploadFieldFromIntent,
+  type EditorAsset,
+} from './editor-contract';
+import {
   editorSectionForContentPath,
   type EditorSectionKey,
 } from './editor-sections';
@@ -42,10 +46,7 @@ type PublishState = typeof PublishState.Type;
 
 export type EditorFieldErrors = Partial<Record<EditorSectionKey, string[]>>;
 
-export type EditorAsset = {
-  readonly key: string;
-  readonly label: string;
-};
+export { imageUploadIntent, type EditorAsset } from './editor-contract';
 
 export type EditorModel = {
   readonly content: SiteContent;
@@ -144,18 +145,6 @@ function deriveLockedAssetFields(input: unknown): MutableRecord {
       : defaultContent.jsonLd.imageKey;
   jsonLd['menuPath'] = MENU_PDF_PUBLIC_HREF;
   return content;
-}
-
-function imageUploadFieldFromIntent(intent: string): string | null {
-  if (!intent.startsWith(IMAGE_UPLOAD_INTENT_PREFIX)) return null;
-  const fieldName = intent.slice(IMAGE_UPLOAD_INTENT_PREFIX.length);
-  return fieldName.length > 0 ? fieldName : null;
-}
-
-const IMAGE_UPLOAD_INTENT_PREFIX = 'upload-image:';
-
-export function imageUploadIntent(fieldName: string): string {
-  return `${IMAGE_UPLOAD_INTENT_PREFIX}${fieldName}`;
 }
 
 const IMAGE_EXTENSIONS = ['.avif', '.gif', '.jpg', '.jpeg', '.png', '.webp'];

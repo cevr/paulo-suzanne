@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 import { Input } from '~/components/ui/input';
-import { imageUploadIntent, type EditorAsset } from '~/content/editor';
+import { imageUploadIntent, type EditorAsset } from '~/content/editor-contract';
 import type { ImageRef } from '~/content/schema';
 import {
   ADMIN_IMAGE_UPLOAD_ACCEPT,

@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
-import type { EditorAsset } from '~/content/editor';
+import type { EditorAsset } from '~/content/editor-contract';
 import type { ImageRef, SiteContent, SocialKind, Text } from '~/content/schema';
 import { MENU_PDF_PUBLIC_HREF } from '~/lib/managed-assets';
 
