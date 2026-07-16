@@ -1,4 +1,4 @@
-import { Clock, Config, Context, DateTime, Effect, Layer, Redacted, Schema } from 'effect';
+import { Clock, Config, Context, DateTime, Effect, Layer, Option, Redacted, Schema } from 'effect';
 
 const StorageOp = Schema.Literals(['get', 'put', 'head', 'list', 'delete']);
 type StorageOp = typeof StorageOp.Type;
@@ -99,6 +99,22 @@ export class Storage extends Context.Service<
     readonly delete: (key: string) => Effect.Effect<void, StorageError>;
   }
 >()('paulo-suzanne/services/Storage') {
+  static layerOptional = () =>
+    Layer.unwrap(
+      Effect.gen(function* () {
+        const endpoint = yield* Config.option(Config.string('BUCKET_ENDPOINT'));
+        const accessKey = yield* Config.option(Config.redacted('BUCKET_ACCESS_KEY'));
+        const secretKey = yield* Config.option(Config.redacted('BUCKET_SECRET_KEY'));
+        const bucket = yield* Config.option(Config.string('BUCKET_NAME'));
+        return Option.isSome(endpoint) &&
+          Option.isSome(accessKey) &&
+          Option.isSome(secretKey) &&
+          Option.isSome(bucket)
+          ? Storage.layer
+          : Storage.layerTest();
+      }),
+    );
+
   static layerTest = (objects: Record<string, TestStoredObject> = {}) =>
     Layer.sync(Storage, () => {
       const entries = new Map<string, Required<TestStoredObject>>();

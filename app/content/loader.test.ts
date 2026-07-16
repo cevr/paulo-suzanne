@@ -28,7 +28,11 @@ describe('loadContent', () => {
       expect(content).toEqual(defaultContent);
     }).pipe(
       Effect.provide(
-        Layer.mergeAll(Content.layer, ConfigProvider.layer(allowDefaultsConfig)),
+        Layer.mergeAll(
+          Content.layer,
+          Storage.layerTest(),
+          ConfigProvider.layer(allowDefaultsConfig),
+        ),
       ),
     ),
   );
@@ -37,10 +41,16 @@ describe('loadContent', () => {
     Effect.gen(function* () {
       const exit = yield* Effect.exit(loadContent);
       const cause = expectFailureCause(exit);
-      expect(cause).toContain('bucket env not set');
+      expect(cause).toContain('no content/site.json');
       expect(cause).toContain('refusing to ship defaults');
     }).pipe(
-      Effect.provide(Layer.mergeAll(Content.layer, ConfigProvider.layer(emptyConfig))),
+      Effect.provide(
+        Layer.mergeAll(
+          Content.layer,
+          Storage.layerTest(),
+          ConfigProvider.layer(emptyConfig),
+        ),
+      ),
     ),
   );
 
@@ -50,7 +60,11 @@ describe('loadContent', () => {
       expectFailureCause(exit);
     }).pipe(
       Effect.provide(
-        Layer.mergeAll(Content.layer, ConfigProvider.layer(disallowDefaultsConfig)),
+        Layer.mergeAll(
+          Content.layer,
+          Storage.layerTest(),
+          ConfigProvider.layer(disallowDefaultsConfig),
+        ),
       ),
     ),
   );

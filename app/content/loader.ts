@@ -16,24 +16,6 @@ export class ContentLoadError extends Schema.TaggedErrorClass<ContentLoadError>(
   { message: Schema.String },
 ) {}
 
-type BucketConfig = {
-  readonly endpoint: string;
-  readonly accessKeyId: string;
-  readonly secretAccessKey: string;
-  readonly bucket: string;
-  readonly region: string;
-};
-
-type ContentFile = {
-  readonly exists: () => Promise<boolean>;
-  readonly text: () => Promise<string>;
-  readonly stat: () => Promise<{ readonly lastModified: Date }>;
-};
-
-type ContentClient = {
-  readonly file: (key: string) => ContentFile;
-};
-
 export type AdminContentLoad = {
   readonly content: SiteContent;
   readonly source: 'draft' | 'published' | 'defaults';
@@ -44,34 +26,6 @@ const allowDefaultContent = Effect.gen(function* () {
   const value = yield* Config.option(Config.string('ALLOW_DEFAULT_CONTENT'));
   return Option.isSome(value) && value.value === '1';
 });
-
-const bucketConfig = Effect.gen(function* () {
-  const endpoint = yield* Config.option(Config.string('BUCKET_ENDPOINT'));
-  const accessKeyId = yield* Config.option(Config.string('BUCKET_ACCESS_KEY'));
-  const secretAccessKey = yield* Config.option(Config.string('BUCKET_SECRET_KEY'));
-  const bucket = yield* Config.option(Config.string('BUCKET_NAME'));
-  const region = yield* Config.string('BUCKET_REGION').pipe(Config.withDefault('auto'));
-
-  if (
-    Option.isNone(endpoint) ||
-    Option.isNone(accessKeyId) ||
-    Option.isNone(secretAccessKey) ||
-    Option.isNone(bucket)
-  ) {
-    return Option.none<BucketConfig>();
-  }
-
-  return Option.some({
-    endpoint: endpoint.value,
-    accessKeyId: accessKeyId.value,
-    secretAccessKey: secretAccessKey.value,
-    bucket: bucket.value,
-    region,
-  });
-});
-
-const clientFromConfig = (config: BucketConfig): ContentClient =>
-  new Bun.S3Client(config);
 
 const decodeContentText = Effect.fn('decodeContentText')(function* (
   key: string,
@@ -86,43 +40,6 @@ const decodeContentText = Effect.fn('decodeContentText')(function* (
       ),
     ),
   );
-});
-
-const readContentFile = Effect.fn('readContentFile')(function* (
-  client: ContentClient,
-  key: string,
-) {
-  const file = client.file(key);
-  const exists = yield* Effect.tryPromise({
-    try: () => file.exists(),
-    catch: (e) =>
-      new ContentLoadError({
-        message: `[content] S3 exists() failed for ${key} — refusing to ship defaults. Cause: ${String(e)}`,
-      }),
-  });
-
-  if (!exists) return Option.none();
-
-  const stat = yield* Effect.tryPromise({
-    try: () => file.stat(),
-    catch: (e) =>
-      new ContentLoadError({
-        message: `[content] S3 read failed for ${key} — refusing to ship defaults. Cause: ${String(e)}`,
-      }),
-  });
-  const text = yield* Effect.tryPromise({
-    try: () => file.text(),
-    catch: (e) =>
-      new ContentLoadError({
-        message: `[content] S3 read failed for ${key} — refusing to ship defaults. Cause: ${String(e)}`,
-      }),
-  });
-
-  const content = yield* decodeContentText(key, text);
-  return Option.some({
-    content,
-    lastModified: stat.lastModified.getTime(),
-  });
 });
 
 const readContentFromStorage = Effect.fn('readContentFromStorage')(function* (
@@ -161,9 +78,8 @@ const readContentFromStorage = Effect.fn('readContentFromStorage')(function* (
  * The first-deploy bootstrap problem (no key in bucket yet) is solved by
  * setting ALLOW_DEFAULT_CONTENT=1 for that deploy only, then unsetting it.
  */
-const loadContentFromBucket = Effect.fn('loadContentFromBucket')(function* () {
+const loadContentFromStorage = Effect.fn('loadContentFromStorage')(function* () {
   const allowDefaults = yield* allowDefaultContent;
-  const config = yield* bucketConfig;
 
   const fallbackOrThrow = (
     reason: string,
@@ -180,12 +96,14 @@ const loadContentFromBucket = Effect.fn('loadContentFromBucket')(function* () {
     );
   };
 
-  if (Option.isNone(config)) {
-    return yield* fallbackOrThrow('bucket env not set');
-  }
-
-  const client = clientFromConfig(config.value);
-  const published = yield* readContentFile(client, CONTENT_KEY);
+  const published = yield* readContentFromStorage(CONTENT_KEY).pipe(
+    Effect.mapError(
+      (error) =>
+        new ContentLoadError({
+          message: `[content] bucket read failed for ${CONTENT_KEY} — refusing to ship defaults. Cause: ${String(error)}`,
+        }),
+    ),
+  );
 
   if (Option.isNone(published)) {
     return yield* fallbackOrThrow(`no ${CONTENT_KEY} in bucket`);
@@ -237,7 +155,8 @@ export class Content extends Context.Service<
   {
     readonly loadContent: Effect.Effect<
       SiteContent,
-      Config.ConfigError | ContentLoadError
+      Config.ConfigError | ContentLoadError,
+      Storage
     >;
     readonly loadAdminContent: Effect.Effect<
       AdminContentLoad,
@@ -249,7 +168,7 @@ export class Content extends Context.Service<
   static layer = Layer.succeed(
     Content,
     Content.of({
-      loadContent: loadContentFromBucket(),
+      loadContent: loadContentFromStorage(),
       loadAdminContent: loadAdminContentFromStorage(),
     }),
   );
@@ -277,7 +196,9 @@ export function normalizeSiteContentAssets(content: SiteContent): SiteContent {
   };
 }
 
-const ContentRuntime = ManagedRuntime.make(Content.layer);
+const ContentRuntime = ManagedRuntime.make(
+  Layer.mergeAll(Content.layer, Storage.layerOptional()),
+);
 
 export const runLoadContent = (): Promise<SiteContent> =>
   ContentRuntime.runPromise(loadContent);
