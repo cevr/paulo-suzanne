@@ -16,17 +16,13 @@ import {
   PublishState,
 } from '~/content/publish-state';
 import { SiteContent } from '~/content/schema';
-import { processAdminImageUpload } from '~/lib/admin-image-upload';
+import { ingestAdminImage } from '~/lib/admin-image-upload';
 import { ReactRouterContext } from '~/lib/effect/router-context';
 import {
   findAsset,
   MANAGED_ASSETS,
   MENU_PDF_ASSET_KEY,
 } from '~/lib/managed-assets';
-import {
-  ADMIN_IMAGE_UPLOAD_CONTENT_TYPE,
-  isAcceptedAdminImageType,
-} from '~/lib/uploaded-image-assets';
 import { routeAction, routeHandler } from '~/lib/effect/route';
 import { Auth } from '~/services/Auth';
 import { Railway, RailwayDisabled, RailwayError } from '~/services/Railway';
@@ -280,18 +276,11 @@ export const action = routeAction(function* () {
 
   if (imageUploadField !== null) {
     const file = form.get(`${imageUploadField}.__file`);
-    if (!(file instanceof File) || file.size === 0) {
+    if (!(file instanceof File)) {
       return Response.json({ error: 'Choose an image before uploading.' }, { status: 400 });
     }
-    if (!isAcceptedAdminImageType(file.type)) {
-      return Response.json(
-        { error: 'Upload a JPEG, PNG, WebP, GIF, or AVIF image.' },
-        { status: 400 },
-      );
-    }
-
     const now = yield* Clock.currentTimeMillis;
-    const processed = yield* processAdminImageUpload(file, now).pipe(
+    const processed = yield* ingestAdminImage(file, now).pipe(
       Effect.catch((error) =>
         Effect.succeed(
           Response.json(
@@ -303,16 +292,6 @@ export const action = routeAction(function* () {
     );
     if (processed instanceof Response) return processed;
 
-    yield* storage.put(
-      processed.key,
-      processed.bytes,
-      ADMIN_IMAGE_UPLOAD_CONTENT_TYPE,
-    );
-    yield* storage.put(
-      processed.thumbnailKey,
-      processed.thumbnailBytes,
-      ADMIN_IMAGE_UPLOAD_CONTENT_TYPE,
-    );
     const params = new URLSearchParams({
       status: `Image uploaded: ${processed.key} (${processed.width}x${processed.height}); thumbnail ${processed.thumbnailKey} (${processed.thumbnailWidth}x${processed.thumbnailHeight})`,
       published: '0',

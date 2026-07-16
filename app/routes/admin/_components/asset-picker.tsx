@@ -10,7 +10,7 @@ import {
   ADMIN_IMAGE_UPLOAD_PREFIX,
   ADMIN_IMAGE_UPLOAD_THUMBNAIL_MARKER,
   thumbnailKeyForImage,
-} from '~/lib/uploaded-image-assets';
+} from '~/lib/admin-image-upload';
 import { MANAGED_ASSETS } from '~/lib/managed-assets';
 
 import { TextField } from './form-fields';
