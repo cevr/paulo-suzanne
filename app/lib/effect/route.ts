@@ -1,20 +1,20 @@
 import { Effect } from 'effect';
 
 import { ReactRouterContext, type RouteArgs } from './router-context';
-import type { AppError, AppServices } from './runtime';
+import type { AppServices } from './runtime';
 
 type RouteServices = AppServices | ReactRouterContext;
 
 export const routeHandler =
-  <Eff extends Effect.Yieldable<any, any, any, RouteServices>, AEff>(
-    body: () => Generator<Eff, AEff, never>,
+  <Eff extends Effect.Effect<unknown, unknown, RouteServices>, A>(
+    body: () => Generator<Eff, A, never>,
   ) =>
-  (args: RouteArgs): Promise<AEff> =>
-    args.context.runtime.run(args, Effect.gen(body) as Effect.Effect<AEff, AppError, RouteServices>);
+  (args: RouteArgs): Promise<A> =>
+    args.context.runtime.run(args, Effect.gen(body));
 
 export const routeAction =
-  <Eff extends Effect.Yieldable<any, any, any, RouteServices>, AEff>(
-    body: () => Generator<Eff, AEff, never>,
+  <Eff extends Effect.Effect<unknown, unknown, RouteServices>, A>(
+    body: () => Generator<Eff, A, never>,
   ) =>
-  (args: RouteArgs): Promise<AEff> =>
-    args.context.runtime.run(args, Effect.gen(body) as Effect.Effect<AEff, AppError, RouteServices>);
+  (args: RouteArgs): Promise<A> =>
+    args.context.runtime.run(args, Effect.gen(body));

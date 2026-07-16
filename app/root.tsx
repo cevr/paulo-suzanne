@@ -78,7 +78,7 @@ export const loader = ({ request }: Route.LoaderArgs) =>
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const matches = useMatches();
-  const rootData = matches.find((m) => m.id === 'root')?.data as
+  const rootData = matches.find((m) => m.id === 'root')?.loaderData as
     | { lang: Lang; content: SiteContent }
     | undefined;
   const lang = rootData?.lang ?? 'fr';

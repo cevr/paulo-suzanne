@@ -68,13 +68,13 @@ const throwCauseError = (cause: Cause.Cause<unknown>): never => {
 };
 
 export type RequestRuntime = {
-  readonly run: <A, E, R extends AppServices | ReactRouterContext>(
+  readonly run: <A, E, R>(
     args: RouteArgs,
     effect: Effect.Effect<A, E, R>,
   ) => Promise<A>;
 };
 
-const runWithContext = <A, E, R extends AppServices | ReactRouterContext>(
+const runWithContext = <A, E, R>(
   args: RouteArgs,
   effect: Effect.Effect<A, E, R>,
 ): Promise<A> => {

@@ -13,7 +13,7 @@ import type { Route } from './+types/home';
 const CANONICAL_URL = 'https://pauloetsuzanne.com/';
 
 export function meta({ matches }: Route.MetaArgs) {
-  const rootData = matches.find((match) => match?.id === 'root')?.data as
+  const rootData = matches.find((match) => match?.id === 'root')?.loaderData as
     | {
     lang: Lang;
     content: SiteContent;
