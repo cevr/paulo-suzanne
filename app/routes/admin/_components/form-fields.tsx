@@ -5,7 +5,7 @@ import {
   Trash2,
   type LucideIcon,
 } from 'lucide-react';
-import { useRef, useState, type ReactNode } from 'react';
+import { useId, useRef, useState, type ReactNode } from 'react';
 
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
@@ -15,7 +15,7 @@ import { cn } from '~/lib/utils';
 
 type FieldType = 'text' | 'url' | 'email' | 'tel';
 
-const labelClass = 'block text-sm font-medium text-neutral-700';
+const labelClass = 'block text-sm font-medium text-neutral-800';
 
 function IconButton({
   label,
@@ -35,9 +35,10 @@ function IconButton({
       size="icon"
       aria-label={label}
       title={label}
+      data-marks-dirty
       onClick={onClick}
       disabled={disabled}
-      className="size-9"
+      className="size-11 sm:size-10"
     >
       <Icon className="size-4" aria-hidden />
     </Button>
@@ -55,28 +56,47 @@ export function TextField({
   readonly label: string;
   readonly multiline?: boolean;
 }) {
+  const fieldId = useId();
   return (
-    <fieldset className="space-y-2">
+    <fieldset className="flex flex-col gap-2">
       <legend className={labelClass}>{label}</legend>
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block space-y-1.5">
+        <label htmlFor={`${fieldId}-en`} className="flex flex-col gap-1.5">
           <span className="text-xs font-medium uppercase tracking-wide text-neutral-500">
             English
           </span>
           {multiline ? (
-            <Textarea name={`${name}.en`} defaultValue={defaultValue.en} rows={4} />
+            <Textarea
+              id={`${fieldId}-en`}
+              name={`${name}.en`}
+              defaultValue={defaultValue.en}
+              rows={4}
+            />
           ) : (
-            <Input name={`${name}.en`} defaultValue={defaultValue.en} />
+            <Input
+              id={`${fieldId}-en`}
+              name={`${name}.en`}
+              defaultValue={defaultValue.en}
+            />
           )}
         </label>
-        <label className="block space-y-1.5">
+        <label htmlFor={`${fieldId}-fr`} className="flex flex-col gap-1.5">
           <span className="text-xs font-medium uppercase tracking-wide text-neutral-500">
             French
           </span>
           {multiline ? (
-            <Textarea name={`${name}.fr`} defaultValue={defaultValue.fr} rows={4} />
+            <Textarea
+              id={`${fieldId}-fr`}
+              name={`${name}.fr`}
+              defaultValue={defaultValue.fr}
+              rows={4}
+            />
           ) : (
-            <Input name={`${name}.fr`} defaultValue={defaultValue.fr} />
+            <Input
+              id={`${fieldId}-fr`}
+              name={`${name}.fr`}
+              defaultValue={defaultValue.fr}
+            />
           )}
         </label>
       </div>
@@ -97,10 +117,12 @@ export function StringField({
   readonly type?: FieldType;
   readonly placeholder?: string;
 }) {
+  const fieldId = useId();
   return (
-    <label className="block space-y-1.5">
+    <label htmlFor={fieldId} className="flex flex-col gap-1.5">
       <span className={labelClass}>{label}</span>
       <Input
+        id={fieldId}
         name={name}
         defaultValue={defaultValue}
         type={type}
@@ -121,10 +143,12 @@ export function NumberField({
   readonly label: string;
   readonly min?: number;
 }) {
+  const fieldId = useId();
   return (
-    <label className="block space-y-1.5">
+    <label htmlFor={fieldId} className="flex flex-col gap-1.5">
       <span className={labelClass}>{label}</span>
       <Input
+        id={fieldId}
         name={name}
         defaultValue={defaultValue}
         type="number"
@@ -145,10 +169,12 @@ export function SelectField<T extends string>({
   readonly label: string;
   readonly options: readonly { readonly value: T; readonly label: string }[];
 }) {
+  const fieldId = useId();
   return (
-    <label className="block space-y-1.5">
+    <label htmlFor={fieldId} className="flex flex-col gap-1.5">
       <span className={labelClass}>{label}</span>
       <select
+        id={fieldId}
         name={name}
         defaultValue={defaultValue}
         className={cn(
@@ -173,7 +199,7 @@ export function StructField({
   readonly children: ReactNode;
 }) {
   return (
-    <fieldset className="space-y-4 rounded-md border border-neutral-200 p-4">
+    <fieldset className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-neutral-50/60 p-4 sm:p-5">
       <legend className="px-1 text-sm font-semibold text-neutral-900">
         {label}
       </legend>
@@ -199,9 +225,13 @@ export function ArrayField<T>({
   const [rows, setRows] = useState(() =>
     defaultValue.map((item, index) => ({ key: `initial-${index}`, item })),
   );
+  const [removed, setRemoved] = useState<{
+    readonly row: (typeof rows)[number];
+    readonly index: number;
+  } | null>(null);
 
   return (
-    <fieldset className="space-y-3 rounded-md border border-neutral-200 p-4">
+    <fieldset className="flex flex-col gap-3 rounded-xl border border-neutral-200 bg-neutral-50/60 p-4 sm:p-5">
       <input type="hidden" name="_array" value={name} />
       <legend className="px-1 text-sm font-semibold text-neutral-900">
         {label}
@@ -210,7 +240,7 @@ export function ArrayField<T>({
         {rows.map((row, index) => (
           <div
             key={row.key}
-            className="space-y-3 rounded-md border border-neutral-200 bg-neutral-50 p-3"
+            className="flex flex-col gap-3 rounded-lg border border-neutral-200 bg-white p-3 sm:p-4"
           >
             <div className="flex items-center justify-between gap-3">
               <span className="text-xs font-medium uppercase tracking-wide text-neutral-500">
@@ -250,11 +280,14 @@ export function ArrayField<T>({
                 <IconButton
                   label="Remove"
                   icon={Trash2}
-                  onClick={() =>
+                  onClick={() => {
+                    setRemoved({ row, index });
                     setRows((current) =>
-                      current.filter((_, currentIndex) => currentIndex !== index),
-                    )
-                  }
+                      current.filter(
+                        (_, currentIndex) => currentIndex !== index,
+                      ),
+                    );
+                  }}
                 />
               </div>
             </div>
@@ -262,18 +295,49 @@ export function ArrayField<T>({
           </div>
         ))}
       </div>
+      {removed !== null && (
+        <div
+          role="status"
+          className="flex min-h-11 items-center justify-between gap-3 rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white"
+        >
+          <span>Item removed.</span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            data-marks-dirty
+            className="text-white hover:bg-white/15 hover:text-white"
+            onClick={() => {
+              setRows((current) => {
+                const next = [...current];
+                next.splice(
+                  Math.min(removed.index, next.length),
+                  0,
+                  removed.row,
+                );
+                return next;
+              });
+              setRemoved(null);
+            }}
+          >
+            Undo
+          </Button>
+        </div>
+      )}
       <Button
         type="button"
         variant="outline"
-        onClick={() =>
+        data-marks-dirty
+        onClick={() => {
+          setRemoved(null);
           setRows((current) => [
             ...current,
             { key: `added-${nextRowId.current++}`, item: newItem() },
-          ])
-        }
+          ]);
+        }}
       >
         <Plus className="size-4" aria-hidden />
-        Add
+        Add {label.toLowerCase().replace(/s$/, '')}
       </Button>
     </fieldset>
   );

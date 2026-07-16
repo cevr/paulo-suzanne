@@ -5,6 +5,7 @@
     "": {
       "name": "paulo-suzanne",
       "dependencies": {
+        "@radix-ui/react-dialog": "^1.1.19",
         "@react-router/node": "^8.2.0",
         "class-variance-authority": "^0.7.1",
         "isbot": "^5.2.1",

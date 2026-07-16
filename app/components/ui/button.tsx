@@ -21,7 +21,7 @@ const buttonVariants = cva(
         neo: 'font-space-grotesk font-bold',
       },
       color: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        default: '',
         yellow: 'neo-brutalist-yellow bg-secondary btn-hover-effect-yellow',
         red: 'neo-brutalist-red btn-hover-effect-red',
         white: 'neo-brutalist-white btn-hover-effect-white',

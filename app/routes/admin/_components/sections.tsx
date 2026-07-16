@@ -5,10 +5,7 @@ import { Input } from '~/components/ui/input';
 import type { ImageRef, SiteContent, SocialKind, Text } from '~/content/schema';
 import { MENU_PDF_PUBLIC_HREF } from '~/lib/managed-assets';
 
-import {
-  type AssetOption,
-  ImageRefField,
-} from './asset-picker';
+import { type AssetOption, ImageRefField } from './asset-picker';
 import {
   ArrayField,
   SelectField,
@@ -42,7 +39,7 @@ const socialOptions: readonly { value: SocialKind; label: string }[] = [
 
 function LockedAssetGroup({ children }: { readonly children: ReactNode }) {
   return (
-    <StructField label="Locked asset URLs">
+    <StructField label="Managed website files">
       <div className="grid gap-3 sm:grid-cols-2">{children}</div>
     </StructField>
   );
@@ -98,8 +95,16 @@ function NavLinkFields({
   expectNoFields(unhandled);
   return (
     <div className="space-y-3">
-      <StringField name={`${name}.href`} defaultValue={href} label="Href" />
-      <TextField name={`${name}.label`} defaultValue={label} label="Label" />
+      <StringField
+        name={`${name}.href`}
+        defaultValue={href}
+        label="Link destination"
+      />
+      <TextField
+        name={`${name}.label`}
+        defaultValue={label}
+        label="Link text"
+      />
     </div>
   );
 }
@@ -114,9 +119,17 @@ function CtaFields({
   const { href, label, ...unhandled } = defaultValue;
   expectNoFields(unhandled);
   return (
-    <StructField label="CTA">
-      <StringField name={`${name}.href`} defaultValue={href} label="Href" />
-      <TextField name={`${name}.label`} defaultValue={label} label="Label" />
+    <StructField label="Button">
+      <StringField
+        name={`${name}.href`}
+        defaultValue={href}
+        label="Link destination"
+      />
+      <TextField
+        name={`${name}.label`}
+        defaultValue={label}
+        label="Link text"
+      />
     </StructField>
   );
 }
@@ -200,7 +213,7 @@ export function MetaSection({
       <ImageRefField
         name={`${name}.ogImage`}
         defaultValue={ogImage}
-        label="Open Graph image"
+        label="Social sharing image"
         assets={assets}
       />
     </div>
@@ -225,7 +238,12 @@ export function HeaderSection({
   expectNoFields(unhandled);
   return (
     <div className="space-y-4">
-      <ImageRefField name={`${name}.logo`} defaultValue={logo} label="Logo" assets={assets} />
+      <ImageRefField
+        name={`${name}.logo`}
+        defaultValue={logo}
+        label="Logo"
+        assets={assets}
+      />
       <ArrayField
         name={`${name}.navLinks`}
         defaultValue={navLinks}
@@ -238,20 +256,28 @@ export function HeaderSection({
       <StringField
         name={`${name}.orderOnlineUrl`}
         defaultValue={orderOnlineUrl}
-        label="Order online URL"
+        label="Online ordering link"
         type="url"
       />
-      <TextField name={`${name}.orderLong`} defaultValue={orderLong} label="Order long" />
-      <TextField name={`${name}.orderShort`} defaultValue={orderShort} label="Order short" />
+      <TextField
+        name={`${name}.orderLong`}
+        defaultValue={orderLong}
+        label="Order button text"
+      />
+      <TextField
+        name={`${name}.orderShort`}
+        defaultValue={orderShort}
+        label="Short order button text"
+      />
       <TextField
         name={`${name}.openMenuLabel`}
         defaultValue={openMenuLabel}
-        label="Open menu label"
+        label="Open mobile menu text"
       />
       <TextField
         name={`${name}.closeMenuLabel`}
         defaultValue={closeMenuLabel}
-        label="Close menu label"
+        label="Close mobile menu text"
       />
     </div>
   );
@@ -264,8 +290,16 @@ export function HeroSection({ name, defaultValue }: SectionProps<'hero'>) {
   return (
     <div className="space-y-4">
       <TextField name={`${name}.since`} defaultValue={since} label="Since" />
-      <TextField name={`${name}.headline`} defaultValue={headline} label="Headline" />
-      <TextField name={`${name}.tagline`} defaultValue={tagline} label="Tagline" />
+      <TextField
+        name={`${name}.headline`}
+        defaultValue={headline}
+        label="Headline"
+      />
+      <TextField
+        name={`${name}.tagline`}
+        defaultValue={tagline}
+        label="Tagline"
+      />
       <CtaFields name={`${name}.ctaPrimary`} defaultValue={ctaPrimary} />
       <CtaFields name={`${name}.ctaSecondary`} defaultValue={ctaSecondary} />
     </div>
@@ -294,9 +328,22 @@ export function AboutSection({
   expectNoFields(unhandled);
   return (
     <div className="space-y-4">
-      <TextField name={`${name}.heading`} defaultValue={heading} label="Heading" />
-      <TextField name={`${name}.subheading`} defaultValue={subheading} label="Subheading" />
-      <TextField name={`${name}.intro`} defaultValue={intro} label="Intro" multiline />
+      <TextField
+        name={`${name}.heading`}
+        defaultValue={heading}
+        label="Heading"
+      />
+      <TextField
+        name={`${name}.subheading`}
+        defaultValue={subheading}
+        label="Subheading"
+      />
+      <TextField
+        name={`${name}.intro`}
+        defaultValue={intro}
+        label="Intro"
+        multiline
+      />
       <TextField
         name={`${name}.storyHeading`}
         defaultValue={storyHeading}
@@ -308,7 +355,12 @@ export function AboutSection({
         label="Story bullets"
         newItem={() => emptyText}
         renderItem={(item, rowName) => (
-          <TextField name={rowName} defaultValue={item} label="Bullet" multiline />
+          <TextField
+            name={rowName}
+            defaultValue={item}
+            label="Bullet"
+            multiline
+          />
         )}
       />
       <TextField
@@ -322,7 +374,12 @@ export function AboutSection({
         label="Value bullets"
         newItem={() => emptyText}
         renderItem={(item, rowName) => (
-          <TextField name={rowName} defaultValue={item} label="Bullet" multiline />
+          <TextField
+            name={rowName}
+            defaultValue={item}
+            label="Bullet"
+            multiline
+          />
         )}
       />
       <TextField
@@ -330,9 +387,19 @@ export function AboutSection({
         defaultValue={promiseHeading}
         label="Promise heading"
       />
-      <TextField name={`${name}.promise`} defaultValue={promise} label="Promise" multiline />
+      <TextField
+        name={`${name}.promise`}
+        defaultValue={promise}
+        label="Promise"
+        multiline
+      />
       <TextField name={`${name}.since`} defaultValue={since} label="Since" />
-      <ImageRefField name={`${name}.image`} defaultValue={image} label="Image" assets={assets} />
+      <ImageRefField
+        name={`${name}.image`}
+        defaultValue={image}
+        label="Image"
+        assets={assets}
+      />
     </div>
   );
 }
@@ -345,8 +412,17 @@ export function MenuSection({
   const { heading, intro, carousel } = defaultValue;
   return (
     <div className="space-y-4">
-      <TextField name={`${name}.heading`} defaultValue={heading} label="Heading" />
-      <TextField name={`${name}.intro`} defaultValue={intro} label="Intro" multiline />
+      <TextField
+        name={`${name}.heading`}
+        defaultValue={heading}
+        label="Heading"
+      />
+      <TextField
+        name={`${name}.intro`}
+        defaultValue={intro}
+        label="Intro"
+        multiline
+      />
       <ArrayField
         name={`${name}.carousel`}
         defaultValue={carousel}
@@ -377,10 +453,7 @@ export function MenuSection({
   );
 }
 
-export function MenuPdfSection({
-  name,
-  defaultValue,
-}: SectionProps<'menu'>) {
+export function MenuPdfSection({ name, defaultValue }: SectionProps<'menu'>) {
   const { pdfHeading, pdfBody, pdfCta, pdfHref, disclaimer } = defaultValue;
   return (
     <div className="space-y-4">
@@ -389,8 +462,17 @@ export function MenuPdfSection({
         defaultValue={pdfHeading}
         label="PDF heading"
       />
-      <TextField name={`${name}.pdfBody`} defaultValue={pdfBody} label="PDF body" multiline />
-      <TextField name={`${name}.pdfCta`} defaultValue={pdfCta} label="PDF CTA" />
+      <TextField
+        name={`${name}.pdfBody`}
+        defaultValue={pdfBody}
+        label="PDF description"
+        multiline
+      />
+      <TextField
+        name={`${name}.pdfCta`}
+        defaultValue={pdfCta}
+        label="Download button text"
+      />
       <MenuPdfUploadField storedHref={pdfHref} />
       <TextField
         name={`${name}.disclaimer`}
@@ -419,14 +501,22 @@ export function LocationSection({
   expectNoFields(unhandled);
   return (
     <div className="space-y-4">
-      <TextField name={`${name}.heading`} defaultValue={heading} label="Heading" />
+      <TextField
+        name={`${name}.heading`}
+        defaultValue={heading}
+        label="Heading"
+      />
       <StringField
         name={`${name}.mapEmbedSrc`}
         defaultValue={mapEmbedSrc}
-        label="Map embed URL"
+        label="Google Maps embed link"
         type="url"
       />
-      <TextField name={`${name}.mapTitle`} defaultValue={mapTitle} label="Map title" />
+      <TextField
+        name={`${name}.mapTitle`}
+        defaultValue={mapTitle}
+        label="Map accessibility title"
+      />
       <TextField
         name={`${name}.addressHeading`}
         defaultValue={addressHeading}
@@ -478,7 +568,11 @@ export function ContactSection({
   expectNoFields(unhandled);
   return (
     <div className="space-y-4">
-      <TextField name={`${name}.heading`} defaultValue={heading} label="Heading" />
+      <TextField
+        name={`${name}.heading`}
+        defaultValue={heading}
+        label="Heading"
+      />
       <TextField
         name={`${name}.formHeading`}
         defaultValue={formHeading}
@@ -487,19 +581,23 @@ export function ContactSection({
       <TextField
         name={`${name}.phoneLabel`}
         defaultValue={phoneLabel}
-        label="Phone label"
+        label="Phone heading"
       />
       <StringField
         name={`${name}.phoneDisplay`}
         defaultValue={phoneDisplay}
-        label="Phone display"
+        label="Displayed phone number"
         type="tel"
       />
-      <StringField name={`${name}.phoneTel`} defaultValue={phoneTel} label="Phone tel" />
+      <StringField
+        name={`${name}.phoneTel`}
+        defaultValue={phoneTel}
+        label="Click-to-call number"
+      />
       <TextField
         name={`${name}.emailLabel`}
         defaultValue={emailLabel}
-        label="Email label"
+        label="Email heading"
       />
       <StringField
         name={`${name}.emailAddress`}
@@ -510,7 +608,7 @@ export function ContactSection({
       <TextField
         name={`${name}.followLabel`}
         defaultValue={followLabel}
-        label="Follow label"
+        label="Social links heading"
       />
       <ArrayField
         name={`${name}.socials`}
@@ -529,14 +627,19 @@ export function ContactSection({
               <SelectField
                 name={`${rowName}.kind`}
                 defaultValue={kind}
-                label="Kind"
+                label="Social network"
                 options={socialOptions}
               />
-              <StringField name={`${rowName}.href`} defaultValue={href} label="Href" type="url" />
+              <StringField
+                name={`${rowName}.href`}
+                defaultValue={href}
+                label="Profile link"
+                type="url"
+              />
               <TextField
                 name={`${rowName}.ariaLabel`}
                 defaultValue={ariaLabel}
-                label="ARIA label"
+                label="Accessible link name"
               />
             </div>
           );
@@ -564,8 +667,17 @@ export function FooterSection({
   expectNoFields(unhandled);
   return (
     <div className="space-y-4">
-      <ImageRefField name={`${name}.logo`} defaultValue={logo} label="Logo" assets={assets} />
-      <TextField name={`${name}.tagline`} defaultValue={tagline} label="Tagline" />
+      <ImageRefField
+        name={`${name}.logo`}
+        defaultValue={logo}
+        label="Logo"
+        assets={assets}
+      />
+      <TextField
+        name={`${name}.tagline`}
+        defaultValue={tagline}
+        label="Tagline"
+      />
       <TextField
         name={`${name}.quickLinksHeading`}
         defaultValue={quickLinksHeading}
@@ -603,10 +715,7 @@ export function FooterSection({
   );
 }
 
-export function JsonLdSection({
-  name,
-  defaultValue,
-}: SectionProps<'jsonLd'>) {
+export function JsonLdSection({ name, defaultValue }: SectionProps<'jsonLd'>) {
   const {
     name: restaurantName,
     telephone,
@@ -632,23 +741,40 @@ export function JsonLdSection({
   expectNoFields(addressUnhandled);
   return (
     <div className="space-y-4">
-      <StringField name={`${name}.name`} defaultValue={restaurantName} label="Name" />
-      <StringField name={`${name}.telephone`} defaultValue={telephone} label="Telephone" />
-      <StringField name={`${name}.email`} defaultValue={email} label="Email" type="email" />
+      <StringField
+        name={`${name}.name`}
+        defaultValue={restaurantName}
+        label="Restaurant name"
+      />
+      <StringField
+        name={`${name}.telephone`}
+        defaultValue={telephone}
+        label="Phone number"
+      />
+      <StringField
+        name={`${name}.email`}
+        defaultValue={email}
+        label="Email"
+        type="email"
+      />
       <LockedAsset.Group>
-        <LockedAsset.Item label="Image key" value={imageKey} />
-        <LockedAsset.Item label="Menu path" value={menuPath} />
+        <LockedAsset.Item label="Image file" value={imageKey} />
+        <LockedAsset.Item label="Menu file" value={menuPath} />
       </LockedAsset.Group>
       <ArrayField
         name={`${name}.servesCuisine`}
         defaultValue={servesCuisine}
-        label="Serves cuisine"
+        label="Cuisine types"
         newItem={() => ''}
         renderItem={(item, rowName) => (
           <StringField name={rowName} defaultValue={item} label="Cuisine" />
         )}
       />
-      <StringField name={`${name}.priceRange`} defaultValue={priceRange} label="Price range" />
+      <StringField
+        name={`${name}.priceRange`}
+        defaultValue={priceRange}
+        label="Price range"
+      />
       <StructField label="Address">
         <div className="grid gap-3 sm:grid-cols-2">
           <StringField
@@ -659,12 +785,12 @@ export function JsonLdSection({
           <StringField
             name={`${name}.address.addressLocality`}
             defaultValue={addressLocality}
-            label="Locality"
+            label="City"
           />
           <StringField
             name={`${name}.address.addressRegion`}
             defaultValue={addressRegion}
-            label="Region"
+            label="Province or state"
           />
           <StringField
             name={`${name}.address.postalCode`}
@@ -701,13 +827,25 @@ export function JsonLdSection({
                   label="Days of week"
                   newItem={() => ''}
                   renderItem={(day, dayName) => (
-                    <StringField name={dayName} defaultValue={day} label="Day" />
+                    <StringField
+                      name={dayName}
+                      defaultValue={day}
+                      label="Day"
+                    />
                   )}
                 />
               )}
               <div className="grid gap-3 sm:grid-cols-2">
-                <StringField name={`${rowName}.opens`} defaultValue={opens} label="Opens" />
-                <StringField name={`${rowName}.closes`} defaultValue={closes} label="Closes" />
+                <StringField
+                  name={`${rowName}.opens`}
+                  defaultValue={opens}
+                  label="Opening time"
+                />
+                <StringField
+                  name={`${rowName}.closes`}
+                  defaultValue={closes}
+                  label="Closing time"
+                />
               </div>
             </div>
           );
@@ -716,10 +854,15 @@ export function JsonLdSection({
       <ArrayField
         name={`${name}.sameAs`}
         defaultValue={sameAs}
-        label="Same as"
+        label="Other profile links"
         newItem={() => ''}
         renderItem={(item, rowName) => (
-          <StringField name={rowName} defaultValue={item} label="URL" type="url" />
+          <StringField
+            name={rowName}
+            defaultValue={item}
+            label="Profile link"
+            type="url"
+          />
         )}
       />
     </div>

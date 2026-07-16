@@ -1,7 +1,14 @@
-import { Image as ImageIcon, Upload, X } from 'lucide-react';
+import { Check, Image as ImageIcon, Upload } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '~/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog';
 import { Input } from '~/components/ui/input';
 import type { ImageRef } from '~/content/schema';
 import {
@@ -35,7 +42,9 @@ export const assetOptionsFromKeys = (
 ): readonly AssetOption[] =>
   [...keys]
     .filter((key) => !key.startsWith('content/'))
-    .filter((key) => !key.toLowerCase().includes(ADMIN_IMAGE_UPLOAD_THUMBNAIL_MARKER))
+    .filter(
+      (key) => !key.toLowerCase().includes(ADMIN_IMAGE_UPLOAD_THUMBNAIL_MARKER),
+    )
     .filter((key) =>
       IMAGE_EXTENSIONS.some((extension) =>
         key.toLowerCase().endsWith(extension),
@@ -93,7 +102,9 @@ export function ImageRefField({
     height: defaultValue.height,
   });
   const [dimensions, setDimensions] = useState<
-    Readonly<Record<string, { readonly width: number; readonly height: number }>>
+    Readonly<
+      Record<string, { readonly width: number; readonly height: number }>
+    >
   >({
     [defaultValue.key]: {
       width: defaultValue.width,
@@ -102,14 +113,17 @@ export function ImageRefField({
   });
   const [open, setOpen] = useState(false);
   const [picked, setPicked] = useState<File | null>(null);
+  const selectedLabel =
+    assets.find((asset) => asset.key === selected.key)?.label ??
+    'Current image';
 
   return (
-    <fieldset className="space-y-3 rounded-md border border-neutral-200 p-4">
+    <fieldset className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-neutral-50/60 p-4 sm:p-5">
       <legend className="px-1 text-sm font-semibold text-neutral-900">
         {label}
       </legend>
 
-      <div className="grid gap-4 sm:grid-cols-[8rem_1fr]">
+      <div className="grid gap-4 sm:grid-cols-[9rem_1fr]">
         <img
           src={imageUrl(selected.key)}
           alt=""
@@ -126,9 +140,9 @@ export function ImageRefField({
                 : current,
             );
           }}
-          className="h-28 w-32 rounded-md border border-neutral-200 bg-neutral-100 object-cover"
+          className="aspect-square w-full rounded-lg border border-neutral-200 bg-neutral-100 object-cover"
         />
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <Button
               type="button"
@@ -136,10 +150,13 @@ export function ImageRefField({
               onClick={() => setOpen(true)}
             >
               <ImageIcon className="size-4" aria-hidden />
-              Pick image
+              Choose from library
             </Button>
-            <span className="break-all font-mono text-xs text-neutral-500">
-              {selected.key}
+            <span className="text-sm text-neutral-600">
+              Selected:{' '}
+              <strong className="font-medium text-neutral-900">
+                {selectedLabel}
+              </strong>
             </span>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -161,110 +178,113 @@ export function ImageRefField({
               className="w-full sm:w-auto"
             >
               <Upload className="size-4" aria-hidden />
-              Upload
+              Upload new image
             </Button>
           </div>
           <input type="hidden" name={`${name}.key`} value={selected.key} />
           <input type="hidden" name={`${name}.width`} value={selected.width} />
-          <input type="hidden" name={`${name}.height`} value={selected.height} />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <span className="block text-sm font-medium text-neutral-700">Width</span>
-              <span className="block rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 font-mono text-sm text-neutral-700">
-                {selected.width}
-              </span>
-            </div>
-            <div className="space-y-1.5">
-              <span className="block text-sm font-medium text-neutral-700">Height</span>
-              <span className="block rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 font-mono text-sm text-neutral-700">
-                {selected.height}
-              </span>
-            </div>
-          </div>
+          <input
+            type="hidden"
+            name={`${name}.height`}
+            value={selected.height}
+          />
+          <p className="text-xs text-neutral-500">
+            JPG, PNG, WebP, GIF, or AVIF. The editor prepares uploaded images
+            automatically.
+          </p>
         </div>
       </div>
 
-      <TextField name={`${name}.alt`} defaultValue={defaultValue.alt} label="Alt text" />
+      <TextField
+        name={`${name}.alt`}
+        defaultValue={defaultValue.alt}
+        label="Alt text"
+      />
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/50 p-4">
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={`Pick image for ${label}`}
-            className="max-h-[85vh] w-full max-w-3xl overflow-hidden rounded-lg bg-white shadow-xl"
-          >
-            <div className="flex items-center justify-between border-b border-neutral-200 p-4">
-              <h3 className="text-base font-semibold">Pick image</h3>
-              <Button
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-hidden p-0">
+          <DialogHeader className="border-b border-neutral-200 p-5 pr-14">
+            <DialogTitle>Choose an image</DialogTitle>
+            <DialogDescription>
+              Select an image from the website library for {label.toLowerCase()}
+              .
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid max-h-[70vh] gap-3 overflow-y-auto p-4 sm:grid-cols-2 md:grid-cols-3">
+            {assets.map((asset) => (
+              <button
+                key={asset.key}
                 type="button"
-                variant="ghost"
-                size="icon"
-                aria-label="Close"
-                title="Close"
-                onClick={() => setOpen(false)}
-                className="size-9"
+                data-marks-dirty
+                onClick={() => {
+                  const knownDimensions = dimensions[asset.key];
+                  setSelected((current) => ({
+                    key: asset.key,
+                    width: knownDimensions?.width ?? current.width,
+                    height: knownDimensions?.height ?? current.height,
+                  }));
+                  setOpen(false);
+                }}
+                aria-pressed={selected.key === asset.key}
+                className="group relative min-h-11 cursor-pointer overflow-hidden rounded-lg border border-neutral-200 bg-white text-left transition-colors hover:border-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 aria-pressed:border-neutral-900 aria-pressed:ring-2 aria-pressed:ring-neutral-900"
               >
-                <X className="size-4" aria-hidden />
-              </Button>
-            </div>
-            <div className="grid max-h-[70vh] gap-3 overflow-y-auto p-4 sm:grid-cols-2 md:grid-cols-3">
-              {assets.map((asset) => (
-                <button
-                  key={asset.key}
-                  type="button"
-                  onClick={() => {
-                    const knownDimensions = dimensions[asset.key];
-                    setSelected((current) => ({
-                      key: asset.key,
-                      width: knownDimensions?.width ?? current.width,
-                      height: knownDimensions?.height ?? current.height,
-                    }));
-                    setOpen(false);
-                  }}
-                  className="group cursor-pointer overflow-hidden rounded-md border border-neutral-200 bg-white text-left transition-colors hover:border-neutral-900"
-                >
-                  <img
-                    src={previewImageUrl(asset.key)}
-                    alt=""
-                    loading="lazy"
-                    onLoad={(event) => {
-                      if (
-                        !isFullAssetImage(
-                          event.currentTarget,
-                          asset.key,
-                          window.location.href,
-                        )
-                      ) {
-                        return;
-                      }
-                      const nextDimensions = imageDimensions(event.currentTarget);
-                      setDimensions((current) => ({
-                        ...current,
-                        [asset.key]: nextDimensions,
-                      }));
-                      if (selected.key === asset.key) {
-                        setSelected({ key: asset.key, ...nextDimensions });
-                      }
-                    }}
-                    onError={(event) => {
-                      const image = event.currentTarget;
-                      const fallback = imageUrl(asset.key);
-                      if (!isFullAssetImage(image, asset.key, window.location.href)) {
-                        image.src = fallback;
-                      }
-                    }}
-                    className="aspect-square w-full bg-neutral-100 object-cover"
-                  />
-                  <span className="block truncate px-3 py-2 text-sm font-medium text-neutral-800">
-                    {asset.label}
+                {selected.key === asset.key && (
+                  <span className="absolute top-2 right-2 z-10 grid size-8 place-items-center rounded-full bg-neutral-900 text-white shadow-sm">
+                    <Check className="size-4" aria-hidden />
+                    <span className="sr-only">Selected</span>
                   </span>
-                </button>
-              ))}
-            </div>
+                )}
+                <img
+                  src={previewImageUrl(asset.key)}
+                  alt=""
+                  loading="lazy"
+                  onLoad={(event) => {
+                    if (
+                      !isFullAssetImage(
+                        event.currentTarget,
+                        asset.key,
+                        window.location.href,
+                      )
+                    ) {
+                      return;
+                    }
+                    const nextDimensions = imageDimensions(event.currentTarget);
+                    setDimensions((current) => ({
+                      ...current,
+                      [asset.key]: nextDimensions,
+                    }));
+                    if (selected.key === asset.key) {
+                      setSelected({ key: asset.key, ...nextDimensions });
+                    }
+                  }}
+                  onError={(event) => {
+                    const image = event.currentTarget;
+                    const fallback = imageUrl(asset.key);
+                    if (
+                      !isFullAssetImage(image, asset.key, window.location.href)
+                    ) {
+                      image.src = fallback;
+                    }
+                  }}
+                  className="aspect-square w-full bg-neutral-100 object-cover"
+                />
+                <span className="block truncate px-3 py-2 text-sm font-medium text-neutral-800">
+                  {asset.label}
+                </span>
+              </button>
+            ))}
           </div>
-        </div>
-      )}
+          {assets.length === 0 && (
+            <p className="p-6 text-center text-sm text-neutral-600">
+              No library images are available yet. Close this window and upload
+              one instead.
+            </p>
+          )}
+          <div className="border-t border-neutral-200 px-5 py-3 text-xs text-neutral-500">
+            Press Escape to close without changing the image.
+          </div>
+        </DialogContent>
+      </Dialog>
     </fieldset>
   );
 }
