@@ -11,7 +11,7 @@ const DRAFT_CONTENT_KEY = 'content/site.draft.json';
 
 const decode = Schema.decodeUnknownEffect(Schema.fromJsonString(SiteContent));
 
-export class ContentLoadError extends Schema.TaggedErrorClass<ContentLoadError>()(
+export class ContentLoadError extends Schema.TaggedError<ContentLoadError>()(
   'paulo-suzanne/content/loader/ContentLoadError',
   { message: Schema.String },
 ) {}

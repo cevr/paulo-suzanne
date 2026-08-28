@@ -40,7 +40,7 @@ type ProcessedAdminImage = {
   readonly thumbnailHeight: number;
 };
 
-export class AdminImageUploadError extends Schema.TaggedErrorClass<AdminImageUploadError>()(
+export class AdminImageUploadError extends Schema.TaggedError<AdminImageUploadError>()(
   'paulo-suzanne/lib/AdminImageUploadError',
   {
     message: Schema.String,

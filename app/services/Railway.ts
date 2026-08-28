@@ -22,12 +22,12 @@ import {
   HttpClientRequest,
 } from 'effect/unstable/http';
 
-export class RailwayDisabled extends Schema.TaggedErrorClass<RailwayDisabled>()(
+export class RailwayDisabled extends Schema.TaggedError<RailwayDisabled>()(
   'paulo-suzanne/services/Railway/RailwayDisabled',
   { reason: Schema.String },
 ) {}
 
-export class RailwayError extends Schema.TaggedErrorClass<RailwayError>()(
+export class RailwayError extends Schema.TaggedError<RailwayError>()(
   'paulo-suzanne/services/Railway/RailwayError',
   { message: Schema.String },
 ) {}

@@ -9,7 +9,7 @@ export const createDevVite = (): Promise<ViteDevServer> =>
     appType: 'custom',
   });
 
-class ViteMiddlewareError extends Schema.TaggedErrorClass<ViteMiddlewareError>()(
+class ViteMiddlewareError extends Schema.TaggedError<ViteMiddlewareError>()(
   'paulo-suzanne/lib/dev/vite-middleware/ViteMiddlewareError',
   { message: Schema.String },
 ) {}

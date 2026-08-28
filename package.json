@@ -12,37 +12,37 @@
     "prepare": "effect-tsgo patch"
   },
   "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.19",
-    "@react-router/node": "^8.2.0",
+    "@radix-ui/react-dialog": "^1.1.23",
+    "@react-router/node": "^8.3.1",
     "class-variance-authority": "^0.7.1",
-    "isbot": "^5.2.1",
-    "lucide-react": "^1.24.0",
-    "radix-ui": "^1.6.2",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-router": "^8.2.0",
-    "sonner": "^2.0.7",
+    "isbot": "^5.2.2",
+    "lucide-react": "^1.35.0",
+    "radix-ui": "^1.6.7",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router": "^8.3.1",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
-    "@effect/platform-bun": "4.0.0-beta.98",
-    "@effect/tsgo": "0.23.0",
-    "@react-router/dev": "^8.2.0",
+    "@effect/platform-bun": "4.0.0-rc.112",
+    "@effect/tsgo": "0.38.0",
+    "@react-router/dev": "^8.3.1",
     "@tailwindcss/vite": "^4.3.3",
-    "@types/bun": "1.3.14",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
+    "@types/bun": "1.4.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
     "@typescript/native-preview": "7.0.0-dev.20260707.2",
-    "bun": "1.3.14",
-    "effect": "4.0.0-beta.98",
+    "bun": "1.4.0",
+    "effect": "4.0.0-rc.112",
     "effect-bun-test": "0.3.0",
-    "oxlint": "^1.74.0",
-    "oxlint-tsgolint": "^0.24.0",
+    "oxlint": "^1.80.0",
+    "oxlint-tsgolint": "^7.0.2001",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vite": "^8.1.5"
+    "vite": "^8.2.2"
   },
   "overrides": {
-    "effect": "4.0.0-beta.98"
+    "effect": "4.0.0-rc.112"
   }
 }

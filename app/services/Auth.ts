@@ -1,11 +1,11 @@
 import { Clock, Config, Context, Effect, Layer, Redacted, Schema } from 'effect';
 
-export class BadPassword extends Schema.TaggedErrorClass<BadPassword>()(
+export class BadPassword extends Schema.TaggedError<BadPassword>()(
   'paulo-suzanne/services/Auth/BadPassword',
   {},
 ) {}
 
-export class Unauthorized extends Schema.TaggedErrorClass<Unauthorized>()(
+export class Unauthorized extends Schema.TaggedError<Unauthorized>()(
   'paulo-suzanne/services/Auth/Unauthorized',
   {},
 ) {}

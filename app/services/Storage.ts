@@ -3,7 +3,7 @@ import { Clock, Config, Context, DateTime, Effect, Layer, Option, Redacted, Sche
 const StorageOp = Schema.Literals(['get', 'put', 'head', 'list', 'delete']);
 type StorageOp = typeof StorageOp.Type;
 
-export class StorageError extends Schema.TaggedErrorClass<StorageError>()(
+export class StorageError extends Schema.TaggedError<StorageError>()(
   'paulo-suzanne/services/Storage/StorageError',
   {
     key: Schema.String,
@@ -12,7 +12,7 @@ export class StorageError extends Schema.TaggedErrorClass<StorageError>()(
   },
 ) {}
 
-export class NotFound extends Schema.TaggedErrorClass<NotFound>()(
+export class NotFound extends Schema.TaggedError<NotFound>()(
   'paulo-suzanne/services/Storage/NotFound',
   { key: Schema.String },
 ) {}
