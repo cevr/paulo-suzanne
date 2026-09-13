@@ -240,21 +240,6 @@ export const defaultContent: SiteContent = SiteContent.make({
       },
       {
         image: {
-          key: 'images/food/homemade-meat-sauce.avif',
-          alt: {
-            en: 'Homemade Meat Sauce',
-            fr: 'Sauce Viande Fait Maison',
-          },
-          width: 800,
-          height: 800,
-        },
-        description: {
-          en: 'Our Homemade Meat Sauce since 1980',
-          fr: 'Notre sauce viande fait maison depuis 1980',
-        },
-      },
-      {
-        image: {
           key: 'images/food/swag.avif',
           alt: { en: 'Swag', fr: 'Swag' },
           width: 800,

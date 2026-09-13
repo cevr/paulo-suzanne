@@ -101,6 +101,25 @@ describe('Content editor', () => {
     ),
   );
 
+  it.effect('omits retired images from the editor asset catalog', () =>
+    Effect.gen(function* () {
+      const model = yield* loadEditor();
+
+      expect(model.assets).toEqual([]);
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(
+          Storage.layerTest({
+            ...publishedContentObjects,
+            'images/food/homemade-meat-sauce.avif': { body: 'image' },
+          }),
+          Content.layer,
+          railwayTest(() => 'unused'),
+        ),
+      ),
+    ),
+  );
+
   it.effect(
     'returns managed image fallbacks when the catalog is unavailable',
     () =>
@@ -144,6 +163,58 @@ describe('Content editor', () => {
         expect(content.jsonLd.menuPath).toBe(MENU_PDF_PUBLIC_HREF);
         expect(content.jsonLd.imageKey).toBe('images/uploads/new-cover.webp');
       }),
+  );
+
+  it.effect('removes retired carousel images from published content', () =>
+    Effect.sync(() => {
+      const referenceItem = defaultContent.menu.carousel[0];
+      const content = normalizeSiteContentAssets({
+        ...defaultContent,
+        menu: {
+          ...defaultContent.menu,
+          carousel: [
+            ...defaultContent.menu.carousel,
+            {
+              ...referenceItem,
+              image: {
+                ...referenceItem.image,
+                key: 'images/food/homemade-meat-sauce.avif',
+              },
+            },
+          ],
+        },
+      });
+
+      expect(
+        content.menu.carousel.some(
+          (item) =>
+            item.image.key === 'images/food/homemade-meat-sauce.avif',
+        ),
+      ).toBe(false);
+    }),
+  );
+
+  it.effect('uses the default carousel when every published image is retired', () =>
+    Effect.sync(() => {
+      const referenceItem = defaultContent.menu.carousel[0];
+      const content = normalizeSiteContentAssets({
+        ...defaultContent,
+        menu: {
+          ...defaultContent.menu,
+          carousel: [
+            {
+              ...referenceItem,
+              image: {
+                ...referenceItem.image,
+                key: 'images/food/homemade-meat-sauce.avif',
+              },
+            },
+          ],
+        },
+      });
+
+      expect(content.menu.carousel).toEqual(defaultContent.menu.carousel);
+    }),
   );
 
   it.effect(

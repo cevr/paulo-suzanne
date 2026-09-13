@@ -7,6 +7,7 @@ import {
 } from '~/lib/admin-image-upload';
 import {
   findAsset,
+  isRetiredAssetKey,
   MANAGED_ASSETS,
   MENU_PDF_ASSET_KEY,
   MENU_PDF_PUBLIC_HREF,
@@ -152,6 +153,7 @@ const IMAGE_EXTENSIONS = ['.avif', '.gif', '.jpg', '.jpeg', '.png', '.webp'];
 function editorAssets(keys: readonly string[]): readonly EditorAsset[] {
   return [...keys]
     .filter((key) => !key.startsWith('content/'))
+    .filter((key) => !isRetiredAssetKey(key))
     .filter(
       (key) => !key.toLowerCase().includes(ADMIN_IMAGE_UPLOAD_THUMBNAIL_MARKER),
     )

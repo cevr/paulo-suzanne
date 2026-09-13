@@ -1,7 +1,10 @@
 import { Config, Context, Effect, Layer, ManagedRuntime, Option, Schema } from 'effect';
 
 import { NotFound, Storage, StorageError } from '~/services/Storage';
-import { MENU_PDF_PUBLIC_HREF } from '~/lib/managed-assets';
+import {
+  isRetiredAssetKey,
+  MENU_PDF_PUBLIC_HREF,
+} from '~/lib/managed-assets';
 
 import { defaultContent } from './defaults';
 import { SiteContent } from './schema';
@@ -185,9 +188,21 @@ export const loadAdminContent = Effect.gen(function* () {
 });
 
 export function normalizeSiteContentAssets(content: SiteContent): SiteContent {
+  const visibleCarousel = content.menu.carousel.filter(
+    (item) => !isRetiredAssetKey(item.image.key),
+  );
+  const [firstVisibleItem, ...remainingVisibleItems] = visibleCarousel;
+
   return {
     ...content,
-    menu: { ...content.menu, pdfHref: MENU_PDF_PUBLIC_HREF },
+    menu: {
+      ...content.menu,
+      carousel:
+        firstVisibleItem === undefined
+          ? defaultContent.menu.carousel
+          : [firstVisibleItem, ...remainingVisibleItems],
+      pdfHref: MENU_PDF_PUBLIC_HREF,
+    },
     jsonLd: {
       ...content.jsonLd,
       imageKey: content.meta.ogImage.key,
