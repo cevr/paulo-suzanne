@@ -52,6 +52,6 @@ jobs:
         with:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
-      - run: bunx alchemy provider check-env --provider Cloudflare
       - run: bun run build
+      - run: bunx alchemy provider check-env --provider Cloudflare
       - run: bunx alchemy deploy alchemy.run.ts --stage prod --yes
