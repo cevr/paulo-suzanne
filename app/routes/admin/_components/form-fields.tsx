@@ -1,21 +1,15 @@
-import {
-  ArrowDown,
-  ArrowUp,
-  Plus,
-  Trash2,
-  type LucideIcon,
-} from 'lucide-react';
-import { useId, useRef, useState, type ReactNode } from 'react';
+import { ArrowDown, ArrowUp, Plus, Trash2, type LucideIcon } from "lucide-react";
+import { useId, useRef, useState, type ReactNode } from "react";
 
-import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { Textarea } from '~/components/ui/textarea';
-import type { Text } from '~/content/schema';
-import { cn } from '~/lib/utils';
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
+import type { Text } from "~/content/schema";
+import { cn } from "~/lib/utils";
 
-type FieldType = 'text' | 'url' | 'email' | 'tel';
+type FieldType = "text" | "url" | "email" | "tel";
 
-const labelClass = 'block text-sm font-medium text-neutral-800';
+const labelClass = "block text-sm font-medium text-neutral-800";
 
 function IconButton({
   label,
@@ -73,11 +67,7 @@ export function TextField({
               rows={4}
             />
           ) : (
-            <Input
-              id={`${fieldId}-en`}
-              name={`${name}.en`}
-              defaultValue={defaultValue.en}
-            />
+            <Input id={`${fieldId}-en`} name={`${name}.en`} defaultValue={defaultValue.en} />
           )}
         </label>
         <label htmlFor={`${fieldId}-fr`} className="flex flex-col gap-1.5">
@@ -92,11 +82,7 @@ export function TextField({
               rows={4}
             />
           ) : (
-            <Input
-              id={`${fieldId}-fr`}
-              name={`${name}.fr`}
-              defaultValue={defaultValue.fr}
-            />
+            <Input id={`${fieldId}-fr`} name={`${name}.fr`} defaultValue={defaultValue.fr} />
           )}
         </label>
       </div>
@@ -108,7 +94,7 @@ export function StringField({
   name,
   defaultValue,
   label,
-  type = 'text',
+  type = "text",
   placeholder,
 }: {
   readonly name: string;
@@ -147,13 +133,7 @@ export function NumberField({
   return (
     <label htmlFor={fieldId} className="flex flex-col gap-1.5">
       <span className={labelClass}>{label}</span>
-      <Input
-        id={fieldId}
-        name={name}
-        defaultValue={defaultValue}
-        type="number"
-        min={min}
-      />
+      <Input id={fieldId} name={name} defaultValue={defaultValue} type="number" min={min} />
     </label>
   );
 }
@@ -178,7 +158,7 @@ export function SelectField<T extends string>({
         name={name}
         defaultValue={defaultValue}
         className={cn(
-          'border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-base focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 lg:text-sm',
+          "border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-base focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 lg:text-sm",
         )}
       >
         {options.map((option) => (
@@ -200,9 +180,7 @@ export function StructField({
 }) {
   return (
     <fieldset className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-neutral-50/60 p-4 sm:p-5">
-      <legend className="px-1 text-sm font-semibold text-neutral-900">
-        {label}
-      </legend>
+      <legend className="px-1 text-sm font-semibold text-neutral-900">{label}</legend>
       {children}
     </fieldset>
   );
@@ -233,9 +211,7 @@ export function ArrayField<T>({
   return (
     <fieldset className="flex flex-col gap-3 rounded-xl border border-neutral-200 bg-neutral-50/60 p-4 sm:p-5">
       <input type="hidden" name="_array" value={name} />
-      <legend className="px-1 text-sm font-semibold text-neutral-900">
-        {label}
-      </legend>
+      <legend className="px-1 text-sm font-semibold text-neutral-900">{label}</legend>
       <div className="space-y-3">
         {rows.map((row, index) => (
           <div
@@ -283,9 +259,7 @@ export function ArrayField<T>({
                   onClick={() => {
                     setRemoved({ row, index });
                     setRows((current) =>
-                      current.filter(
-                        (_, currentIndex) => currentIndex !== index,
-                      ),
+                      current.filter((_, currentIndex) => currentIndex !== index),
                     );
                   }}
                 />
@@ -310,11 +284,7 @@ export function ArrayField<T>({
             onClick={() => {
               setRows((current) => {
                 const next = [...current];
-                next.splice(
-                  Math.min(removed.index, next.length),
-                  0,
-                  removed.row,
-                );
+                next.splice(Math.min(removed.index, next.length), 0, removed.row);
                 return next;
               });
               setRemoved(null);
@@ -337,7 +307,7 @@ export function ArrayField<T>({
         }}
       >
         <Plus className="size-4" aria-hidden />
-        Add {label.toLowerCase().replace(/s$/, '')}
+        Add {label.toLowerCase().replace(/s$/, "")}
       </Button>
     </fieldset>
   );

@@ -1,16 +1,16 @@
-import type { SiteContent } from './schema';
+import type { SiteContent } from "./schema";
 
 export const EDITOR_SECTION_KEYS = [
-  'meta',
-  'header',
-  'hero',
-  'about',
-  'menu',
-  'menuPdf',
-  'location',
-  'contact',
-  'footer',
-  'jsonLd',
+  "meta",
+  "header",
+  "hero",
+  "about",
+  "menu",
+  "menuPdf",
+  "location",
+  "contact",
+  "footer",
+  "jsonLd",
 ] as const;
 
 export type EditorSectionKey = (typeof EDITOR_SECTION_KEYS)[number];
@@ -20,14 +20,14 @@ export function editorSectionForContentPath(
   tailHead: PropertyKey | undefined,
 ): EditorSectionKey {
   if (
-    head === 'menu' &&
-    (tailHead === 'pdfHeading' ||
-      tailHead === 'pdfBody' ||
-      tailHead === 'pdfCta' ||
-      tailHead === 'pdfHref' ||
-      tailHead === 'disclaimer')
+    head === "menu" &&
+    (tailHead === "pdfHeading" ||
+      tailHead === "pdfBody" ||
+      tailHead === "pdfCta" ||
+      tailHead === "pdfHref" ||
+      tailHead === "disclaimer")
   ) {
-    return 'menuPdf';
+    return "menuPdf";
   }
   return head;
 }

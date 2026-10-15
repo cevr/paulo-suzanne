@@ -1,4 +1,4 @@
-import { MANAGED_ASSETS } from '../app/lib/managed-assets.ts';
+import { MANAGED_ASSETS } from "../app/lib/managed-assets.ts";
 
 const endpoint = process.env.SEED_BUCKET_ENDPOINT;
 const accessKeyId = process.env.SEED_BUCKET_ACCESS_KEY;
@@ -13,7 +13,7 @@ if (
 ) {
   // oxlint-disable-next-line no-console
   console.error(
-    'Missing SEED_BUCKET_ENDPOINT / SEED_BUCKET_ACCESS_KEY / SEED_BUCKET_SECRET_KEY / SEED_BUCKET_NAME',
+    "Missing SEED_BUCKET_ENDPOINT / SEED_BUCKET_ACCESS_KEY / SEED_BUCKET_SECRET_KEY / SEED_BUCKET_NAME",
   );
   process.exit(1);
 }
@@ -23,15 +23,15 @@ const client = new Bun.S3Client({
   accessKeyId,
   secretAccessKey,
   bucket,
-  region: 'auto',
+  region: "auto",
 });
 
 const mimeFor = (key: string): string => {
-  if (key.endsWith('.pdf')) return 'application/pdf';
-  if (key.endsWith('.avif')) return 'image/avif';
-  if (key.endsWith('.png')) return 'image/png';
-  if (key.endsWith('.jpg') || key.endsWith('.jpeg')) return 'image/jpeg';
-  return 'application/octet-stream';
+  if (key.endsWith(".pdf")) return "application/pdf";
+  if (key.endsWith(".avif")) return "image/avif";
+  if (key.endsWith(".png")) return "image/png";
+  if (key.endsWith(".jpg") || key.endsWith(".jpeg")) return "image/jpeg";
+  return "application/octet-stream";
 };
 
 let uploaded = 0;

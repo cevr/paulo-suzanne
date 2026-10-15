@@ -1,24 +1,24 @@
-import { Check, Image as ImageIcon, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { Check, Image as ImageIcon, Upload } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from '~/components/ui/button';
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '~/components/ui/dialog';
-import { Input } from '~/components/ui/input';
-import { imageUploadIntent, type EditorAsset } from '~/content/editor-contract';
-import type { ImageRef } from '~/content/schema';
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { imageUploadIntent, type EditorAsset } from "~/content/editor-contract";
+import type { ImageRef } from "~/content/schema";
 import {
   ADMIN_IMAGE_UPLOAD_ACCEPT,
   ADMIN_IMAGE_UPLOAD_PREFIX,
   thumbnailKeyForImage,
-} from '~/lib/admin-image-upload';
+} from "~/lib/admin-image-upload";
 
-import { TextField } from './form-fields';
+import { TextField } from "./form-fields";
 
 function imageUrl(key: string): string {
   return `/${key}`;
@@ -31,11 +31,7 @@ function previewImageUrl(key: string): string {
   return imageUrl(key);
 }
 
-function isFullAssetImage(
-  image: HTMLImageElement,
-  key: string,
-  baseUrl: string,
-): boolean {
+function isFullAssetImage(image: HTMLImageElement, key: string, baseUrl: string): boolean {
   return image.currentSrc === new URL(imageUrl(key), baseUrl).href;
 }
 
@@ -66,9 +62,7 @@ export function ImageRefField({
     height: defaultValue.height,
   });
   const [dimensions, setDimensions] = useState<
-    Readonly<
-      Record<string, { readonly width: number; readonly height: number }>
-    >
+    Readonly<Record<string, { readonly width: number; readonly height: number }>>
   >({
     [defaultValue.key]: {
       width: defaultValue.width,
@@ -78,14 +72,11 @@ export function ImageRefField({
   const [open, setOpen] = useState(false);
   const [picked, setPicked] = useState<File | null>(null);
   const selectedLabel =
-    assets.find((asset) => asset.key === selected.key)?.label ??
-    'Current image';
+    assets.find((asset) => asset.key === selected.key)?.label ?? "Current image";
 
   return (
     <fieldset className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-neutral-50/60 p-4 sm:p-5">
-      <legend className="px-1 text-sm font-semibold text-neutral-900">
-        {label}
-      </legend>
+      <legend className="px-1 text-sm font-semibold text-neutral-900">{label}</legend>
 
       <div className="grid gap-4 sm:grid-cols-[9rem_1fr]">
         <img
@@ -99,28 +90,19 @@ export function ImageRefField({
               [selected.key]: nextDimensions,
             }));
             setSelected((current) =>
-              current.key === selected.key
-                ? { key: selected.key, ...nextDimensions }
-                : current,
+              current.key === selected.key ? { key: selected.key, ...nextDimensions } : current,
             );
           }}
           className="aspect-square w-full rounded-lg border border-neutral-200 bg-neutral-100 object-cover"
         />
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(true)}
-            >
+            <Button type="button" variant="outline" onClick={() => setOpen(true)}>
               <ImageIcon className="size-4" aria-hidden />
               Choose from library
             </Button>
             <span className="text-sm text-neutral-600">
-              Selected:{' '}
-              <strong className="font-medium text-neutral-900">
-                {selectedLabel}
-              </strong>
+              Selected: <strong className="font-medium text-neutral-900">{selectedLabel}</strong>
             </span>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -147,31 +129,21 @@ export function ImageRefField({
           </div>
           <input type="hidden" name={`${name}.key`} value={selected.key} />
           <input type="hidden" name={`${name}.width`} value={selected.width} />
-          <input
-            type="hidden"
-            name={`${name}.height`}
-            value={selected.height}
-          />
+          <input type="hidden" name={`${name}.height`} value={selected.height} />
           <p className="text-xs text-neutral-500">
-            JPG, PNG, WebP, GIF, or AVIF. The editor prepares uploaded images
-            automatically.
+            JPG, PNG, WebP, GIF, or AVIF. The editor prepares uploaded images automatically.
           </p>
         </div>
       </div>
 
-      <TextField
-        name={`${name}.alt`}
-        defaultValue={defaultValue.alt}
-        label="Alt text"
-      />
+      <TextField name={`${name}.alt`} defaultValue={defaultValue.alt} label="Alt text" />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-hidden p-0">
           <DialogHeader className="border-b border-neutral-200 p-5 pr-14">
             <DialogTitle>Choose an image</DialogTitle>
             <DialogDescription>
-              Select an image from the website library for {label.toLowerCase()}
-              .
+              Select an image from the website library for {label.toLowerCase()}.
             </DialogDescription>
           </DialogHeader>
           <div className="grid max-h-[70vh] gap-3 overflow-y-auto p-4 sm:grid-cols-2 md:grid-cols-3">
@@ -203,13 +175,7 @@ export function ImageRefField({
                   alt=""
                   loading="lazy"
                   onLoad={(event) => {
-                    if (
-                      !isFullAssetImage(
-                        event.currentTarget,
-                        asset.key,
-                        window.location.href,
-                      )
-                    ) {
+                    if (!isFullAssetImage(event.currentTarget, asset.key, window.location.href)) {
                       return;
                     }
                     const nextDimensions = imageDimensions(event.currentTarget);
@@ -224,9 +190,7 @@ export function ImageRefField({
                   onError={(event) => {
                     const image = event.currentTarget;
                     const fallback = imageUrl(asset.key);
-                    if (
-                      !isFullAssetImage(image, asset.key, window.location.href)
-                    ) {
+                    if (!isFullAssetImage(image, asset.key, window.location.href)) {
                       image.src = fallback;
                     }
                   }}
@@ -240,8 +204,7 @@ export function ImageRefField({
           </div>
           {assets.length === 0 && (
             <p className="p-6 text-center text-sm text-neutral-600">
-              No library images are available yet. Close this window and upload
-              one instead.
+              No library images are available yet. Close this window and upload one instead.
             </p>
           )}
           <div className="border-t border-neutral-200 px-5 py-3 text-xs text-neutral-500">

@@ -1,16 +1,13 @@
-import { imageSrc } from '~/content/schema';
+import { imageSrc } from "~/content/schema";
 
-import { useContent, useLanguage } from '../lib/language-provider';
+import { useContent, useLanguage } from "../lib/language-provider";
 
 export function AboutSection() {
   const lang = useLanguage();
   const { about } = useContent();
 
   return (
-    <section
-      id="about"
-      className="bg-muted scroll-mt-20 overflow-x-hidden py-20"
-    >
+    <section id="about" className="bg-muted scroll-mt-20 overflow-x-hidden py-20">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-5xl">
           <div className="grid items-start gap-12 lg:grid-cols-2">
@@ -22,9 +19,7 @@ export function AboutSection() {
               </div>
 
               <div className="space-y-6">
-                <h3 className="font-space-grotesk text-2xl font-bold">
-                  {about.subheading[lang]}
-                </h3>
+                <h3 className="font-space-grotesk text-2xl font-bold">{about.subheading[lang]}</h3>
 
                 <p className="text-lg">{about.intro[lang]}</p>
 
@@ -34,10 +29,7 @@ export function AboutSection() {
                   </h4>
                   <ul className="space-y-2">
                     {about.storyBullets.map((bullet, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start"
-                      >
+                      <li key={index} className="flex items-start">
                         <span className="text-primary mr-2 font-bold">•</span>
                         <p>{bullet[lang]}</p>
                       </li>
@@ -51,10 +43,7 @@ export function AboutSection() {
                   </h4>
                   <ul className="space-y-2">
                     {about.valueBullets.map((bullet, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start"
-                      >
+                      <li key={index} className="flex items-start">
                         <span className="text-primary mr-2 font-bold">•</span>
                         <p>{bullet[lang]}</p>
                       </li>
@@ -79,9 +68,7 @@ export function AboutSection() {
                   </div>
                 </div>
                 <div className="bg-secondary neo-brutalist absolute -right-4 -bottom-8 rotate-[-3deg] p-4 lg:-right-8">
-                  <p className="font-space-grotesk text-2xl font-black">
-                    {about.since[lang]}
-                  </p>
+                  <p className="font-space-grotesk text-2xl font-black">{about.since[lang]}</p>
                 </div>
               </div>
 

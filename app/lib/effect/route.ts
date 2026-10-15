@@ -1,7 +1,7 @@
-import { Effect } from 'effect';
+import { Effect } from "effect";
 
-import { ReactRouterContext, type RouteArgs } from './router-context';
-import type { AppServices } from './runtime';
+import { ReactRouterContext, type RouteArgs } from "./router-context";
+import type { AppServices } from "./runtime";
 
 type RouteServices = AppServices | ReactRouterContext;
 

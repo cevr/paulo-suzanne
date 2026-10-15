@@ -1,4 +1,4 @@
-import { defaultContent } from '../app/content/defaults.ts';
+import { defaultContent } from "../app/content/defaults.ts";
 
 const endpoint = process.env.SEED_BUCKET_ENDPOINT;
 const accessKeyId = process.env.SEED_BUCKET_ACCESS_KEY;
@@ -13,7 +13,7 @@ if (
 ) {
   // oxlint-disable-next-line no-console
   console.error(
-    'Missing SEED_BUCKET_ENDPOINT / SEED_BUCKET_ACCESS_KEY / SEED_BUCKET_SECRET_KEY / SEED_BUCKET_NAME',
+    "Missing SEED_BUCKET_ENDPOINT / SEED_BUCKET_ACCESS_KEY / SEED_BUCKET_SECRET_KEY / SEED_BUCKET_NAME",
   );
   process.exit(1);
 }
@@ -23,10 +23,10 @@ const client = new Bun.S3Client({
   accessKeyId,
   secretAccessKey,
   bucket,
-  region: 'auto',
+  region: "auto",
 });
 
-const KEY = 'content/site.json';
+const KEY = "content/site.json";
 
 const existing = client.file(KEY);
 if (await existing.exists()) {
@@ -38,7 +38,7 @@ if (await existing.exists()) {
 }
 
 const body = JSON.stringify(defaultContent, null, 2);
-await client.write(KEY, body, { type: 'application/json' });
+await client.write(KEY, body, { type: "application/json" });
 
 // oxlint-disable-next-line no-console
 console.log(`seeded ${KEY} (${body.length} bytes) into ${bucket}`);

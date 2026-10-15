@@ -1,8 +1,8 @@
-import React, { type ReactNode } from 'react';
+import React, { type ReactNode } from "react";
 
-import type { SiteContent } from '~/content/schema';
+import type { SiteContent } from "~/content/schema";
 
-import type { Lang } from './language';
+import type { Lang } from "./language";
 
 const LanguageContext = React.createContext<Lang | undefined>(undefined);
 const ContentContext = React.createContext<SiteContent | undefined>(undefined);
@@ -18,9 +18,7 @@ export function LanguageProvider({
 }) {
   return (
     <LanguageContext.Provider value={initialLanguage}>
-      <ContentContext.Provider value={content}>
-        {children}
-      </ContentContext.Provider>
+      <ContentContext.Provider value={content}>{children}</ContentContext.Provider>
     </LanguageContext.Provider>
   );
 }
@@ -28,7 +26,7 @@ export function LanguageProvider({
 export function useLanguage() {
   const context = React.useContext(LanguageContext);
   if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    throw new Error("useLanguage must be used within a LanguageProvider");
   }
   return context;
 }
@@ -36,7 +34,7 @@ export function useLanguage() {
 export function useContent() {
   const context = React.useContext(ContentContext);
   if (context === undefined) {
-    throw new Error('useContent must be used within a LanguageProvider');
+    throw new Error("useContent must be used within a LanguageProvider");
   }
   return context;
 }

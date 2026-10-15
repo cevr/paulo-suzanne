@@ -1,4 +1,4 @@
-import { MANAGED_ASSETS } from '../app/lib/managed-assets.ts';
+import { MANAGED_ASSETS } from "../app/lib/managed-assets.ts";
 
 const srcEndpoint = process.env.SRC_BUCKET_ENDPOINT;
 const srcAccessKey = process.env.SRC_BUCKET_ACCESS_KEY;
@@ -21,7 +21,7 @@ if (
   dstBucket === undefined
 ) {
   // oxlint-disable-next-line no-console
-  console.error('Missing SRC_BUCKET_* or DST_BUCKET_* env vars');
+  console.error("Missing SRC_BUCKET_* or DST_BUCKET_* env vars");
   process.exit(1);
 }
 
@@ -30,7 +30,7 @@ const src = new Bun.S3Client({
   accessKeyId: srcAccessKey,
   secretAccessKey: srcSecretKey,
   bucket: srcBucket,
-  region: 'auto',
+  region: "auto",
 });
 
 const dst = new Bun.S3Client({
@@ -38,15 +38,15 @@ const dst = new Bun.S3Client({
   accessKeyId: dstAccessKey,
   secretAccessKey: dstSecretKey,
   bucket: dstBucket,
-  region: 'auto',
+  region: "auto",
 });
 
 const mimeFor = (key: string): string => {
-  if (key.endsWith('.pdf')) return 'application/pdf';
-  if (key.endsWith('.avif')) return 'image/avif';
-  if (key.endsWith('.png')) return 'image/png';
-  if (key.endsWith('.jpg') || key.endsWith('.jpeg')) return 'image/jpeg';
-  return 'application/octet-stream';
+  if (key.endsWith(".pdf")) return "application/pdf";
+  if (key.endsWith(".avif")) return "image/avif";
+  if (key.endsWith(".png")) return "image/png";
+  if (key.endsWith(".jpg") || key.endsWith(".jpeg")) return "image/jpeg";
+  return "application/octet-stream";
 };
 
 let copied = 0;

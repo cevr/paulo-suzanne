@@ -1,25 +1,22 @@
-import { DateTime } from 'effect';
-import { Link } from 'react-router';
+import { DateTime } from "effect";
+import { Link } from "react-router";
 
-import { imageSrc } from '~/content/schema';
+import { imageSrc } from "~/content/schema";
 
-import { useContent, useLanguage } from '../lib/language-provider';
+import { useContent, useLanguage } from "../lib/language-provider";
 
 export function Footer() {
   const lang = useLanguage();
   const { footer, contact, location } = useContent();
 
-  const currentYear = DateTime.getPartUtc(DateTime.nowUnsafe(), 'year');
+  const currentYear = DateTime.getPartUtc(DateTime.nowUnsafe(), "year");
 
   return (
     <footer className="border-primary border-t-4 bg-black text-white">
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-8 lg:grid-cols-4">
           <div className="lg:col-span-1">
-            <Link
-              to="/"
-              className="mb-4 inline-block"
-            >
+            <Link to="/" className="mb-4 inline-block">
               <img
                 src={imageSrc(footer.logo)}
                 alt={footer.logo.alt[lang]}
@@ -39,10 +36,7 @@ export function Footer() {
             <ul className="space-y-2">
               {footer.quickLinks.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    to={link.href}
-                    className="hover:text-primary transition-colors"
-                  >
+                  <Link to={link.href} className="hover:text-primary transition-colors">
                     {link.label[lang]}
                   </Link>
                 </li>
@@ -58,16 +52,10 @@ export function Footer() {
               {footer.contactInfoLines.map((line) => (
                 <p key={line}>{line}</p>
               ))}
-              <a
-                href={`tel:${contact.phoneTel}`}
-                className="text-white"
-              >
+              <a href={`tel:${contact.phoneTel}`} className="text-white">
                 {contact.phoneDisplay}
               </a>
-              <a
-                href={`mailto:${contact.emailAddress}`}
-                className="text-white"
-              >
+              <a href={`mailto:${contact.emailAddress}`} className="text-white">
                 {contact.emailAddress}
               </a>
             </address>
@@ -79,10 +67,7 @@ export function Footer() {
             </h2>
             <ul className="font-space-grotesk flex flex-col gap-1 text-gray-400">
               {location.hours.map((row, index) => (
-                <li
-                  key={index}
-                  className="flex justify-between gap-4"
-                >
+                <li key={index} className="flex justify-between gap-4">
                   <span className="font-medium">{row.day[lang]}</span>
                   <span className="text-right">{row.hours[lang]}</span>
                 </li>

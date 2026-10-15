@@ -15,24 +15,20 @@
  * main. The build step then reads content/site.json from the bucket and bakes
  * it into the prerendered HTML.
  */
-import { Config, Context, Effect, Layer, Option, Redacted, Schema } from 'effect';
-import {
-  HttpBody,
-  HttpClient,
-  HttpClientRequest,
-} from 'effect/unstable/http';
+import { Config, Context, Effect, Layer, Option, Redacted, Schema } from "effect";
+import { HttpBody, HttpClient, HttpClientRequest } from "effect/unstable/http";
 
 export class RailwayDisabled extends Schema.TaggedError<RailwayDisabled>()(
-  'paulo-suzanne/services/Railway/RailwayDisabled',
+  "paulo-suzanne/services/Railway/RailwayDisabled",
   { reason: Schema.String },
 ) {}
 
 export class RailwayError extends Schema.TaggedError<RailwayError>()(
-  'paulo-suzanne/services/Railway/RailwayError',
+  "paulo-suzanne/services/Railway/RailwayError",
   { message: Schema.String },
 ) {}
 
-const ENDPOINT = 'https://backboard.railway.com/graphql/v2';
+const ENDPOINT = "https://backboard.railway.com/graphql/v2";
 
 const DEPLOY_MUTATION = `
 mutation Deploy($serviceId: String!, $environmentId: String!) {
@@ -53,34 +49,25 @@ const DeployResponse = Schema.Struct({
   errors: Schema.optional(Schema.Array(Schema.Struct({ message: Schema.String }))),
 });
 
-const decodeDeployResponse = Schema.decodeUnknownEffect(
-  Schema.fromJsonString(DeployResponse),
-);
+const decodeDeployResponse = Schema.decodeUnknownEffect(Schema.fromJsonString(DeployResponse));
 
 export class Railway extends Context.Service<
   Railway,
   {
     readonly enabled: Effect.Effect<boolean>;
-    readonly triggerDeploy: Effect.Effect<
-      DeployResult,
-      RailwayDisabled | RailwayError
-    >;
+    readonly triggerDeploy: Effect.Effect<DeployResult, RailwayDisabled | RailwayError>;
   }
->()('paulo-suzanne/services/Railway') {
+>()("paulo-suzanne/services/Railway") {
   static layer = Layer.effect(
     Railway,
     Effect.gen(function* () {
-      const tokenOpt = yield* Config.option(Config.redacted('RAILWAY_API_TOKEN'));
-      const serviceIdOpt = yield* Config.option(Config.string('RAILWAY_SERVICE_ID'));
-      const environmentIdOpt = yield* Config.option(
-        Config.string('RAILWAY_ENVIRONMENT_ID'),
-      );
+      const tokenOpt = yield* Config.option(Config.redacted("RAILWAY_API_TOKEN"));
+      const serviceIdOpt = yield* Config.option(Config.string("RAILWAY_SERVICE_ID"));
+      const environmentIdOpt = yield* Config.option(Config.string("RAILWAY_ENVIRONMENT_ID"));
       const httpClient = yield* HttpClient.HttpClient;
 
       const isEnabled =
-        Option.isSome(tokenOpt) &&
-        Option.isSome(serviceIdOpt) &&
-        Option.isSome(environmentIdOpt);
+        Option.isSome(tokenOpt) && Option.isSome(serviceIdOpt) && Option.isSome(environmentIdOpt);
 
       return Railway.of({
         enabled: Effect.succeed(isEnabled),
@@ -93,7 +80,7 @@ export class Railway extends Context.Service<
           ) {
             return yield* new RailwayDisabled({
               reason:
-                'RAILWAY_API_TOKEN, RAILWAY_SERVICE_ID and RAILWAY_ENVIRONMENT_ID must all be set',
+                "RAILWAY_API_TOKEN, RAILWAY_SERVICE_ID and RAILWAY_ENVIRONMENT_ID must all be set",
             });
           }
 
@@ -123,11 +110,11 @@ export class Railway extends Context.Service<
             );
             if (decoded.errors !== undefined && decoded.errors.length > 0) {
               return yield* new RailwayError({
-                message: decoded.errors.map((e) => e.message).join('; '),
+                message: decoded.errors.map((e) => e.message).join("; "),
               });
             }
             const deploymentId = decoded.data?.serviceInstanceDeployV2;
-            if (typeof deploymentId !== 'string' || deploymentId === '') {
+            if (typeof deploymentId !== "string" || deploymentId === "") {
               return yield* new RailwayError({
                 message: `serviceInstanceDeployV2 returned no deployment id: ${text}`,
               });
@@ -135,9 +122,7 @@ export class Railway extends Context.Service<
             return { deploymentId };
           }).pipe(
             Effect.mapError((e) =>
-              Schema.is(RailwayError)(e)
-                ? e
-                : new RailwayError({ message: String(e) }),
+              Schema.is(RailwayError)(e) ? e : new RailwayError({ message: String(e) }),
             ),
           );
         }),

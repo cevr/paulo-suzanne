@@ -1,16 +1,13 @@
-import { Clock, MapPin } from 'lucide-react';
+import { Clock, MapPin } from "lucide-react";
 
-import { useContent, useLanguage } from '../lib/language-provider';
+import { useContent, useLanguage } from "../lib/language-provider";
 
 export function LocationSection() {
   const lang = useLanguage();
   const { location } = useContent();
 
   return (
-    <section
-      id="location"
-      className="scroll-mt-20 bg-white py-20"
-    >
+    <section id="location" className="scroll-mt-20 bg-white py-20">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
           <h2 className="font-space-grotesk bg-secondary neo-brutalist mb-4 inline-block rotate-1 p-4 text-4xl font-black lg:text-5xl">
@@ -63,10 +60,7 @@ export function LocationSection() {
                   </h3>
                   <div className="gap-1">
                     {location.hours.map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between"
-                      >
+                      <div key={index} className="flex justify-between">
                         <span className="font-medium">{item.day[lang]}</span>
                         <span className="text-right">{item.hours[lang]}</span>
                       </div>

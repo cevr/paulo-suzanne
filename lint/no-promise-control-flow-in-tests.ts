@@ -1,4 +1,4 @@
-import type { Plugin } from '#oxlint/plugins';
+import type { Plugin } from "#oxlint/plugins";
 
 interface AstNode {
   readonly type: string;
@@ -6,13 +6,13 @@ interface AstNode {
 }
 
 const isAstNode = (value: unknown): value is AstNode => {
-  if (typeof value !== 'object' || value === null || !('type' in value)) return false;
-  return typeof (value as Record<string, unknown>).type === 'string';
+  if (typeof value !== "object" || value === null || !("type" in value)) return false;
+  return typeof (value as Record<string, unknown>).type === "string";
 };
 
 const getStringField = (node: AstNode, field: string): string | undefined => {
   const value = node[field];
-  return typeof value === 'string' ? value : undefined;
+  return typeof value === "string" ? value : undefined;
 };
 
 const getNodeField = (node: AstNode, field: string): AstNode | undefined => {
@@ -23,49 +23,49 @@ const getNodeField = (node: AstNode, field: string): AstNode | undefined => {
 const isTestFilename = (filename: string): boolean =>
   /\/tests\//.test(filename) || /\.test\.tsx?$/.test(filename);
 
-const PROMISE_CHAIN_METHODS = new Set(['then', 'catch', 'finally']);
-const PROMISE_STATIC_METHODS = new Set(['all', 'allSettled', 'any', 'race', 'resolve', 'reject']);
+const PROMISE_CHAIN_METHODS = new Set(["then", "catch", "finally"]);
+const PROMISE_STATIC_METHODS = new Set(["all", "allSettled", "any", "race", "resolve", "reject"]);
 
 const promiseChainMethodName = (node: AstNode): string | undefined => {
-  if (node.type !== 'CallExpression') return undefined;
-  const callee = getNodeField(node, 'callee');
-  if (callee?.type !== 'MemberExpression') return undefined;
-  const object = getNodeField(callee, 'object');
-  if (object?.type === 'Identifier' && getStringField(object, 'name') === 'Effect') {
+  if (node.type !== "CallExpression") return undefined;
+  const callee = getNodeField(node, "callee");
+  if (callee?.type !== "MemberExpression") return undefined;
+  const object = getNodeField(callee, "object");
+  if (object?.type === "Identifier" && getStringField(object, "name") === "Effect") {
     return undefined;
   }
-  const property = getNodeField(callee, 'property');
-  if (property?.type !== 'Identifier') return undefined;
-  const name = getStringField(property, 'name');
+  const property = getNodeField(callee, "property");
+  if (property?.type !== "Identifier") return undefined;
+  const name = getStringField(property, "name");
   return name !== undefined && PROMISE_CHAIN_METHODS.has(name) ? name : undefined;
 };
 
 const promiseStaticMethodName = (node: AstNode): string | undefined => {
-  if (node.type !== 'CallExpression') return undefined;
-  const callee = getNodeField(node, 'callee');
-  if (callee?.type !== 'MemberExpression') return undefined;
-  const object = getNodeField(callee, 'object');
-  if (object?.type !== 'Identifier' || getStringField(object, 'name') !== 'Promise') {
+  if (node.type !== "CallExpression") return undefined;
+  const callee = getNodeField(node, "callee");
+  if (callee?.type !== "MemberExpression") return undefined;
+  const object = getNodeField(callee, "object");
+  if (object?.type !== "Identifier" || getStringField(object, "name") !== "Promise") {
     return undefined;
   }
-  const property = getNodeField(callee, 'property');
-  if (property?.type !== 'Identifier') return undefined;
-  const name = getStringField(property, 'name');
+  const property = getNodeField(callee, "property");
+  if (property?.type !== "Identifier") return undefined;
+  const name = getStringField(property, "name");
   return name !== undefined && PROMISE_STATIC_METHODS.has(name) ? name : undefined;
 };
 
 const isPromiseConstructor = (node: AstNode): boolean => {
-  if (node.type !== 'NewExpression') return false;
-  const callee = getNodeField(node, 'callee');
-  return callee?.type === 'Identifier' && getStringField(callee, 'name') === 'Promise';
+  if (node.type !== "NewExpression") return false;
+  const callee = getNodeField(node, "callee");
+  return callee?.type === "Identifier" && getStringField(callee, "name") === "Promise";
 };
 
 const plugin: Plugin = {
   meta: {
-    name: 'paulo-suzanne',
+    name: "paulo-suzanne",
   },
   rules: {
-    'no-promise-control-flow-in-tests': {
+    "no-promise-control-flow-in-tests": {
       create(context) {
         if (!isTestFilename(context.filename)) return {};
 
@@ -74,7 +74,7 @@ const plugin: Plugin = {
             if (node.finalizer == null) return;
             context.report({
               message:
-                'Do not use try/finally cleanup in tests. Use effect-bun-test with it.scopedLive, FileSystem.makeTempDirectoryScoped, or Effect.acquireRelease.',
+                "Do not use try/finally cleanup in tests. Use effect-bun-test with it.scopedLive, FileSystem.makeTempDirectoryScoped, or Effect.acquireRelease.",
               node,
             });
           },
@@ -82,7 +82,7 @@ const plugin: Plugin = {
             if (node.async !== true) return;
             context.report({
               message:
-                'Do not use async test functions. Import it from effect-bun-test and return an Effect.',
+                "Do not use async test functions. Import it from effect-bun-test and return an Effect.",
               node,
             });
           },
@@ -90,7 +90,7 @@ const plugin: Plugin = {
             if (node.async !== true) return;
             context.report({
               message:
-                'Do not use async test functions. Import it from effect-bun-test and return an Effect.',
+                "Do not use async test functions. Import it from effect-bun-test and return an Effect.",
               node,
             });
           },
@@ -98,14 +98,14 @@ const plugin: Plugin = {
             if (node.async !== true) return;
             context.report({
               message:
-                'Do not use async test functions. Import it from effect-bun-test and return an Effect.',
+                "Do not use async test functions. Import it from effect-bun-test and return an Effect.",
               node,
             });
           },
           AwaitExpression(node) {
             context.report({
               message:
-                'Do not use await in tests. Use yield* inside Effect.gen and Effect.promise only at real async boundaries.',
+                "Do not use await in tests. Use yield* inside Effect.gen and Effect.promise only at real async boundaries.",
               node,
             });
           },
@@ -130,7 +130,7 @@ const plugin: Plugin = {
             if (!isAstNode(node) || !isPromiseConstructor(node)) return;
             context.report({
               message:
-                'Do not construct raw Promises in tests. Use Deferred, Effect.async, or Effect.promise at a real boundary.',
+                "Do not construct raw Promises in tests. Use Deferred, Effect.async, or Effect.promise at a real boundary.",
               node,
             });
           },

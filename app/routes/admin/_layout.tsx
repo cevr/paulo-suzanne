@@ -1,11 +1,11 @@
-import { LogOut, Utensils } from 'lucide-react';
-import { Form, Link, Outlet } from 'react-router';
+import { LogOut, Utensils } from "lucide-react";
+import { Form, Link, Outlet } from "react-router";
 
-import { Button } from '~/components/ui/button';
-import { adminMeta, adminSecurityHeaders } from '~/lib/admin-headers';
-import { ReactRouterContext } from '~/lib/effect/router-context';
-import { routeHandler } from '~/lib/effect/route';
-import { Auth } from '~/services/Auth';
+import { Button } from "~/components/ui/button";
+import { adminMeta, adminSecurityHeaders } from "~/lib/admin-headers";
+import { ReactRouterContext } from "~/lib/effect/router-context";
+import { routeHandler } from "~/lib/effect/route";
+import { Auth } from "~/services/Auth";
 
 export const meta = adminMeta;
 
@@ -14,7 +14,7 @@ export const headers = adminSecurityHeaders;
 export const loader = routeHandler(function* () {
   const { request } = yield* ReactRouterContext;
   const auth = yield* Auth;
-  yield* auth.checkCookie(request.headers.get('cookie'));
+  yield* auth.checkCookie(request.headers.get("cookie"));
   return null;
 });
 
@@ -34,9 +34,7 @@ export default function AdminLayout() {
               <span className="block text-sm font-semibold text-neutral-950">
                 Paulo &amp; Suzanne
               </span>
-              <span className="block text-xs text-neutral-500">
-                Website editor
-              </span>
+              <span className="block text-xs text-neutral-500">Website editor</span>
             </Link>
           </div>
           <Form method="post" action="/admin/logout">

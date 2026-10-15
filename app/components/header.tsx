@@ -1,12 +1,12 @@
-import { MenuIcon, XIcon } from 'lucide-react';
-import { useState, useTransition } from 'react';
-import { Link } from 'react-router';
+import { MenuIcon, XIcon } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Link } from "react-router";
 
-import { Button } from '~/components/ui/button';
-import { imageSrc } from '~/content/schema';
+import { Button } from "~/components/ui/button";
+import { imageSrc } from "~/content/schema";
 
-import { useContent, useLanguage } from '../lib/language-provider';
-import { LanguageSwitcher } from './language-switcher';
+import { useContent, useLanguage } from "../lib/language-provider";
+import { LanguageSwitcher } from "./language-switcher";
 
 export function Header() {
   const [_, startTransition] = useTransition();
@@ -23,10 +23,7 @@ export function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="flex items-center"
-            >
+            <Link to="/" className="flex items-center">
               <img
                 src={imageSrc(header.logo)}
                 alt={header.logo.alt[lang]}
@@ -51,34 +48,15 @@ export function Header() {
               ))}
             </div>
 
-            <Button
-              asChild
-              variant="neo"
-              color="red"
-              size="lg"
-              className="hidden text-xl lg:flex"
-            >
-              <a
-                href={header.orderOnlineUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+            <Button asChild variant="neo" color="red" size="lg" className="hidden text-xl lg:flex">
+              <a href={header.orderOnlineUrl} target="_blank" rel="noopener noreferrer">
                 {header.orderLong[lang]}
               </a>
             </Button>
 
             {/* Mobile Order Button */}
-            <Button
-              asChild
-              variant="neo"
-              size="sm"
-              className="px-2 py-1 text-lg lg:hidden"
-            >
-              <a
-                href={header.orderOnlineUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+            <Button asChild variant="neo" size="sm" className="px-2 py-1 text-lg lg:hidden">
+              <a href={header.orderOnlineUrl} target="_blank" rel="noopener noreferrer">
                 {header.orderShort[lang]}
               </a>
             </Button>
@@ -90,16 +68,10 @@ export function Header() {
                 startTransition(() => toggleMenu());
               }}
               className="lg:hidden bg-transparent"
-              aria-label={
-                isMenuOpen ? header.closeMenuLabel[lang] : header.openMenuLabel[lang]
-              }
+              aria-label={isMenuOpen ? header.closeMenuLabel[lang] : header.openMenuLabel[lang]}
               aria-expanded={isMenuOpen}
             >
-              {isMenuOpen ? (
-                <XIcon className="size-6" />
-              ) : (
-                <MenuIcon className="size-6" />
-              )}
+              {isMenuOpen ? <XIcon className="size-6" /> : <MenuIcon className="size-6" />}
             </Button>
           </div>
         </div>
@@ -107,7 +79,7 @@ export function Header() {
 
       {/* Mobile menu */}
       <div
-        data-visible={isMenuOpen ? '' : undefined}
+        data-visible={isMenuOpen ? "" : undefined}
         className="border-primary absolute top-20 right-0 left-0 hidden border-t-2 bg-black text-white data-visible:block lg:hidden"
       >
         <div className="container mx-auto px-4 py-4">

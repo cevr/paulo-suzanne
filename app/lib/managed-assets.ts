@@ -1,42 +1,99 @@
 export type ManagedAsset = {
   readonly key: string;
   readonly label: string;
-  readonly group: 'menu' | 'atmosphere' | 'food';
+  readonly group: "menu" | "atmosphere" | "food";
   readonly accept: string;
 };
 
-export const MENU_PDF_ASSET_KEY = 'menu.pdf';
+export const MENU_PDF_ASSET_KEY = "menu.pdf";
 export const MENU_PDF_PUBLIC_HREF = `/${MENU_PDF_ASSET_KEY}`;
 
-const RETIRED_ASSET_KEYS: ReadonlySet<string> = new Set([
-  'images/food/homemade-meat-sauce.avif',
-]);
+const RETIRED_ASSET_KEYS: ReadonlySet<string> = new Set(["images/food/homemade-meat-sauce.avif"]);
 
-export const isRetiredAssetKey = (key: string): boolean =>
-  RETIRED_ASSET_KEYS.has(key);
+export const isRetiredAssetKey = (key: string): boolean => RETIRED_ASSET_KEYS.has(key);
 
 export const MANAGED_ASSETS: readonly ManagedAsset[] = [
-  { key: MENU_PDF_ASSET_KEY, label: 'Menu PDF', group: 'menu', accept: 'application/pdf' },
+  { key: MENU_PDF_ASSET_KEY, label: "Menu PDF", group: "menu", accept: "application/pdf" },
 
-  { key: 'indoor.avif', label: 'Indoor photo', group: 'atmosphere', accept: 'image/avif,image/jpeg,image/png' },
-  { key: 'outdoor.avif', label: 'Outdoor photo', group: 'atmosphere', accept: 'image/avif,image/jpeg,image/png' },
   {
-    key: 'retro-diner-red-booths.avif',
-    label: 'Retro diner / red booths',
-    group: 'atmosphere',
-    accept: 'image/avif,image/jpeg,image/png',
+    key: "indoor.avif",
+    label: "Indoor photo",
+    group: "atmosphere",
+    accept: "image/avif,image/jpeg,image/png",
+  },
+  {
+    key: "outdoor.avif",
+    label: "Outdoor photo",
+    group: "atmosphere",
+    accept: "image/avif,image/jpeg,image/png",
+  },
+  {
+    key: "retro-diner-red-booths.avif",
+    label: "Retro diner / red booths",
+    group: "atmosphere",
+    accept: "image/avif,image/jpeg,image/png",
   },
 
-  { key: 'images/food/famous-crepes.avif', label: 'Famous crêpes', group: 'food', accept: 'image/avif,image/jpeg,image/png' },
-  { key: 'images/food/grilled-cheese-smoked-meat.avif', label: 'Grilled cheese (smoked meat)', group: 'food', accept: 'image/avif,image/jpeg,image/png' },
-  { key: 'images/food/grilled-chicken-burger-piri-piri.avif', label: 'Grilled chicken burger (piri piri)', group: 'food', accept: 'image/avif,image/jpeg,image/png' },
-  { key: 'images/food/omelette-compagnarde.avif', label: 'Omelette compagnarde', group: 'food', accept: 'image/avif,image/jpeg,image/png' },
-  { key: 'images/food/popcorn-poutine-piri-piri.avif', label: 'Popcorn poutine (piri piri)', group: 'food', accept: 'image/avif,image/jpeg,image/png' },
-  { key: 'images/food/poutine-extra-cheese.avif', label: 'Poutine extra cheese', group: 'food', accept: 'image/avif,image/jpeg,image/png' },
-  { key: 'images/food/poutine-pop-n-hot.avif', label: 'Poutine pop n hot', group: 'food', accept: 'image/avif,image/jpeg,image/png' },
-  { key: 'images/food/southwest-club-grilled-chicken.avif', label: 'Southwest club (grilled chicken)', group: 'food', accept: 'image/avif,image/jpeg,image/png' },
-  { key: 'images/food/swag.avif', label: 'Swag', group: 'food', accept: 'image/avif,image/jpeg,image/png' },
-  { key: 'images/food/veggie-burger.avif', label: 'Veggie burger', group: 'food', accept: 'image/avif,image/jpeg,image/png' },
+  {
+    key: "images/food/famous-crepes.avif",
+    label: "Famous crêpes",
+    group: "food",
+    accept: "image/avif,image/jpeg,image/png",
+  },
+  {
+    key: "images/food/grilled-cheese-smoked-meat.avif",
+    label: "Grilled cheese (smoked meat)",
+    group: "food",
+    accept: "image/avif,image/jpeg,image/png",
+  },
+  {
+    key: "images/food/grilled-chicken-burger-piri-piri.avif",
+    label: "Grilled chicken burger (piri piri)",
+    group: "food",
+    accept: "image/avif,image/jpeg,image/png",
+  },
+  {
+    key: "images/food/omelette-compagnarde.avif",
+    label: "Omelette compagnarde",
+    group: "food",
+    accept: "image/avif,image/jpeg,image/png",
+  },
+  {
+    key: "images/food/popcorn-poutine-piri-piri.avif",
+    label: "Popcorn poutine (piri piri)",
+    group: "food",
+    accept: "image/avif,image/jpeg,image/png",
+  },
+  {
+    key: "images/food/poutine-extra-cheese.avif",
+    label: "Poutine extra cheese",
+    group: "food",
+    accept: "image/avif,image/jpeg,image/png",
+  },
+  {
+    key: "images/food/poutine-pop-n-hot.avif",
+    label: "Poutine pop n hot",
+    group: "food",
+    accept: "image/avif,image/jpeg,image/png",
+  },
+  {
+    key: "images/food/southwest-club-grilled-chicken.avif",
+    label: "Southwest club (grilled chicken)",
+    group: "food",
+    accept: "image/avif,image/jpeg,image/png",
+  },
+  {
+    key: "images/food/swag.avif",
+    label: "Swag",
+    group: "food",
+    accept: "image/avif,image/jpeg,image/png",
+  },
+  {
+    key: "images/food/veggie-burger.avif",
+    label: "Veggie burger",
+    group: "food",
+    accept: "image/avif,image/jpeg,image/png",
+  },
 ];
 
 export const findAsset = (key: string): ManagedAsset | undefined =>

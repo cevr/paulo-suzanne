@@ -1,39 +1,33 @@
-import { Config, Context, Effect, Layer, ManagedRuntime, Option, Schema } from 'effect';
+import { Config, Context, Effect, Layer, ManagedRuntime, Option, Schema } from "effect";
 
-import { NotFound, Storage, StorageError } from '~/services/Storage';
-import {
-  isRetiredAssetKey,
-  MENU_PDF_PUBLIC_HREF,
-} from '~/lib/managed-assets';
+import { NotFound, Storage, StorageError } from "~/services/Storage";
+import { isRetiredAssetKey, MENU_PDF_PUBLIC_HREF } from "~/lib/managed-assets";
 
-import { defaultContent } from './defaults';
-import { SiteContent } from './schema';
+import { defaultContent } from "./defaults";
+import { SiteContent } from "./schema";
 
-const CONTENT_KEY = 'content/site.json';
-const DRAFT_CONTENT_KEY = 'content/site.draft.json';
+const CONTENT_KEY = "content/site.json";
+const DRAFT_CONTENT_KEY = "content/site.draft.json";
 
 const decode = Schema.decodeUnknownEffect(Schema.fromJsonString(SiteContent));
 
 export class ContentLoadError extends Schema.TaggedError<ContentLoadError>()(
-  'paulo-suzanne/content/loader/ContentLoadError',
+  "paulo-suzanne/content/loader/ContentLoadError",
   { message: Schema.String },
 ) {}
 
 export type AdminContentLoad = {
   readonly content: SiteContent;
-  readonly source: 'draft' | 'published' | 'defaults';
+  readonly source: "draft" | "published" | "defaults";
   readonly draftLastModified: number | null;
 };
 
 const allowDefaultContent = Effect.gen(function* () {
-  const value = yield* Config.option(Config.string('ALLOW_DEFAULT_CONTENT'));
-  return Option.isSome(value) && value.value === '1';
+  const value = yield* Config.option(Config.string("ALLOW_DEFAULT_CONTENT"));
+  return Option.isSome(value) && value.value === "1";
 });
 
-const decodeContentText = Effect.fn('decodeContentText')(function* (
-  key: string,
-  text: string,
-) {
+const decodeContentText = Effect.fn("decodeContentText")(function* (key: string, text: string) {
   return yield* decode(text).pipe(
     Effect.catchCause((cause) =>
       Effect.fail(
@@ -45,9 +39,7 @@ const decodeContentText = Effect.fn('decodeContentText')(function* (
   );
 });
 
-const readContentFromStorage = Effect.fn('readContentFromStorage')(function* (
-  key: string,
-) {
+const readContentFromStorage = Effect.fn("readContentFromStorage")(function* (key: string) {
   const storage = yield* Storage;
   const head = yield* storage.head(key);
   if (head === null) return Option.none();
@@ -81,12 +73,10 @@ const readContentFromStorage = Effect.fn('readContentFromStorage')(function* (
  * The first-deploy bootstrap problem (no key in bucket yet) is solved by
  * setting ALLOW_DEFAULT_CONTENT=1 for that deploy only, then unsetting it.
  */
-const loadContentFromStorage = Effect.fn('loadContentFromStorage')(function* () {
+const loadContentFromStorage = Effect.fn("loadContentFromStorage")(function* () {
   const allowDefaults = yield* allowDefaultContent;
 
-  const fallbackOrThrow = (
-    reason: string,
-  ): Effect.Effect<SiteContent, ContentLoadError> => {
+  const fallbackOrThrow = (reason: string): Effect.Effect<SiteContent, ContentLoadError> => {
     if (allowDefaults) {
       return Effect.logInfo(
         `[content] ${reason} — using bundled defaults (ALLOW_DEFAULT_CONTENT=1)`,
@@ -115,15 +105,13 @@ const loadContentFromStorage = Effect.fn('loadContentFromStorage')(function* () 
   return published.value.content;
 });
 
-const loadAdminContentFromStorage = Effect.fn(
-  'loadAdminContentFromStorage',
-)(function* () {
+const loadAdminContentFromStorage = Effect.fn("loadAdminContentFromStorage")(function* () {
   const allowDefaults = yield* allowDefaultContent;
   const draft = yield* readContentFromStorage(DRAFT_CONTENT_KEY);
   if (Option.isSome(draft)) {
     return {
       content: draft.value.content,
-      source: 'draft' as const,
+      source: "draft" as const,
       draftLastModified: draft.value.lastModified,
     };
   }
@@ -132,7 +120,7 @@ const loadAdminContentFromStorage = Effect.fn(
   if (Option.isSome(published)) {
     return {
       content: published.value.content,
-      source: 'published' as const,
+      source: "published" as const,
       draftLastModified: null,
     };
   }
@@ -143,7 +131,7 @@ const loadAdminContentFromStorage = Effect.fn(
     );
     return {
       content: defaultContent,
-      source: 'defaults' as const,
+      source: "defaults" as const,
       draftLastModified: null,
     };
   }
@@ -167,7 +155,7 @@ export class Content extends Context.Service<
       Storage
     >;
   }
->()('paulo-suzanne/content/loader/Content') {
+>()("paulo-suzanne/content/loader/Content") {
   static layer = Layer.succeed(
     Content,
     Content.of({
@@ -211,9 +199,6 @@ export function normalizeSiteContentAssets(content: SiteContent): SiteContent {
   };
 }
 
-const ContentRuntime = ManagedRuntime.make(
-  Layer.mergeAll(Content.layer, Storage.layerOptional()),
-);
+const ContentRuntime = ManagedRuntime.make(Layer.mergeAll(Content.layer, Storage.layerOptional()));
 
-export const runLoadContent = (): Promise<SiteContent> =>
-  ContentRuntime.runPromise(loadContent);
+export const runLoadContent = (): Promise<SiteContent> => ContentRuntime.runPromise(loadContent);

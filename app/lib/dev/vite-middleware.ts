@@ -1,16 +1,16 @@
-import { Effect, Schema } from 'effect';
-import { createServer as createViteServer, type ViteDevServer } from 'vite';
+import { Effect, Schema } from "effect";
+import { createServer as createViteServer, type ViteDevServer } from "vite";
 
-export const SERVER_BUILD_ID = 'virtual:react-router/server-build';
+export const SERVER_BUILD_ID = "virtual:react-router/server-build";
 
 export const createDevVite = (): Promise<ViteDevServer> =>
   createViteServer({
     server: { middlewareMode: true },
-    appType: 'custom',
+    appType: "custom",
   });
 
 class ViteMiddlewareError extends Schema.TaggedError<ViteMiddlewareError>()(
-  'paulo-suzanne/lib/dev/vite-middleware/ViteMiddlewareError',
+  "paulo-suzanne/lib/dev/vite-middleware/ViteMiddlewareError",
   { message: Schema.String },
 ) {}
 
@@ -24,16 +24,18 @@ const runViteMiddlewareEffect = (
     req.headers.forEach((value, key) => {
       const existing = headers[key];
       headers[key] =
-        existing === undefined ? value
-        : Array.isArray(existing) ? [...existing, value]
-        : [existing, value];
+        existing === undefined
+          ? value
+          : Array.isArray(existing)
+            ? [...existing, value]
+            : [existing, value];
     });
 
     const nodeReq: any = {
       url: `${url.pathname}${url.search}`,
       method: req.method,
       headers,
-      socket: { remoteAddress: '127.0.0.1' },
+      socket: { remoteAddress: "127.0.0.1" },
       on: () => nodeReq,
       once: () => nodeReq,
       off: () => nodeReq,
@@ -85,17 +87,18 @@ const runViteMiddlewareEffect = (
       flushHeaders() {},
       writeHead(code: number, maybeHeaders?: Record<string, string>) {
         statusCode = code;
-        if (maybeHeaders) for (const k in maybeHeaders) resHeaders[k.toLowerCase()] = maybeHeaders[k]!;
+        if (maybeHeaders)
+          for (const k in maybeHeaders) resHeaders[k.toLowerCase()] = maybeHeaders[k]!;
       },
       write(chunk: Uint8Array | string) {
-        chunks.push(typeof chunk === 'string' ? new TextEncoder().encode(chunk) : chunk);
+        chunks.push(typeof chunk === "string" ? new TextEncoder().encode(chunk) : chunk);
         return true;
       },
       end(chunk?: Uint8Array | string) {
         if (ended) return;
         ended = true;
         if (chunk !== undefined) {
-          chunks.push(typeof chunk === 'string' ? new TextEncoder().encode(chunk) : chunk);
+          chunks.push(typeof chunk === "string" ? new TextEncoder().encode(chunk) : chunk);
         }
         const total = chunks.reduce((n, c) => n + c.length, 0);
         const body = new Uint8Array(total);
@@ -106,7 +109,7 @@ const runViteMiddlewareEffect = (
         }
         const flatHeaders: HeadersInit = {};
         for (const [k, v] of Object.entries(resHeaders)) {
-          flatHeaders[k] = Array.isArray(v) ? v.join(', ') : v;
+          flatHeaders[k] = Array.isArray(v) ? v.join(", ") : v;
         }
         resume(Effect.succeed(new Response(body, { status: statusCode, headers: flatHeaders })));
       },
@@ -127,13 +130,11 @@ const runViteMiddlewareEffect = (
     });
   });
 
-export const runViteMiddleware = (
-  vite: ViteDevServer,
-  req: Request,
-): Promise<Response | null> => Effect.runPromise(runViteMiddlewareEffect(vite, req));
+export const runViteMiddleware = (vite: ViteDevServer, req: Request): Promise<Response | null> =>
+  Effect.runPromise(runViteMiddlewareEffect(vite, req));
 
 export const looksLikeViteAsset = (pathname: string): boolean => {
-  if (pathname.startsWith('/@') || pathname.startsWith('/node_modules/')) return true;
-  const lastSegment = pathname.slice(pathname.lastIndexOf('/') + 1);
-  return lastSegment.includes('.');
+  if (pathname.startsWith("/@") || pathname.startsWith("/node_modules/")) return true;
+  const lastSegment = pathname.slice(pathname.lastIndexOf("/") + 1);
+  return lastSegment.includes(".");
 };
