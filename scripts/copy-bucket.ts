@@ -1,80 +1,73 @@
-import { MANAGED_ASSETS } from '../app/lib/managed-assets.ts';
+/**
+ * Copy every object of an S3-compatible bucket into the site's R2 bucket.
+ *
+ *   SRC_BUCKET_ENDPOINT, SRC_BUCKET_ACCESS_KEY, SRC_BUCKET_SECRET_KEY,
+ *   SRC_BUCKET_NAME  the source bucket (the old Railway bucket)
+ *   bun scripts/copy-bucket.ts <r2-bucket-name>
+ *
+ * Objects are downloaded into `.data/bucket` first, which is also the dev
+ * server's bucket, then uploaded with `cf r2 objects put`. Each object keeps
+ * its content type. Run it again to bring R2 up to date: every object is
+ * copied again, and nothing in R2 is deleted.
+ */
+const env = (name: string): string => {
+  const value = process.env[name];
+  if (value === undefined || value === "") {
+    console.error(`Missing ${name}`);
+    process.exit(1);
+  }
+  return value;
+};
 
-const srcEndpoint = process.env.SRC_BUCKET_ENDPOINT;
-const srcAccessKey = process.env.SRC_BUCKET_ACCESS_KEY;
-const srcSecretKey = process.env.SRC_BUCKET_SECRET_KEY;
-const srcBucket = process.env.SRC_BUCKET_NAME;
-
-const dstEndpoint = process.env.DST_BUCKET_ENDPOINT;
-const dstAccessKey = process.env.DST_BUCKET_ACCESS_KEY;
-const dstSecretKey = process.env.DST_BUCKET_SECRET_KEY;
-const dstBucket = process.env.DST_BUCKET_NAME;
-
-if (
-  srcEndpoint === undefined ||
-  srcAccessKey === undefined ||
-  srcSecretKey === undefined ||
-  srcBucket === undefined ||
-  dstEndpoint === undefined ||
-  dstAccessKey === undefined ||
-  dstSecretKey === undefined ||
-  dstBucket === undefined
-) {
-  // oxlint-disable-next-line no-console
-  console.error('Missing SRC_BUCKET_* or DST_BUCKET_* env vars');
+const target = process.argv[2];
+if (target === undefined) {
+  console.error("Usage: bun scripts/copy-bucket.ts <r2-bucket-name>");
   process.exit(1);
 }
 
-const src = new Bun.S3Client({
-  endpoint: srcEndpoint,
-  accessKeyId: srcAccessKey,
-  secretAccessKey: srcSecretKey,
-  bucket: srcBucket,
-  region: 'auto',
+const source = new Bun.S3Client({
+  endpoint: env("SRC_BUCKET_ENDPOINT"),
+  accessKeyId: env("SRC_BUCKET_ACCESS_KEY"),
+  secretAccessKey: env("SRC_BUCKET_SECRET_KEY"),
+  bucket: env("SRC_BUCKET_NAME"),
+  region: "auto",
 });
 
-const dst = new Bun.S3Client({
-  endpoint: dstEndpoint,
-  accessKeyId: dstAccessKey,
-  secretAccessKey: dstSecretKey,
-  bucket: dstBucket,
-  region: 'auto',
-});
+const keys: string[] = [];
+let continuationToken: string | undefined;
+do {
+  const page = await source.list({ continuationToken });
+  for (const item of page.contents ?? []) keys.push(item.key);
+  continuationToken = page.nextContinuationToken;
+} while (continuationToken !== undefined);
 
-const mimeFor = (key: string): string => {
-  if (key.endsWith('.pdf')) return 'application/pdf';
-  if (key.endsWith('.avif')) return 'image/avif';
-  if (key.endsWith('.png')) return 'image/png';
-  if (key.endsWith('.jpg') || key.endsWith('.jpeg')) return 'image/jpeg';
-  return 'application/octet-stream';
-};
-
-let copied = 0;
-let missing = 0;
 let failed = 0;
-
-for (const asset of MANAGED_ASSETS) {
-  try {
-    const srcFile = src.file(asset.key);
-    const exists = await srcFile.exists();
-    if (!exists) {
-      // oxlint-disable-next-line no-console
-      console.warn(`missing in source: ${asset.key}`);
-      missing += 1;
-      continue;
-    }
-    const buf = await srcFile.arrayBuffer();
-    await dst.write(asset.key, new Uint8Array(buf), { type: mimeFor(asset.key) });
-    // oxlint-disable-next-line no-console
-    console.log(`copied ${asset.key} (${buf.byteLength} bytes)`);
-    copied += 1;
-  } catch (e) {
-    // oxlint-disable-next-line no-console
-    console.error(`failed ${asset.key}: ${String(e)}`);
+for (const key of keys) {
+  const file = source.file(key);
+  const stat = await file.stat();
+  const local = `.data/bucket/${key}`;
+  await Bun.write(local, await file.arrayBuffer());
+  const put = Bun.spawnSync([
+    "cf",
+    "r2",
+    "objects",
+    "put",
+    key,
+    "--bucket-name",
+    target,
+    "--file",
+    local,
+    "--content-type",
+    stat.type || "application/octet-stream",
+    "--quiet",
+  ]);
+  if (put.exitCode === 0) {
+    console.log(`copied ${key} (${stat.size} bytes)`);
+  } else {
     failed += 1;
+    console.error(`FAILED ${key}: ${put.stderr.toString().trim()}`);
   }
 }
 
-// oxlint-disable-next-line no-console
-console.log(`\n${copied} copied, ${missing} missing, ${failed} failed`);
-process.exit(failed > 0 ? 1 : 0);
+console.log(`${keys.length - failed} of ${keys.length} objects copied to ${target}`);
+if (failed > 0) process.exit(1);

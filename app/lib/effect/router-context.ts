@@ -1,8 +1,8 @@
-import { Context } from 'effect';
-import type { LoaderFunctionArgs, RouterContextProvider } from 'react-router';
+import { Context } from "effect";
+import type { LoaderFunctionArgs, RouterContextProvider } from "react-router";
 
-export type RouteArgs = LoaderFunctionArgs<Omit<RouterContextProvider, '#private'>>;
+export type RouteArgs = LoaderFunctionArgs<Omit<RouterContextProvider, "#private">>;
 
 export class ReactRouterContext extends Context.Service<ReactRouterContext, Readonly<RouteArgs>>()(
-  'paulo-suzanne/lib/effect/router-context/ReactRouterContext',
+  "paulo-suzanne/lib/effect/router-context/ReactRouterContext",
 ) {}

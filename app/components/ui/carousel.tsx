@@ -1,8 +1,8 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import * as React from 'react';
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import * as React from "react";
 
-import { Button } from '~/components/ui/button';
-import { cn } from '~/lib/utils';
+import { Button } from "~/components/ui/button";
+import { cn } from "~/lib/utils";
 
 type CarouselProps = {
   children: React.ReactNode;
@@ -15,38 +15,33 @@ type CarouselState = {
 };
 
 type CarouselAction =
-  | { type: 'NEXT' }
-  | { type: 'PREV' }
-  | { type: 'GOTO'; payload: number }
-  | { type: 'SET_LENGTH'; payload: number };
+  | { type: "NEXT" }
+  | { type: "PREV" }
+  | { type: "GOTO"; payload: number }
+  | { type: "SET_LENGTH"; payload: number };
 
 export const CarouselContext = React.createContext<
   [CarouselState, React.Dispatch<CarouselAction>] | undefined
 >(undefined);
 
-function carouselReducer(
-  state: CarouselState,
-  action: CarouselAction,
-): CarouselState {
+function carouselReducer(state: CarouselState, action: CarouselAction): CarouselState {
   switch (action.type) {
-    case 'NEXT':
+    case "NEXT":
       return {
         ...state,
-        activeIndex:
-          state.activeIndex === state.length - 1 ? 0 : state.activeIndex + 1,
+        activeIndex: state.activeIndex === state.length - 1 ? 0 : state.activeIndex + 1,
       };
-    case 'PREV':
+    case "PREV":
       return {
         ...state,
-        activeIndex:
-          state.activeIndex === 0 ? state.length - 1 : state.activeIndex - 1,
+        activeIndex: state.activeIndex === 0 ? state.length - 1 : state.activeIndex - 1,
       };
-    case 'GOTO':
+    case "GOTO":
       return {
         ...state,
         activeIndex: action.payload,
       };
-    case 'SET_LENGTH':
+    case "SET_LENGTH":
       return {
         ...state,
         length: action.payload,
@@ -96,7 +91,7 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
     // Only start timer if carousel is in viewport
     if (isInViewport) {
       timerRef.current = window.setTimeout(() => {
-        dispatch({ type: 'NEXT' });
+        dispatch({ type: "NEXT" });
       }, 5000);
     }
 
@@ -105,7 +100,7 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
       clearTimeout(timerRef.current);
       if (isInViewport) {
         timerRef.current = window.setTimeout(() => {
-          dispatch({ type: 'NEXT' });
+          dispatch({ type: "NEXT" });
         }, 5000);
       }
     }
@@ -114,13 +109,13 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
       clearTimeout(timerRef.current);
     }
 
-    window.addEventListener('blur', handleBlur);
-    window.addEventListener('focus', handleFocus);
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("focus", handleFocus);
 
     return () => {
       clearTimeout(timerRef.current);
-      window.removeEventListener('blur', handleBlur);
-      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("focus", handleFocus);
     };
   }, [state.activeIndex, isInViewport]);
 
@@ -131,26 +126,26 @@ export function Carousel({ children, className, ...props }: CarouselProps) {
         elementRef.current?.contains(document.activeElement) ||
         elementRef.current === document.activeElement
       ) {
-        if (e.key === 'ArrowRight') {
-          dispatch({ type: 'NEXT' });
+        if (e.key === "ArrowRight") {
+          dispatch({ type: "NEXT" });
         }
-        if (e.key === 'ArrowLeft') {
-          dispatch({ type: 'PREV' });
+        if (e.key === "ArrowLeft") {
+          dispatch({ type: "PREV" });
         }
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
   return (
     <CarouselContext value={reducer}>
       <div
-        className={cn('relative outline-none', className)}
+        className={cn("relative outline-none", className)}
         ref={elementRef}
         tabIndex={0}
         {...props}
@@ -166,11 +161,7 @@ type CarouselContentProps = {
   className?: string;
 };
 
-export function CarouselContent({
-  children,
-  className,
-  ...props
-}: CarouselContentProps) {
+export function CarouselContent({ children, className, ...props }: CarouselContentProps) {
   const [state, dispatch] = useCarousel();
   const itemCount = React.Children.count(children);
 
@@ -181,7 +172,7 @@ export function CarouselContent({
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    dispatch({ type: 'SET_LENGTH', payload: itemCount });
+    dispatch({ type: "SET_LENGTH", payload: itemCount });
   }, [itemCount]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -222,10 +213,10 @@ export function CarouselContent({
     if (Math.abs(pixelOffset) > threshold) {
       if (pixelOffset > 0) {
         // Dragged right, go to previous
-        dispatch({ type: 'PREV' });
+        dispatch({ type: "PREV" });
       } else {
         // Dragged left, go to next
-        dispatch({ type: 'NEXT' });
+        dispatch({ type: "NEXT" });
       }
     }
 
@@ -264,10 +255,10 @@ export function CarouselContent({
     if (Math.abs(pixelOffset) > threshold) {
       if (pixelOffset > 0) {
         // Dragged right, go to previous
-        dispatch({ type: 'PREV' });
+        dispatch({ type: "PREV" });
       } else {
         // Dragged left, go to next
-        dispatch({ type: 'NEXT' });
+        dispatch({ type: "NEXT" });
       }
     }
 
@@ -302,10 +293,10 @@ export function CarouselContent({
       if (Math.abs(pixelOffset) > threshold) {
         if (pixelOffset > 0) {
           // Dragged right, go to previous
-          dispatch({ type: 'PREV' });
+          dispatch({ type: "PREV" });
         } else {
           // Dragged left, go to next
-          dispatch({ type: 'NEXT' });
+          dispatch({ type: "NEXT" });
         }
       }
 
@@ -314,13 +305,13 @@ export function CarouselContent({
     };
 
     if (isDragging) {
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.addEventListener("mousemove", handleGlobalMouseMove);
+      document.addEventListener("mouseup", handleGlobalMouseUp);
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleGlobalMouseMove);
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener("mousemove", handleGlobalMouseMove);
+      document.removeEventListener("mouseup", handleGlobalMouseUp);
     };
   }, [isDragging, startX, dragOffset, dispatch]);
 
@@ -329,19 +320,15 @@ export function CarouselContent({
   const finalTransform = baseTransform + dragOffset;
 
   return (
-    <div
-      ref={containerRef}
-      className={cn('overflow-hidden', className)}
-      {...props}
-    >
+    <div ref={containerRef} className={cn("overflow-hidden", className)} {...props}>
       <div
         className={cn(
-          'flex ease-in-out',
-          isDragging ? 'transition-none' : 'transition-transform duration-500',
+          "flex ease-in-out",
+          isDragging ? "transition-none" : "transition-transform duration-500",
         )}
         style={{
           transform: `translateX(${finalTransform}%)`,
-          touchAction: 'pan-y pinch-zoom',
+          touchAction: "pan-y pinch-zoom",
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -363,11 +350,7 @@ type CarouselItemProps = {
   className?: string;
 };
 
-export function CarouselItem({
-  children,
-  className,
-  ...props
-}: CarouselItemProps) {
+export function CarouselItem({ children, className, ...props }: CarouselItemProps) {
   return (
     <div className={className} {...props}>
       {children}
@@ -375,10 +358,7 @@ export function CarouselItem({
   );
 }
 
-export function CarouselPrevious({
-  className,
-  ...props
-}: React.ComponentProps<typeof Button>) {
+export function CarouselPrevious({ className, ...props }: React.ComponentProps<typeof Button>) {
   const [, dispatch] = useCarousel();
 
   return (
@@ -386,10 +366,10 @@ export function CarouselPrevious({
       variant="neo"
       size="icon"
       className={cn(
-        'absolute top-1/2 left-2 z-10 h-8 w-8 -translate-y-1/2 rounded-full',
+        "absolute top-1/2 left-2 z-10 h-8 w-8 -translate-y-1/2 rounded-full",
         className,
       )}
-      onClick={() => dispatch({ type: 'PREV' })}
+      onClick={() => dispatch({ type: "PREV" })}
       {...props}
     >
       <ChevronLeft className="h-4 w-4" />
@@ -398,10 +378,7 @@ export function CarouselPrevious({
   );
 }
 
-export function CarouselNext({
-  className,
-  ...props
-}: React.ComponentProps<typeof Button>) {
+export function CarouselNext({ className, ...props }: React.ComponentProps<typeof Button>) {
   const [, dispatch] = useCarousel();
 
   return (
@@ -409,10 +386,10 @@ export function CarouselNext({
       variant="neo"
       size="icon"
       className={cn(
-        'absolute top-1/2 right-3 z-10 h-8 w-8 -translate-y-1/2 rounded-full',
+        "absolute top-1/2 right-3 z-10 h-8 w-8 -translate-y-1/2 rounded-full",
         className,
       )}
-      onClick={() => dispatch({ type: 'NEXT' })}
+      onClick={() => dispatch({ type: "NEXT" })}
       {...props}
     >
       <ChevronRight className="h-4 w-4" />
@@ -421,17 +398,11 @@ export function CarouselNext({
   );
 }
 
-export function CarouselDots({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+export function CarouselDots({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const [state, dispatch] = useCarousel();
 
   return (
-    <div
-      className={cn('mt-4 flex justify-center gap-1', className)}
-      {...props}
-    >
+    <div className={cn("mt-4 flex justify-center gap-1", className)} {...props}>
       {Array.from({ length: state.length }).map((_, index) => (
         <Button
           key={index}
@@ -439,11 +410,9 @@ export function CarouselDots({
           size="icon"
           className={cn(
             'relative h-2 w-2 rounded-full border-none p-0 ring-offset-0 before:absolute before:-inset-3 before:content-[""]',
-            state.activeIndex === index
-              ? 'bg-primary'
-              : 'bg-muted-foreground/20',
+            state.activeIndex === index ? "bg-primary" : "bg-muted-foreground/20",
           )}
-          onClick={() => dispatch({ type: 'GOTO', payload: index })}
+          onClick={() => dispatch({ type: "GOTO", payload: index })}
         >
           <span className="sr-only">Go to slide {index + 1}</span>
         </Button>
@@ -456,7 +425,7 @@ export function useCarousel() {
   const context = React.useContext(CarouselContext);
 
   if (!context) {
-    throw new Error('useCarousel must be used within a <Carousel />');
+    throw new Error("useCarousel must be used within a <Carousel />");
   }
 
   return context;

@@ -1,7 +1,7 @@
-import { Link } from 'react-router';
+import { Link } from "react-router";
 
-import { Button } from '~/components/ui/button';
-import { useLanguage } from '../lib/language-provider';
+import { Button } from "~/components/ui/button";
+import { useLanguage } from "../lib/language-provider";
 
 export function LanguageSwitcher() {
   const language = useLanguage();
@@ -11,20 +11,20 @@ export function LanguageSwitcher() {
       <Button
         asChild
         variant="neo"
-        color={language === 'fr' ? 'red' : 'white'}
+        color={language === "fr" ? "red" : "white"}
         size="sm"
         className="font-bold"
-        aria-pressed={language === 'fr'}
+        aria-pressed={language === "fr"}
       >
         <Link to="/">FR</Link>
       </Button>
       <Button
         asChild
         variant="neo"
-        color={language === 'en' ? 'red' : 'white'}
+        color={language === "en" ? "red" : "white"}
         size="sm"
         className="font-bold"
-        aria-pressed={language === 'en'}
+        aria-pressed={language === "en"}
       >
         <Link to="/en">EN</Link>
       </Button>

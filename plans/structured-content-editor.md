@@ -13,6 +13,7 @@ in nested objects, no asset discovery, no draft mode, every save is a
 deploy. We're replacing it with a real form UI.
 
 User picked (2026-05-06):
+
 - Full schema-driven forms (every leaf has a real input)
 - Asset picker integrated with the bucket-managed asset list
 - Two-step save: Draft (no deploy) + Publish (deploy)
@@ -68,17 +69,17 @@ Both sections still write to the same `menu.*` schema branch.
 
 ## Critical files
 
-| File | Role | Touched |
-|------|------|---------|
-| `app/content/schema.ts` | Effect Schema for SiteContent | read-only |
-| `app/content/defaults.ts` | bundled defaults | read-only |
-| `app/content/loader.ts` | bucket → SiteContent (strict mode) | C5 (draft branch) |
-| `app/routes/admin/content.tsx` | the page being rebuilt | C4, C5 |
-| `app/routes/admin/_components/` | new shared form primitives | C1 (new) |
-| `app/services/Storage.ts` | bucket put/get/head | C3 (add `list`) |
-| `app/lib/managed-assets.ts` | static asset list | reference for picker fallback |
-| `app/services/Railway.ts` | deploy trigger | unchanged |
-| `app/content/publish-state.ts` | hash + in-flight lock | reused as-is |
+| File                            | Role                               | Touched                       |
+| ------------------------------- | ---------------------------------- | ----------------------------- |
+| `app/content/schema.ts`         | Effect Schema for SiteContent      | read-only                     |
+| `app/content/defaults.ts`       | bundled defaults                   | read-only                     |
+| `app/content/loader.ts`         | bucket → SiteContent (strict mode) | C5 (draft branch)             |
+| `app/routes/admin/content.tsx`  | the page being rebuilt             | C4, C5                        |
+| `app/routes/admin/_components/` | new shared form primitives         | C1 (new)                      |
+| `app/services/Storage.ts`       | bucket put/get/head                | C3 (add `list`)               |
+| `app/lib/managed-assets.ts`     | static asset list                  | reference for picker fallback |
+| `app/services/Railway.ts`       | deploy trigger                     | unchanged                     |
+| `app/content/publish-state.ts`  | hash + in-flight lock              | reused as-is                  |
 
 ## Applicable skills
 
@@ -163,9 +164,9 @@ sections second, swap last).
 
 **Changes**:
 
-| File | Change | Lines |
-|------|--------|-------|
-| `app/routes/admin/_components/form-fields.tsx` | new — primitives | ~250 |
+| File                                           | Change           | Lines |
+| ---------------------------------------------- | ---------------- | ----- |
+| `app/routes/admin/_components/form-fields.tsx` | new — primitives | ~250  |
 
 All primitives are **uncontrolled wrappers around plain HTML inputs**.
 Every prop named `name` becomes the input's `name` attribute (the
@@ -196,8 +197,9 @@ FormData key). Every prop named `defaultValue` becomes the input's
   wrapper. No state, no name, just layout.
 
 **Verification**:
+
 - typecheck: every component has explicit prop types, no `any`.
-- visual: render in isolation in `/admin/content` *just below* the
+- visual: render in isolation in `/admin/content` _just below_ the
   existing form (temporarily) to eyeball EN/FR pairing, array
   add/remove, struct nesting. Remove the eyeball block before commit.
 - gate: `bun run typecheck && bun test && bun run build` green.
@@ -218,9 +220,9 @@ TS error here.
 
 **Changes**:
 
-| File | Change | Lines |
-|------|--------|-------|
-| `app/routes/admin/_components/sections.tsx` | new — section components | ~450 |
+| File                                        | Change                   | Lines |
+| ------------------------------------------- | ------------------------ | ----- |
+| `app/routes/admin/_components/sections.tsx` | new — section components | ~450  |
 
 **Components to export** (one per top-level key in `SiteContent`).
 Each accepts `{ name: string; defaultValue: SectionType }` and renders
@@ -253,6 +255,7 @@ renders inputs with the right `name` prefix and `defaultValue` from
 props. The browser owns input state. The action owns submit handling.
 
 **Verification**:
+
 - typecheck: section component prop types reference `typeof
   XxxSchema.Type` directly. Adding/renaming a schema field breaks the
   build here.
@@ -276,14 +279,14 @@ extension follows existing service shape).
 
 **Changes**:
 
-| File | Change | Lines |
-|------|--------|-------|
-| `app/services/Storage.ts` | add `list(prefix?)` op | +30 |
-| `app/services/Storage.test.ts` | add list test | +15 |
-| `app/routes/admin/_components/asset-picker.tsx` | new | ~120 |
-| `app/routes/admin/_components/sections.tsx` | swap raw image structs to `<ImageRefField>` | ~60 modified |
-| `app/routes/admin/content.tsx` | loader: include asset list | +15 |
-| `package.json`, `bun.lock` | add `image-size` dep (optional, see below) | +1 |
+| File                                            | Change                                      | Lines        |
+| ----------------------------------------------- | ------------------------------------------- | ------------ |
+| `app/services/Storage.ts`                       | add `list(prefix?)` op                      | +30          |
+| `app/services/Storage.test.ts`                  | add list test                               | +15          |
+| `app/routes/admin/_components/asset-picker.tsx` | new                                         | ~120         |
+| `app/routes/admin/_components/sections.tsx`     | swap raw image structs to `<ImageRefField>` | ~60 modified |
+| `app/routes/admin/content.tsx`                  | loader: include asset list                  | +15          |
+| `package.json`, `bun.lock`                      | add `image-size` dep (optional, see below)  | +1           |
 
 **Key design choices**:
 
@@ -311,6 +314,7 @@ extension follows existing service shape).
   (read-only, derived from selection), plus an `<TextField>` for `alt`.
 
 **Verification**:
+
 - typecheck: green.
 - `bun test` includes new Storage.list test.
 - manually exercise the picker against a local seeded bucket — pick an
@@ -327,14 +331,14 @@ JSON at submit time so the action stays unchanged.
 
 **Principles**: `migrate-callers-then-delete-legacy-apis` — the action
 side keeps the same wire format; we delete the textarea path
-*completely* in this commit, not in parallel.
+_completely_ in this commit, not in parallel.
 
 **Skills**: none.
 
 **Changes**:
 
-| File | Change | Lines |
-|------|--------|-------|
+| File                           | Change                                                    | Lines         |
+| ------------------------------ | --------------------------------------------------------- | ------------- |
 | `app/routes/admin/content.tsx` | swap textarea loop for section components + hidden inputs | net ~+50, -80 |
 
 **State shape — uncontrolled, FormData-only, no refs, no client JS at submit**:
@@ -369,9 +373,9 @@ expects the wide naming convention. Rewrite the FormData-decoding step:
 function assembleFromFormData(form: FormData): unknown {
   const root: Record<string, unknown> = {};
   for (const [name, value] of form.entries()) {
-    if (typeof value !== 'string') continue;
-    if (name.startsWith('_') || name === 'intent') continue; // meta keys
-    setPath(root, name.split('.'), value);
+    if (typeof value !== "string") continue;
+    if (name.startsWith("_") || name === "intent") continue; // meta keys
+    setPath(root, name.split("."), value);
   }
   return root;
 }
@@ -445,12 +449,13 @@ leaf input does not trigger a re-render.
 - Section component accepts an `errors?: string[]` prop, renders a
   rose-bordered banner + scroll-into-view on first invalid section
   (existing behavior, ported).
-- We *lose* the "errors point to specific paths inside a section"
+- We _lose_ the "errors point to specific paths inside a section"
   granularity from the current Standard Schema formatter — for now,
   keep the same per-section list; per-leaf error mapping is a stretch
   goal for a follow-up.
 
 **Verification**:
+
 - typecheck: green.
 - `bun test` unchanged (no new test files; existing
   `app/content/schema.test.ts` covers schema constraints).
@@ -475,11 +480,11 @@ loader signature stays exactly the same; the draft-aware path is admin-only.
 
 **Changes**:
 
-| File | Change | Lines |
-|------|--------|-------|
-| `app/content/loader.ts` | add `loadAdminContent()` returning `{ content, source: 'draft' \| 'published' \| 'defaults' }` | +30 |
-| `app/content/loader.test.ts` | tests for the draft branch | +40 |
-| `app/routes/admin/content.tsx` | two buttons (Save Draft, Publish), discard-draft button, "viewing draft" banner | +60 |
+| File                           | Change                                                                                         | Lines |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- | ----- |
+| `app/content/loader.ts`        | add `loadAdminContent()` returning `{ content, source: 'draft' \| 'published' \| 'defaults' }` | +30   |
+| `app/content/loader.test.ts`   | tests for the draft branch                                                                     | +40   |
+| `app/routes/admin/content.tsx` | two buttons (Save Draft, Publish), discard-draft button, "viewing draft" banner                | +60   |
 
 **Action variants** (use a hidden `intent` input):
 
@@ -511,9 +516,10 @@ loader signature stays exactly the same; the draft-aware path is admin-only.
   schema. We don't allow unparseable drafts.
 
 **Verification**:
+
 - typecheck: green.
 - `bun test`: new loader tests for draft-priority + draft-not-present
-  + draft-decode-failure.
+  - draft-decode-failure.
 - manual: edit content, Save Draft, refresh — banner appears, content
   matches draft. Click Publish — banner disappears, site.json updated,
   Railway deploys.
@@ -553,13 +559,13 @@ loader signature stays exactly the same; the draft-aware path is admin-only.
 
 ## Sequencing summary
 
-| Commit | What | Risk | Rollback |
-|--------|------|------|----------|
-| C1 | Form primitives | Low — pure additions | Delete the file |
-| C2 | Section components | Low — pure additions | Delete the file |
-| C3 | Asset picker + Storage.list | Medium — new dep + bucket I/O on loader | Revert; sections fall back to raw fields |
-| C4 | Wire into content.tsx | Medium — replaces user-facing form | Revert single file |
-| C5 | Draft workflow | Medium — touches loader + action | Revert; admin loses draft button |
+| Commit | What                        | Risk                                    | Rollback                                 |
+| ------ | --------------------------- | --------------------------------------- | ---------------------------------------- |
+| C1     | Form primitives             | Low — pure additions                    | Delete the file                          |
+| C2     | Section components          | Low — pure additions                    | Delete the file                          |
+| C3     | Asset picker + Storage.list | Medium — new dep + bucket I/O on loader | Revert; sections fall back to raw fields |
+| C4     | Wire into content.tsx       | Medium — replaces user-facing form      | Revert single file                       |
+| C5     | Draft workflow              | Medium — touches loader + action        | Revert; admin loses draft button         |
 
 Stop after C4 and review before C5 if scope feels too large in one
 session.

@@ -1,4 +1,4 @@
-import { Schema } from 'effect';
+import { Schema } from "effect";
 
 export const Text = Schema.Struct({
   en: Schema.NonEmptyString,
@@ -8,16 +8,16 @@ export type Text = typeof Text.Type;
 
 const assetKeyFilter = Schema.makeFilter<string>(
   (s) => {
-    if (s.startsWith('/')) return 'must not start with "/"';
-    if (/^[a-z][a-z0-9+.-]*:/i.test(s)) return 'must not contain a URL scheme';
-    if (s.includes('//')) return 'must not contain "//"';
-    const segments = s.split('/');
-    if (segments.some((seg) => seg === '' || seg === '.' || seg === '..')) {
+    if (s.startsWith("/")) return 'must not start with "/"';
+    if (/^[a-z][a-z0-9+.-]*:/i.test(s)) return "must not contain a URL scheme";
+    if (s.includes("//")) return 'must not contain "//"';
+    const segments = s.split("/");
+    if (segments.some((seg) => seg === "" || seg === "." || seg === "..")) {
       return 'must not contain empty, "." or ".." segments';
     }
     return undefined;
   },
-  { title: 'AssetKey' },
+  { title: "AssetKey" },
 );
 
 export const AssetKey = Schema.NonEmptyString.check(assetKeyFilter);
@@ -113,7 +113,7 @@ const Location = Schema.Struct({
   hours: Schema.NonEmptyArray(HoursRow),
 });
 
-export const SocialKind = Schema.Literals(['instagram', 'facebook']);
+export const SocialKind = Schema.Literals(["instagram", "facebook"]);
 export type SocialKind = typeof SocialKind.Type;
 
 const ContactSocial = Schema.Struct({

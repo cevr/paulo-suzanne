@@ -1,11 +1,11 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from "bun:test";
 
-import { EDITOR_SECTION_KEYS } from '~/content/editor-sections';
+import { EDITOR_SECTION_KEYS } from "~/content/editor-sections";
 
-import { editorSectionGroups, editorSections } from './editor-sections';
+import { editorSectionGroups, editorSections } from "./editor-sections";
 
-describe('editor section registry', () => {
-  test('owns the grouped desktop and mobile navigation order', () => {
+describe("editor section registry", () => {
+  test("owns the grouped desktop and mobile navigation order", () => {
     expect(
       editorSectionGroups.map((group) => ({
         label: group.label,
@@ -13,26 +13,17 @@ describe('editor section registry', () => {
       })),
     ).toEqual([
       {
-        label: 'Website content',
-        sections: [
-          'hero',
-          'header',
-          'about',
-          'menu',
-          'menuPdf',
-          'location',
-          'contact',
-          'footer',
-        ],
+        label: "Website content",
+        sections: ["hero", "header", "about", "menu", "menuPdf", "location", "contact", "footer"],
       },
       {
-        label: 'Search settings',
-        sections: ['meta', 'jsonLd'],
+        label: "Search settings",
+        sections: ["meta", "jsonLd"],
       },
     ]);
   });
 
-  test('places every canonical editorial section exactly once', () => {
+  test("places every canonical editorial section exactly once", () => {
     const keys = editorSections.map((section) => section.key);
 
     expect(keys).toHaveLength(EDITOR_SECTION_KEYS.length);

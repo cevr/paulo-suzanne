@@ -1,13 +1,6 @@
-import { DateTime, Effect } from 'effect';
-import {
-  AlertCircle,
-  CheckCircle2,
-  ExternalLink,
-  Info,
-  Save,
-  Send,
-} from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { DateTime, Effect } from "effect";
+import { AlertCircle, CheckCircle2, ExternalLink, Info, Save, Send } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Form,
   redirect,
@@ -16,11 +9,11 @@ import {
   useLoaderData,
   useNavigation,
   useSearchParams,
-} from 'react-router';
+} from "react-router";
 
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -30,28 +23,22 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '~/components/ui/dialog';
-import { Spinner } from '~/components/ui/spinner';
+} from "~/components/ui/dialog";
+import { Spinner } from "~/components/ui/spinner";
 import {
   loadEditor,
   submitEditor,
   type EditorFieldErrors,
   type EditorMutation,
-} from '~/content/editor';
-import {
-  EDITOR_SECTION_KEYS,
-  type EditorSectionKey,
-} from '~/content/editor-sections';
-import { ReactRouterContext } from '~/lib/effect/router-context';
-import { routeAction, routeHandler } from '~/lib/effect/route';
-import { cn } from '~/lib/utils';
-import { Auth } from '~/services/Auth';
+} from "~/content/editor";
+import { EDITOR_SECTION_KEYS, type EditorSectionKey } from "~/content/editor-sections";
+import { ReactRouterContext } from "~/lib/effect/router-context";
+import { routeAction, routeHandler } from "~/lib/effect/route";
+import { cn } from "~/lib/utils";
+import { Auth } from "~/services/Auth";
 
-import {
-  editorSectionGroups,
-  editorSections,
-} from './_components/editor-sections';
-import { MENU_PDF_UPLOAD_FORM_ID } from './_components/sections';
+import { editorSectionGroups, editorSections } from "./_components/editor-sections";
+import { MENU_PDF_UPLOAD_FORM_ID } from "./_components/sections";
 
 type FieldErrors = EditorFieldErrors;
 
@@ -61,17 +48,14 @@ type ActionResult = {
   readonly fieldErrors: FieldErrors;
 };
 
-const DEFAULT_SECTION: EditorSectionKey = 'hero';
+const DEFAULT_SECTION: EditorSectionKey = "hero";
 
 function isEditorSection(value: string | null): value is EditorSectionKey {
   return EDITOR_SECTION_KEYS.some((section) => section === value);
 }
 
-function mutationResponse(
-  result: EditorMutation,
-  section: EditorSectionKey,
-): Response {
-  if (result._tag === 'Rejected') {
+function mutationResponse(result: EditorMutation, section: EditorSectionKey): Response {
+  if (result._tag === "Rejected") {
     const body: ActionResult = {
       ok: false,
       error: result.error,
@@ -83,51 +67,52 @@ function mutationResponse(
   const params = new URLSearchParams({
     section,
     status: result.status,
-    published: result.published ? '1' : '0',
+    published: result.published ? "1" : "0",
   });
   return redirect(`/admin?${params.toString()}`);
 }
 
-export const loader = routeHandler(function* () {
-  return yield* loadEditor();
-});
+// The layout loader checks the cookie too, but a client navigation can ask
+// for this loader's data alone, so it checks for itself.
+export const loader = routeHandler(
+  Effect.gen(function* () {
+    const { request } = yield* ReactRouterContext;
+    const auth = yield* Auth;
+    yield* auth.checkCookie(request.headers.get("cookie"));
+    return yield* loadEditor();
+  }),
+);
 
-export const action = routeAction(function* () {
-  const { request } = yield* ReactRouterContext;
-  const auth = yield* Auth;
-  yield* auth.checkCookie(request.headers.get('cookie'));
-  const form = yield* Effect.tryPromise(() => request.formData());
-  const requestedSection = String(form.get('_section'));
-  const section = isEditorSection(requestedSection)
-    ? requestedSection
-    : DEFAULT_SECTION;
-  return mutationResponse(yield* submitEditor(form), section);
-});
+export const action = routeAction(
+  Effect.gen(function* () {
+    const { request } = yield* ReactRouterContext;
+    const auth = yield* Auth;
+    yield* auth.checkCookie(request.headers.get("cookie"));
+    const form = yield* Effect.tryPromise(() => request.formData());
+    const requestedSection = String(form.get("_section"));
+    const section = isEditorSection(requestedSection) ? requestedSection : DEFAULT_SECTION;
+    return mutationResponse(yield* submitEditor(form), section);
+  }),
+);
 
 function formatDate(timestamp: number): string {
   return new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
+    dateStyle: "medium",
+    timeStyle: "short",
   }).format(DateTime.toDate(DateTime.makeUnsafe(timestamp)));
 }
 
 function StatusBanner({ search }: { readonly search: URLSearchParams }) {
-  const status = search.get('status');
-  const published = search.get('published') === '1';
+  const status = search.get("status");
+  const published = search.get("published") === "1";
   if (status === null) return null;
 
   return (
     <Alert
-      className={
-        published
-          ? 'border-emerald-200 bg-emerald-50'
-          : 'border-blue-200 bg-blue-50'
-      }
+      className={published ? "border-emerald-200 bg-emerald-50" : "border-blue-200 bg-blue-50"}
     >
-      <CheckCircle2
-        className={published ? 'text-emerald-700' : 'text-blue-700'}
-      />
-      <AlertTitle>{published ? 'Website published' : 'Draft saved'}</AlertTitle>
+      <CheckCircle2 className={published ? "text-emerald-700" : "text-blue-700"} />
+      <AlertTitle>{published ? "Website published" : "Draft saved"}</AlertTitle>
       <AlertDescription>{status}</AlertDescription>
     </Alert>
   );
@@ -147,18 +132,11 @@ function DraftBanner({
       <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <span>
           Visitors cannot see these changes yet
-          {draftLastModified === null
-            ? '.'
-            : ` · Last saved ${formatDate(draftLastModified)}.`}
+          {draftLastModified === null ? "." : ` · Last saved ${formatDate(draftLastModified)}.`}
         </span>
         <Dialog>
           <DialogTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="bg-white"
-            >
+            <Button type="button" variant="outline" size="sm" className="bg-white">
               Discard draft
             </Button>
           </DialogTrigger>
@@ -166,8 +144,7 @@ function DraftBanner({
             <DialogHeader>
               <DialogTitle>Discard this draft?</DialogTitle>
               <DialogDescription>
-                Every unpublished change will be removed. Your live website will
-                stay as it is.
+                Every unpublished change will be removed. Your live website will stay as it is.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -178,11 +155,7 @@ function DraftBanner({
               </DialogClose>
               <Form method="post">
                 <input type="hidden" name="intent" value="discard-draft" />
-                <Button
-                  type="submit"
-                  variant="destructive"
-                  disabled={submitting}
-                >
+                <Button type="submit" variant="destructive" disabled={submitting}>
                   Discard draft
                 </Button>
               </Form>
@@ -215,12 +188,12 @@ function SectionNavigation({
             key={section.key}
             type="button"
             onClick={() => onSelect(section.key)}
-            aria-current={activeSection === section.key ? 'page' : undefined}
+            aria-current={activeSection === section.key ? "page" : undefined}
             className={cn(
-              'flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900',
+              "flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900",
               activeSection === section.key
-                ? 'bg-neutral-900 text-white'
-                : 'text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950',
+                ? "bg-neutral-900 text-white"
+                : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950",
             )}
           >
             <span>{section.label}</span>
@@ -245,19 +218,13 @@ function SectionNavigation({
 }
 
 export default function AdminContent() {
-  const {
-    content,
-    contentSource,
-    draftLastModified,
-    assets,
-    assetCatalogStatus,
-    isUsingDefaults,
-  } = useLoaderData<typeof loader>();
+  const { content, contentSource, draftLastModified, assets, assetCatalogStatus, isUsingDefaults } =
+    useLoaderData<typeof loader>();
   const actionData = useActionData<ActionResult>();
   const navigation = useNavigation();
   const [search, setSearch] = useSearchParams();
   const [isDirty, setIsDirty] = useState(false);
-  const requestedSection = search.get('section');
+  const requestedSection = search.get("section");
   const [activeSection, setActiveSection] = useState<EditorSectionKey>(() =>
     isEditorSection(requestedSection) ? requestedSection : DEFAULT_SECTION,
   );
@@ -265,17 +232,16 @@ export default function AdminContent() {
     ({ currentLocation, nextLocation }) =>
       isDirty && currentLocation.pathname !== nextLocation.pathname,
   );
-  const submitting = navigation.state === 'submitting';
+  const submitting = navigation.state === "submitting";
 
-  const fieldErrors: FieldErrors =
-    actionData && !actionData.ok ? actionData.fieldErrors : {};
+  const fieldErrors: FieldErrors = actionData && !actionData.ok ? actionData.fieldErrors : {};
 
   const selectSection = useCallback(
     (section: EditorSectionKey) => {
       setActiveSection(section);
       setSearch((current) => {
         const next = new URLSearchParams(current);
-        next.set('section', section);
+        next.set("section", section);
         return next;
       });
     },
@@ -283,9 +249,7 @@ export default function AdminContent() {
   );
 
   useEffect(() => {
-    setActiveSection(
-      isEditorSection(requestedSection) ? requestedSection : DEFAULT_SECTION,
-    );
+    setActiveSection(isEditorSection(requestedSection) ? requestedSection : DEFAULT_SECTION);
   }, [requestedSection]);
 
   useEffect(() => {
@@ -293,24 +257,20 @@ export default function AdminContent() {
     const warnBeforeLeaving = (event: BeforeUnloadEvent) => {
       event.preventDefault();
     };
-    window.addEventListener('beforeunload', warnBeforeLeaving);
-    return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
+    window.addEventListener("beforeunload", warnBeforeLeaving);
+    return () => window.removeEventListener("beforeunload", warnBeforeLeaving);
   }, [isDirty]);
 
   useEffect(() => {
     if (!actionData || actionData.ok) return;
-    const firstBroken = EDITOR_SECTION_KEYS.find(
-      (key) => fieldErrors[key]?.length,
-    );
+    const firstBroken = EDITOR_SECTION_KEYS.find((key) => fieldErrors[key]?.length);
     if (firstBroken === undefined) return;
     setActiveSection(firstBroken);
     const url = new URL(window.location.href);
-    url.searchParams.set('section', firstBroken);
-    window.history.replaceState(window.history.state, '', url);
+    url.searchParams.set("section", firstBroken);
+    window.history.replaceState(window.history.state, "", url);
     window.setTimeout(() => {
-      const field = document.querySelector<HTMLElement>(
-        `[name^="${firstBroken}."]`,
-      );
+      const field = document.querySelector<HTMLElement>(`[name^="${firstBroken}."]`);
       field?.focus();
     }, 0);
   }, [actionData, fieldErrors]);
@@ -318,9 +278,9 @@ export default function AdminContent() {
   return (
     <div className="flex flex-col gap-6 pb-24">
       <Dialog
-        open={blocker.state === 'blocked'}
+        open={blocker.state === "blocked"}
         onOpenChange={(open) => {
-          if (!open && blocker.state === 'blocked') blocker.reset();
+          if (!open && blocker.state === "blocked") blocker.reset();
         }}
       >
         <DialogContent>
@@ -334,14 +294,14 @@ export default function AdminContent() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => blocker.state === 'blocked' && blocker.reset()}
+              onClick={() => blocker.state === "blocked" && blocker.reset()}
             >
               Keep editing
             </Button>
             <Button
               type="button"
               variant="destructive"
-              onClick={() => blocker.state === 'blocked' && blocker.proceed()}
+              onClick={() => blocker.state === "blocked" && blocker.proceed()}
             >
               Leave without saving
             </Button>
@@ -356,8 +316,8 @@ export default function AdminContent() {
             Make your website feel up to date
           </h1>
           <p className="mt-2 text-sm leading-6 text-neutral-600">
-            Choose a section, make your changes in English and French, then save
-            a private draft or publish it for visitors.
+            Choose a section, make your changes in English and French, then save a private draft or
+            publish it for visitors.
           </p>
         </div>
         <Button asChild variant="outline">
@@ -370,11 +330,8 @@ export default function AdminContent() {
 
       <StatusBanner search={search} />
 
-      {contentSource === 'draft' && (
-        <DraftBanner
-          draftLastModified={draftLastModified}
-          submitting={submitting}
-        />
+      {contentSource === "draft" && (
+        <DraftBanner draftLastModified={draftLastModified} submitting={submitting} />
       )}
 
       {actionData && !actionData.ok && (
@@ -382,24 +339,21 @@ export default function AdminContent() {
           <AlertCircle />
           <AlertTitle>We couldn’t save these changes</AlertTitle>
           <AlertDescription>
-            {actionData.error} Open the highlighted section and check the marked
-            information.
+            {actionData.error} Open the highlighted section and check the marked information.
           </AlertDescription>
         </Alert>
       )}
 
-      {(isUsingDefaults || assetCatalogStatus === 'fallback') && (
+      {(isUsingDefaults || assetCatalogStatus === "fallback") && (
         <Alert>
           <Info />
           <AlertTitle>
-            {isUsingDefaults
-              ? 'Ready for your first save'
-              : 'Image library unavailable'}
+            {isUsingDefaults ? "Ready for your first save" : "Image library unavailable"}
           </AlertTitle>
           <AlertDescription>
             {isUsingDefaults
-              ? 'The website is using its original content. Your first save will create an editable version.'
-              : 'You can keep editing. Existing website images remain available while the library reconnects.'}
+              ? "The website is using its original content. Your first save will create an editable version."
+              : "You can keep editing. Existing website images remain available while the library reconnects."}
           </AlertDescription>
         </Alert>
       )}
@@ -420,7 +374,7 @@ export default function AdminContent() {
         onChange={() => setIsDirty(true)}
         onInput={() => setIsDirty(true)}
         onClick={(event) => {
-          if ((event.target as HTMLElement).closest('[data-marks-dirty]')) {
+          if ((event.target as HTMLElement).closest("[data-marks-dirty]")) {
             setIsDirty(true);
           }
         }}
@@ -439,14 +393,10 @@ export default function AdminContent() {
 
         <div className="min-w-0">
           <label className="mb-4 flex flex-col gap-1.5 lg:hidden">
-            <span className="text-sm font-medium text-neutral-800">
-              Editing section
-            </span>
+            <span className="text-sm font-medium text-neutral-800">Editing section</span>
             <select
               value={activeSection}
-              onChange={(event) =>
-                selectSection(event.currentTarget.value as EditorSectionKey)
-              }
+              onChange={(event) => selectSection(event.currentTarget.value as EditorSectionKey)}
               className="h-11 rounded-lg border border-neutral-300 bg-white px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900"
             >
               {editorSectionGroups.map((group) => (
@@ -470,8 +420,8 @@ export default function AdminContent() {
                 hidden={section.key !== activeSection}
                 aria-labelledby={`${section.key}-heading`}
                 className={cn(
-                  'rounded-xl border bg-white shadow-sm',
-                  hasError ? 'border-red-300' : 'border-neutral-200',
+                  "rounded-xl border bg-white shadow-sm",
+                  hasError ? "border-red-300" : "border-neutral-200",
                 )}
               >
                 <div className="border-b border-neutral-200 px-5 py-5 sm:px-7">
@@ -482,20 +432,14 @@ export default function AdminContent() {
                     >
                       {section.label}
                     </h2>
-                    {hasError && (
-                      <Badge variant="destructive">Needs attention</Badge>
-                    )}
+                    {hasError && <Badge variant="destructive">Needs attention</Badge>}
                   </div>
-                  <p className="mt-1 text-sm leading-6 text-neutral-600">
-                    {section.description}
-                  </p>
+                  <p className="mt-1 text-sm leading-6 text-neutral-600">{section.description}</p>
                 </div>
                 <div
                   className="flex flex-col gap-5 p-5 sm:p-7"
                   aria-invalid={hasError || undefined}
-                  aria-describedby={
-                    hasError ? `${section.key}-errors` : undefined
-                  }
+                  aria-describedby={hasError ? `${section.key}-errors` : undefined}
                 >
                   {section.render(content, assets)}
                   {hasError && (
@@ -520,12 +464,9 @@ export default function AdminContent() {
             <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               <div className="flex items-center gap-2 text-sm text-neutral-600">
                 <span
-                  className={cn(
-                    'size-2 rounded-full',
-                    isDirty ? 'bg-amber-500' : 'bg-emerald-500',
-                  )}
+                  className={cn("size-2 rounded-full", isDirty ? "bg-amber-500" : "bg-emerald-500")}
                 />
-                {isDirty ? 'You have unsaved changes' : 'All changes are saved'}
+                {isDirty ? "You have unsaved changes" : "All changes are saved"}
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <Button
@@ -538,12 +479,7 @@ export default function AdminContent() {
                   {submitting ? <Spinner /> : <Save aria-hidden />}
                   Save draft
                 </Button>
-                <Button
-                  type="submit"
-                  name="intent"
-                  value="publish"
-                  disabled={submitting}
-                >
+                <Button type="submit" name="intent" value="publish" disabled={submitting}>
                   {submitting ? <Spinner /> : <Send aria-hidden />}
                   Publish website
                 </Button>

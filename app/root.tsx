@@ -1,4 +1,5 @@
-import './app.css';
+import { Effect } from "effect";
+import "./app.css";
 
 import {
   isRouteErrorResponse,
@@ -8,92 +9,90 @@ import {
   Scripts,
   ScrollRestoration,
   useMatches,
-} from 'react-router';
+} from "react-router";
 
-import type { Route } from './+types/root';
-import { Toaster } from './components/ui/sonner';
-import { runLoadContent } from './content/loader';
-import type { SiteContent } from './content/schema';
-import { LanguageProvider } from './lib/language-provider';
-import type { Lang } from './lib/language';
-import { MENU_PDF_PUBLIC_HREF } from './lib/managed-assets';
+import type { Route } from "./+types/root";
+import { Toaster } from "./components/ui/sonner";
+import { loadContent } from "./content/loader";
+import type { SiteContent } from "./content/schema";
+import { LanguageProvider } from "./lib/language-provider";
+import type { Lang } from "./lib/language";
+import { ReactRouterContext } from "./lib/effect/router-context";
+import { routeHandler } from "./lib/effect/route";
+import { MENU_PDF_PUBLIC_HREF } from "./lib/managed-assets";
 
-const CANONICAL_URL = 'https://pauloetsuzanne.com/';
+const CANONICAL_URL = "https://pauloetsuzanne.com/";
 
 export const links: Route.LinksFunction = () => [
-  { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+  { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
-    rel: 'preconnect',
-    href: 'https://fonts.gstatic.com',
-    crossOrigin: 'anonymous',
+    rel: "preconnect",
+    href: "https://fonts.gstatic.com",
+    crossOrigin: "anonymous",
   },
   {
-    rel: 'stylesheet',
-    href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=latin',
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=latin",
   },
   {
-    rel: 'stylesheet',
-    href: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap&subset=latin',
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap&subset=latin",
   },
-  { rel: 'alternate', hrefLang: 'fr', href: CANONICAL_URL },
-  { rel: 'alternate', hrefLang: 'en', href: `${CANONICAL_URL}en` },
-  { rel: 'alternate', hrefLang: 'x-default', href: CANONICAL_URL },
-  { rel: 'icon', href: '/favicon.ico' },
-  { rel: 'apple-touch-icon', href: '/favicon.ico' },
+  { rel: "alternate", hrefLang: "fr", href: CANONICAL_URL },
+  { rel: "alternate", hrefLang: "en", href: `${CANONICAL_URL}en` },
+  { rel: "alternate", hrefLang: "x-default", href: CANONICAL_URL },
+  { rel: "icon", href: "/favicon.ico" },
+  { rel: "apple-touch-icon", href: "/favicon.ico" },
 ];
 
 function buildJsonLd(content: SiteContent) {
   const { jsonLd } = content;
   return {
-    '@context': 'https://schema.org',
-    '@type': 'Restaurant',
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
     name: jsonLd.name,
     url: CANONICAL_URL,
     telephone: jsonLd.telephone,
     email: jsonLd.email,
     image: `${CANONICAL_URL}${jsonLd.imageKey}`,
-    menu: `${CANONICAL_URL}${MENU_PDF_PUBLIC_HREF.replace(/^\//, '')}`,
+    menu: `${CANONICAL_URL}${MENU_PDF_PUBLIC_HREF.replace(/^\//, "")}`,
     servesCuisine: jsonLd.servesCuisine,
     priceRange: jsonLd.priceRange,
     address: {
-      '@type': 'PostalAddress',
+      "@type": "PostalAddress",
       ...jsonLd.address,
     },
     openingHoursSpecification: jsonLd.openingHours.map((spec) => ({
-      '@type': 'OpeningHoursSpecification',
+      "@type": "OpeningHoursSpecification",
       ...spec,
     })),
     sameAs: jsonLd.sameAs,
   };
 }
 
-export const loader = ({ request }: Route.LoaderArgs) =>
-  runLoadContent().then((content) => {
-    const url = new URL(request.url);
-    const lang: Lang = url.pathname.startsWith('/en') ? 'en' : 'fr';
+export const loader = routeHandler(
+  Effect.gen(function* () {
+    const { request } = yield* ReactRouterContext;
+    const content = yield* loadContent;
+    const lang: Lang = new URL(request.url).pathname.startsWith("/en") ? "en" : "fr";
     return { lang, content };
-  });
+  }),
+);
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const matches = useMatches();
-  const rootData = matches.find((m) => m.id === 'root')?.loaderData as
+  const rootData = matches.find((m) => m.id === "root")?.loaderData as
     | { lang: Lang; content: SiteContent }
     | undefined;
-  const lang = rootData?.lang ?? 'fr';
+  const lang = rootData?.lang ?? "fr";
   const jsonLd = rootData?.content ? buildJsonLd(rootData.content) : null;
 
   return (
     <html lang={lang}>
       <head>
         <meta charSet="utf-8" />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        />
-        <meta
-          name="theme-color"
-          content="#d41111"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#d41111" />
         <Meta />
         <Links />
         {jsonLd && (
@@ -123,16 +122,14 @@ export default function App({ loaderData }: Route.ComponentProps) {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = 'Oops!';
-  let details = 'An unexpected error occurred.';
+  let message = "Oops!";
+  let details = "An unexpected error occurred.";
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? '404' : 'Error';
+    message = error.status === 404 ? "404" : "Error";
     details =
-      error.status === 404
-        ? 'The requested page could not be found.'
-        : error.statusText || details;
+      error.status === 404 ? "The requested page could not be found." : error.statusText || details;
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message;
     stack = error.stack;

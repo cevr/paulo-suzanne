@@ -1,20 +1,14 @@
-import { Effect } from 'effect';
+import type { Effect } from "effect";
 
-import { ReactRouterContext, type RouteArgs } from './router-context';
-import type { AppServices } from './runtime';
+import type { ReactRouterContext, RouteArgs } from "./router-context";
+import type { AppServices } from "./runtime";
 
 type RouteServices = AppServices | ReactRouterContext;
 
+/** A loader or action that runs `effect` with the app's services and its arguments. */
 export const routeHandler =
-  <Eff extends Effect.Effect<unknown, unknown, RouteServices>, A>(
-    body: () => Generator<Eff, A, never>,
-  ) =>
+  <A, E>(effect: Effect.Effect<A, E, RouteServices>) =>
   (args: RouteArgs): Promise<A> =>
-    args.context.runtime.run(args, Effect.gen(body));
+    args.context.runtime.run(args, effect);
 
-export const routeAction =
-  <Eff extends Effect.Effect<unknown, unknown, RouteServices>, A>(
-    body: () => Generator<Eff, A, never>,
-  ) =>
-  (args: RouteArgs): Promise<A> =>
-    args.context.runtime.run(args, Effect.gen(body));
+export const routeAction = routeHandler;

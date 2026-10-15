@@ -3,7 +3,7 @@ export type EditorAsset = {
   readonly label: string;
 };
 
-const IMAGE_UPLOAD_INTENT_PREFIX = 'upload-image:';
+const IMAGE_UPLOAD_INTENT_PREFIX = "upload-image:";
 
 export function imageUploadIntent(fieldName: string): string {
   return `${IMAGE_UPLOAD_INTENT_PREFIX}${fieldName}`;
