@@ -1,0 +1,57 @@
+# The gate on every push and pull request, then `prod` on main.
+# No pull request previews: a new stage starts with an empty bucket, and the
+# Worker refuses to serve pages without content/site.json. `bun run
+# test:deploy` covers a fresh stage instead (it seeds the bundled defaults).
+# CI owns `prod`: a local deploy builds a bundle that hashes differently, so
+# use a throwaway stage for local work (AGENTS.md).
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: deploy-${{ github.event_name == 'pull_request' && github.ref || 'prod' }}
+  cancel-in-progress: false
+
+env:
+  LEFTHOOK: 0
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bun run gate
+      - run: git diff --exit-code
+
+  deploy:
+    if: github.event_name == 'push'
+    needs: gate
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    env:
+      # Provider credentials. Profiles are never read when CI=true.
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      # The Worker's secrets (Auth.secrets).
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      COOKIE_SECRET: ${{ secrets.COOKIE_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bunx alchemy provider check-env --provider Cloudflare
+      - run: bun run build
+      - run: bunx alchemy deploy alchemy.run.ts --stage prod --yes
