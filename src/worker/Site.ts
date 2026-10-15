@@ -7,11 +7,10 @@
  * invokes the Worker. Everything else reaches `fetch`, which serves a bucket
  * file or a React Router page (`../server/render.ts`).
  *
- * `prod` takes the Worker name `paulo-suzanne`. Until the cutover it answers
- * only on its `workers.dev` host; `PROD_HOSTS = "domains"` adds zone routes
- * for the three domains, which take over their proxied traffic from Railway
- * on deploy with no DNS change. Any other stage is a throwaway copy on a
- * generated `workers.dev` name.
+ * `prod` takes the Worker name `paulo-suzanne` and zone routes for the three
+ * domains and their `www`, which serve their proxied traffic with no DNS
+ * change (`PROD_HOSTS`). Any other stage is a throwaway copy on a generated
+ * `workers.dev` name.
  */
 import type { RuntimeContext } from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
@@ -34,8 +33,11 @@ import { Bucket } from "./Bucket.ts";
 
 export const DOMAINS = ["pauloetsuzanne.com", "pauloetsuzanne.ca", "pauloetsuzanne.net"] as const;
 
-/** Where `prod` answers: its workers.dev host before the cutover, the domains after. */
-const PROD_HOSTS: "workers-dev" | "domains" = "workers-dev";
+/**
+ * Where `prod` answers: the domains. `"workers-dev"` drops the zone routes,
+ * which hands the domains back to whatever their DNS points at (the rollback).
+ */
+const PROD_HOSTS: keyof typeof HOSTS = "domains";
 
 const ASSETS = {
   directory: "build/client",
@@ -48,13 +50,18 @@ const routes = Arr.flatMap(DOMAINS, (zoneName) => [
   { pattern: `www.${zoneName}/*`, zoneName },
 ]);
 
+/** The props each choice of `PROD_HOSTS` adds to `prod`. */
+const HOSTS = {
+  "workers-dev": {},
+  domains: { routes },
+};
+
 /** The props, by stage. The running Worker reads them without one. */
 const props = Effect.gen(function* () {
   const stage = yield* Effect.serviceOption(Stage);
   const base = { main: import.meta.url, assets: ASSETS };
   if (!Option.contains(stage, "prod")) return base;
-  if (PROD_HOSTS === "workers-dev") return { ...base, name: "paulo-suzanne" };
-  return { ...base, name: "paulo-suzanne", routes };
+  return { ...base, name: "paulo-suzanne", ...HOSTS[PROD_HOSTS] };
 });
 
 export default class Site extends Cloudflare.Worker<Site>()(

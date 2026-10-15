@@ -9,6 +9,6 @@ React Router 8 site for the restaurant, served by one Cloudflare Worker (`src/wo
 - Dev: `bun run build && bun run dev`. The dev bucket is the folder `.data/bucket`; fill it with `scripts/copy-bucket.ts`, or set `ALLOW_DEFAULT_CONTENT=1` to see the bundled defaults.
 - Deploy: `bun run plan` (prod plan), `bun run deploy` (prod, the owner's call). Secrets `ADMIN_PASSWORD` and `COOKIE_SECRET` come from `.env`. Throwaway stages: `bunx alchemy deploy alchemy.run.ts --stage agent-<topic> --yes`, then `destroy`. `bun run test:deploy` deploys, seeds, probes and destroys a `test_$USER` stage.
 - Prod hosts: `PROD_HOSTS` in `src/worker/Site.ts`. `"domains"` adds zone routes for the three domains and `www`; removing them hands traffic back to whatever DNS points at.
-- CPU: an uncached page render takes about 15–190 ms of CPU. The Workers Free plan allows 10 ms, so the edge cache is what keeps renders rare.
+- CPU: an uncached page render takes about 15–190 ms of CPU (measured 2026-10-15), so the account is on Workers Paid; the edge cache keeps renders rare.
 - State is in the Cloudflare state store (`Cloudflare.state()`), shared by every machine.
 - Lint debt: the React rules `no-array-index-key`, `set-state-in-effect`, `exhaustive-deps` and `iframe-missing-sandbox` are off for `app/` (pre-existing UI code). `app/lib/dev/**` allows `any`. Fix and re-enable them rather than adding more.
