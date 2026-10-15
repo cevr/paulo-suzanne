@@ -1,6 +1,7 @@
 import { describe, expect, it } from "effect-bun-test";
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 
+import { ImageProcessor } from "~/services/ImageProcessor";
 import { Storage } from "~/services/Storage";
 
 import {
@@ -35,7 +36,7 @@ describe("admin image ingestion", () => {
       expect(thumbnailMetadata.format).toBe("webp");
       expect(thumbnailMetadata.width).toBeLessThanOrEqual(ADMIN_IMAGE_UPLOAD_THUMBNAIL_EDGE);
       expect(thumbnailMetadata.height).toBeLessThanOrEqual(ADMIN_IMAGE_UPLOAD_THUMBNAIL_EDGE);
-    }).pipe(Effect.provide(Storage.layerTest())),
+    }).pipe(Effect.provide(Layer.merge(Storage.layerTest(), ImageProcessor.layerBun))),
   );
 
   it.effect("rejects unsupported files before writing any assets", () =>
@@ -49,6 +50,6 @@ describe("admin image ingestion", () => {
 
       expect(error.message).toContain("JPEG, PNG, WebP, GIF, or AVIF");
       expect(yield* storage.list()).toEqual([]);
-    }).pipe(Effect.provide(Storage.layerTest())),
+    }).pipe(Effect.provide(Layer.merge(Storage.layerTest(), ImageProcessor.layerBun))),
   );
 });

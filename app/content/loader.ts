@@ -1,6 +1,7 @@
-import { Config, Context, Effect, Layer, ManagedRuntime, Option, Schema } from "effect";
+import { Config, Context, Effect, Layer, Option, Schema } from "effect";
 
-import { NotFound, Storage, StorageError } from "~/services/Storage";
+import type { NotFound, StorageError } from "~/services/Storage";
+import { Storage } from "~/services/Storage";
 import { isRetiredAssetKey, MENU_PDF_PUBLIC_HREF } from "~/lib/managed-assets";
 
 import { defaultContent } from "./defaults";
@@ -11,10 +12,10 @@ const DRAFT_CONTENT_KEY = "content/site.draft.json";
 
 const decode = Schema.decodeUnknownEffect(Schema.fromJsonString(SiteContent));
 
-export class ContentLoadError extends Schema.TaggedError<ContentLoadError>()(
-  "paulo-suzanne/content/loader/ContentLoadError",
-  { message: Schema.String },
-) {}
+export class ContentLoadError extends Schema.TaggedError<
+  ContentLoadError,
+  { readonly brand: unique symbol }
+>()("paulo-suzanne/content/loader/ContentLoadError", { message: Schema.String }) {}
 
 export type AdminContentLoad = {
   readonly content: SiteContent;
@@ -23,7 +24,7 @@ export type AdminContentLoad = {
 };
 
 const allowDefaultContent = Effect.gen(function* () {
-  const value = yield* Config.option(Config.string("ALLOW_DEFAULT_CONTENT"));
+  const value = yield* Config.option(Config.String("ALLOW_DEFAULT_CONTENT"));
   return Option.isSome(value) && value.value === "1";
 });
 
@@ -31,7 +32,7 @@ const decodeContentText = Effect.fn("decodeContentText")(function* (key: string,
   return yield* decode(text).pipe(
     Effect.catchCause((cause) =>
       Effect.fail(
-        new ContentLoadError({
+        ContentLoadError.make({
           message: `[content] failed to decode ${key} — refusing to ship defaults. Cause: ${String(cause)}`,
         }),
       ),
@@ -47,7 +48,7 @@ const readContentFromStorage = Effect.fn("readContentFromStorage")(function* (ke
   const text = yield* Effect.tryPromise({
     try: () => new Response(object.stream).text(),
     catch: (e) =>
-      new ContentLoadError({
+      ContentLoadError.make({
         message: `[content] S3 stream read failed for ${key} — refusing to ship defaults. Cause: ${String(e)}`,
       }),
   });
@@ -59,19 +60,12 @@ const readContentFromStorage = Effect.fn("readContentFromStorage")(function* (ke
 });
 
 /**
- * Build-time content loader.
+ * Public content loader: the published `content/site.json`.
  *
- * Strict mode is the default. Set ALLOW_DEFAULT_CONTENT=1 (dev / bootstrap) to
- * permit the bundled defaults fallback. In prod we want any of these to FAIL
- * THE BUILD rather than silently ship defaults over previously-published
- * content (`make-operations-idempotent`, `prove-it-works`):
- *   - bucket env missing
- *   - bucket key absent
- *   - S3 read error
- *   - decode error
- *
- * The first-deploy bootstrap problem (no key in bucket yet) is solved by
- * setting ALLOW_DEFAULT_CONTENT=1 for that deploy only, then unsetting it.
+ * Strict mode is the default: a missing key, a read error or a decode error
+ * fails the request rather than silently showing defaults over published
+ * content. Set ALLOW_DEFAULT_CONTENT=1 in the dev server's environment to
+ * permit the bundled defaults. The deployed Worker never binds it.
  */
 const loadContentFromStorage = Effect.fn("loadContentFromStorage")(function* () {
   const allowDefaults = yield* allowDefaultContent;
@@ -83,18 +77,17 @@ const loadContentFromStorage = Effect.fn("loadContentFromStorage")(function* () 
       ).pipe(Effect.as(defaultContent));
     }
     return Effect.fail(
-      new ContentLoadError({
+      ContentLoadError.make({
         message: `[content] ${reason} — refusing to ship defaults. Set ALLOW_DEFAULT_CONTENT=1 to opt in (dev/bootstrap only).`,
       }),
     );
   };
 
   const published = yield* readContentFromStorage(CONTENT_KEY).pipe(
-    Effect.mapError(
-      (error) =>
-        new ContentLoadError({
-          message: `[content] bucket read failed for ${CONTENT_KEY} — refusing to ship defaults. Cause: ${String(error)}`,
-        }),
+    Effect.mapError((error) =>
+      ContentLoadError.make({
+        message: `[content] bucket read failed for ${CONTENT_KEY} — refusing to ship defaults. Cause: ${String(error)}`,
+      }),
     ),
   );
 
@@ -136,7 +129,7 @@ const loadAdminContentFromStorage = Effect.fn("loadAdminContentFromStorage")(fun
     };
   }
 
-  return yield* new ContentLoadError({
+  return yield* ContentLoadError.make({
     message: `[content] no ${CONTENT_KEY} in bucket — refusing to ship defaults. Set ALLOW_DEFAULT_CONTENT=1 to opt in (dev/bootstrap only).`,
   });
 });
@@ -144,23 +137,24 @@ const loadAdminContentFromStorage = Effect.fn("loadAdminContentFromStorage")(fun
 export class Content extends Context.Service<
   Content,
   {
-    readonly loadContent: Effect.Effect<
-      SiteContent,
-      Config.ConfigError | ContentLoadError,
-      Storage
-    >;
+    readonly loadContent: Effect.Effect<SiteContent, Config.ConfigError | ContentLoadError>;
     readonly loadAdminContent: Effect.Effect<
       AdminContentLoad,
-      Config.ConfigError | ContentLoadError | NotFound | StorageError,
-      Storage
+      Config.ConfigError | ContentLoadError | NotFound | StorageError
     >;
   }
 >()("paulo-suzanne/content/loader/Content") {
-  static layer = Layer.succeed(
-    Content,
+  /** Content read from the given storage. */
+  static make = (storage: Storage["Service"]) =>
     Content.of({
-      loadContent: loadContentFromStorage(),
-      loadAdminContent: loadAdminContentFromStorage(),
+      loadContent: loadContentFromStorage().pipe(Effect.provideService(Storage, storage)),
+      loadAdminContent: loadAdminContentFromStorage().pipe(Effect.provideService(Storage, storage)),
+    });
+
+  static layer = Layer.effect(
+    Content,
+    Effect.gen(function* () {
+      return Content.make(yield* Storage);
     }),
   );
 }
@@ -198,7 +192,3 @@ export function normalizeSiteContentAssets(content: SiteContent): SiteContent {
     },
   };
 }
-
-const ContentRuntime = ManagedRuntime.make(Layer.mergeAll(Content.layer, Storage.layerOptional()));
-
-export const runLoadContent = (): Promise<SiteContent> => ContentRuntime.runPromise(loadContent);

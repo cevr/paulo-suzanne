@@ -1,3 +1,4 @@
+import { Effect } from "effect";
 import "./app.css";
 
 import {
@@ -12,10 +13,12 @@ import {
 
 import type { Route } from "./+types/root";
 import { Toaster } from "./components/ui/sonner";
-import { runLoadContent } from "./content/loader";
+import { loadContent } from "./content/loader";
 import type { SiteContent } from "./content/schema";
 import { LanguageProvider } from "./lib/language-provider";
 import type { Lang } from "./lib/language";
+import { ReactRouterContext } from "./lib/effect/router-context";
+import { routeHandler } from "./lib/effect/route";
 import { MENU_PDF_PUBLIC_HREF } from "./lib/managed-assets";
 
 const CANONICAL_URL = "https://pauloetsuzanne.com/";
@@ -67,12 +70,14 @@ function buildJsonLd(content: SiteContent) {
   };
 }
 
-export const loader = ({ request }: Route.LoaderArgs) =>
-  runLoadContent().then((content) => {
-    const url = new URL(request.url);
-    const lang: Lang = url.pathname.startsWith("/en") ? "en" : "fr";
+export const loader = routeHandler(
+  Effect.gen(function* () {
+    const { request } = yield* ReactRouterContext;
+    const content = yield* loadContent;
+    const lang: Lang = new URL(request.url).pathname.startsWith("/en") ? "en" : "fr";
     return { lang, content };
-  });
+  }),
+);
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const matches = useMatches();

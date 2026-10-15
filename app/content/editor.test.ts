@@ -2,7 +2,8 @@ import { describe, expect, it } from "effect-bun-test";
 import { Effect, Layer } from "effect";
 
 import { MANAGED_ASSETS, MENU_PDF_PUBLIC_HREF } from "~/lib/managed-assets";
-import { Railway } from "~/services/Railway";
+import { ImageProcessor } from "~/services/ImageProcessor";
+import { SiteCache, SiteCachePurgeError } from "~/services/SiteCache";
 import { Storage, StorageError } from "~/services/Storage";
 
 import { defaultContent } from "./defaults";
@@ -32,14 +33,10 @@ function contentForm(content: SiteContent, intent: "save-draft" | "publish"): Fo
   return form;
 }
 
-const railwayTest = (deploy: () => string) =>
-  Layer.succeed(
-    Railway,
-    Railway.of({
-      enabled: Effect.succeed(true),
-      triggerDeploy: Effect.sync(() => ({ deploymentId: deploy() })),
-    }),
-  );
+const siteCacheTest = (purge: Effect.Effect<void, SiteCachePurgeError>) =>
+  Layer.succeed(SiteCache, SiteCache.of({ purge }));
+
+const noEdge = Layer.merge(SiteCache.layerNone, ImageProcessor.layerBun);
 
 const publishedContentObjects = {
   "content/site.json": {
@@ -55,7 +52,7 @@ const storageWithListFailure = Layer.effect(
       ...storage,
       list: () =>
         Effect.fail(
-          new StorageError({
+          StorageError.make({
             key: "",
             op: "list",
             message: "catalog unavailable",
@@ -80,17 +77,20 @@ describe("Content editor", () => {
       ]);
     }).pipe(
       Effect.provide(
-        Layer.mergeAll(
-          Storage.layerTest({
-            ...publishedContentObjects,
-            "images/uploads/new-cover.webp": { body: "image" },
-            "images/uploads/new-cover.thumb.webp": { body: "thumbnail" },
-            "outdoor.avif": { body: "image" },
-            "menu.pdf": { body: "document" },
-            "notes.txt": { body: "notes" },
-          }),
-          Content.layer,
-          railwayTest(() => "unused"),
+        Content.layer.pipe(
+          Layer.provideMerge(
+            Layer.mergeAll(
+              Storage.layerTest({
+                ...publishedContentObjects,
+                "images/uploads/new-cover.webp": { body: "image" },
+                "images/uploads/new-cover.thumb.webp": { body: "thumbnail" },
+                "outdoor.avif": { body: "image" },
+                "menu.pdf": { body: "document" },
+                "notes.txt": { body: "notes" },
+              }),
+              noEdge,
+            ),
+          ),
         ),
       ),
     ),
@@ -103,13 +103,16 @@ describe("Content editor", () => {
       expect(model.assets).toEqual([]);
     }).pipe(
       Effect.provide(
-        Layer.mergeAll(
-          Storage.layerTest({
-            ...publishedContentObjects,
-            "images/food/homemade-meat-sauce.avif": { body: "image" },
-          }),
-          Content.layer,
-          railwayTest(() => "unused"),
+        Content.layer.pipe(
+          Layer.provideMerge(
+            Layer.mergeAll(
+              Storage.layerTest({
+                ...publishedContentObjects,
+                "images/food/homemade-meat-sauce.avif": { body: "image" },
+              }),
+              noEdge,
+            ),
+          ),
         ),
       ),
     ),
@@ -127,11 +130,7 @@ describe("Content editor", () => {
       );
     }).pipe(
       Effect.provide(
-        Layer.mergeAll(
-          storageWithListFailure,
-          Content.layer,
-          railwayTest(() => "unused"),
-        ),
+        Content.layer.pipe(Layer.provideMerge(Layer.mergeAll(storageWithListFailure, noEdge))),
       ),
     ),
   );
@@ -232,14 +231,7 @@ describe("Content editor", () => {
       });
       expect(decodedDraft.hero.tagline.en).toBe("Draft tagline");
       expect(storedPublished._tag).toBe("Failure");
-    }).pipe(
-      Effect.provide(
-        Layer.mergeAll(
-          Storage.layerTest(),
-          railwayTest(() => "unused"),
-        ),
-      ),
-    );
+    }).pipe(Effect.provide(Layer.mergeAll(Storage.layerTest(), noEdge)));
   });
 
   it.effect("keeps unsaved edits when an Asset is uploaded and attached to the Draft", () =>
@@ -270,18 +262,11 @@ describe("Content editor", () => {
       });
       expect(draft.hero.tagline.en).toBe("Keep this edit");
       expect(draft.meta.ogImage.key).toMatch(/^images\/uploads\/fresh-cover-.*\.webp$/);
-    }).pipe(
-      Effect.provide(
-        Layer.mergeAll(
-          Storage.layerTest(),
-          railwayTest(() => "unused"),
-        ),
-      ),
-    ),
+    }).pipe(Effect.provide(Layer.mergeAll(Storage.layerTest(), noEdge))),
   );
 
   it.effect("publishes changed Site content once and treats a repeat as up to date", () => {
-    let deployments = 0;
+    let purges = 0;
     const published: SiteContent = {
       ...defaultContent,
       hero: {
@@ -305,16 +290,19 @@ describe("Content editor", () => {
         status: "No changes to publish. The live website is already up to date.",
         published: true,
       });
-      expect(deployments).toBe(1);
+      expect(first).toMatchObject({ status: "Published. The website is up to date." });
+      expect(purges).toBe(1);
       expect(decoded.hero.tagline.en).toBe("Now live");
     }).pipe(
       Effect.provide(
         Layer.mergeAll(
           Storage.layerTest(),
-          railwayTest(() => {
-            deployments += 1;
-            return `deployment-${deployments}`;
-          }),
+          ImageProcessor.layerBun,
+          siteCacheTest(
+            Effect.sync(() => {
+              purges += 1;
+            }),
+          ),
         ),
       ),
     );
@@ -332,14 +320,7 @@ describe("Content editor", () => {
         expect(result.status).toBe(400);
         expect(result.fieldErrors.hero?.length).toBeGreaterThan(0);
       }
-    }).pipe(
-      Effect.provide(
-        Layer.mergeAll(
-          Storage.layerTest(),
-          railwayTest(() => "unused"),
-        ),
-      ),
-    ),
+    }).pipe(Effect.provide(Layer.mergeAll(Storage.layerTest(), noEdge))),
   );
 
   it.effect("assigns menu document errors to the Menu PDF editorial section", () =>
@@ -354,11 +335,24 @@ describe("Content editor", () => {
         expect(result.fieldErrors.menuPdf?.length).toBeGreaterThan(0);
         expect(result.fieldErrors.menu).toBeUndefined();
       }
+    }).pipe(Effect.provide(Layer.mergeAll(Storage.layerTest(), noEdge))),
+  );
+
+  it.effect("publishes even when the edge cache cannot be purged, and says so", () =>
+    Effect.gen(function* () {
+      const result = yield* submitEditor(contentForm(defaultContent, "publish"));
+
+      expect(result).toMatchObject({
+        _tag: "Redirect",
+        published: true,
+        status: "Published. Some visitors may see the previous version for up to a day.",
+      });
     }).pipe(
       Effect.provide(
         Layer.mergeAll(
           Storage.layerTest(),
-          railwayTest(() => "unused"),
+          ImageProcessor.layerBun,
+          siteCacheTest(Effect.fail(SiteCachePurgeError.make({ message: "purge refused" }))),
         ),
       ),
     ),

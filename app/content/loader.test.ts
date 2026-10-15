@@ -28,10 +28,10 @@ describe("loadContent", () => {
       expect(content).toEqual(defaultContent);
     }).pipe(
       Effect.provide(
-        Layer.mergeAll(
-          Content.layer,
-          Storage.layerTest(),
-          ConfigProvider.layer(allowDefaultsConfig),
+        Content.layer.pipe(
+          Layer.provideMerge(
+            Layer.mergeAll(Storage.layerTest(), ConfigProvider.layer(allowDefaultsConfig)),
+          ),
         ),
       ),
     ),
@@ -45,7 +45,11 @@ describe("loadContent", () => {
       expect(cause).toContain("refusing to ship defaults");
     }).pipe(
       Effect.provide(
-        Layer.mergeAll(Content.layer, Storage.layerTest(), ConfigProvider.layer(emptyConfig)),
+        Content.layer.pipe(
+          Layer.provideMerge(
+            Layer.mergeAll(Storage.layerTest(), ConfigProvider.layer(emptyConfig)),
+          ),
+        ),
       ),
     ),
   );
@@ -56,10 +60,10 @@ describe("loadContent", () => {
       expectFailureCause(exit);
     }).pipe(
       Effect.provide(
-        Layer.mergeAll(
-          Content.layer,
-          Storage.layerTest(),
-          ConfigProvider.layer(disallowDefaultsConfig),
+        Content.layer.pipe(
+          Layer.provideMerge(
+            Layer.mergeAll(Storage.layerTest(), ConfigProvider.layer(disallowDefaultsConfig)),
+          ),
         ),
       ),
     ),
@@ -93,18 +97,21 @@ describe("loadAdminContentFromStorage", () => {
       expect(result.draftLastModified).toBe(draftModified.getTime());
     }).pipe(
       Effect.provide(
-        Layer.mergeAll(
-          Content.layer,
-          Storage.layerTest({
-            "content/site.json": {
-              body: JSON.stringify(published),
-              lastModified: date("2026-05-05T12:00:00.000Z"),
-            },
-            "content/site.draft.json": {
-              body: JSON.stringify(draft),
-              lastModified: draftModified,
-            },
-          }),
+        Content.layer.pipe(
+          Layer.provideMerge(
+            Layer.mergeAll(
+              Storage.layerTest({
+                "content/site.json": {
+                  body: JSON.stringify(published),
+                  lastModified: date("2026-05-05T12:00:00.000Z"),
+                },
+                "content/site.draft.json": {
+                  body: JSON.stringify(draft),
+                  lastModified: draftModified,
+                },
+              }),
+            ),
+          ),
         ),
       ),
     );
@@ -121,14 +128,17 @@ describe("loadAdminContentFromStorage", () => {
       expect(result.draftLastModified).toBe(null);
     }).pipe(
       Effect.provide(
-        Layer.mergeAll(
-          Content.layer,
-          Storage.layerTest({
-            "content/site.json": {
-              body: JSON.stringify(published),
-              lastModified: date("2026-05-05T12:00:00.000Z"),
-            },
-          }),
+        Content.layer.pipe(
+          Layer.provideMerge(
+            Layer.mergeAll(
+              Storage.layerTest({
+                "content/site.json": {
+                  body: JSON.stringify(published),
+                  lastModified: date("2026-05-05T12:00:00.000Z"),
+                },
+              }),
+            ),
+          ),
         ),
       ),
     );
@@ -141,21 +151,24 @@ describe("loadAdminContentFromStorage", () => {
       expect(cause).toContain("failed to decode content/site.draft.json");
     }).pipe(
       Effect.provide(
-        Layer.mergeAll(
-          Content.layer,
-          Storage.layerTest({
-            "content/site.json": {
-              body: JSON.stringify(defaultContent),
-              lastModified: date("2026-05-05T12:00:00.000Z"),
-            },
-            "content/site.draft.json": {
-              body: JSON.stringify({
-                ...defaultContent,
-                hero: { ...defaultContent.hero, tagline: { en: "", fr: "" } },
+        Content.layer.pipe(
+          Layer.provideMerge(
+            Layer.mergeAll(
+              Storage.layerTest({
+                "content/site.json": {
+                  body: JSON.stringify(defaultContent),
+                  lastModified: date("2026-05-05T12:00:00.000Z"),
+                },
+                "content/site.draft.json": {
+                  body: JSON.stringify({
+                    ...defaultContent,
+                    hero: { ...defaultContent.hero, tagline: { en: "", fr: "" } },
+                  }),
+                  lastModified: date("2026-05-06T12:00:00.000Z"),
+                },
               }),
-              lastModified: date("2026-05-06T12:00:00.000Z"),
-            },
-          }),
+            ),
+          ),
         ),
       ),
     ),

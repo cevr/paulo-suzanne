@@ -7,14 +7,18 @@ import { Auth } from "~/services/Auth";
 
 export const headers = adminSecurityHeaders;
 
-export const action = routeAction(function* () {
-  const auth = yield* Auth;
-  return redirect("/admin/login", {
-    headers: { "Set-Cookie": auth.clearCookieHeader() },
-  });
-});
+export const action = routeAction(
+  Effect.gen(function* () {
+    const auth = yield* Auth;
+    return redirect("/admin/login", {
+      headers: { "Set-Cookie": auth.clearCookieHeader() },
+    });
+  }),
+);
 
-export const loader = routeHandler(function* () {
-  yield* Effect.void;
-  return redirect("/admin");
-});
+export const loader = routeHandler(
+  Effect.gen(function* () {
+    yield* Effect.void;
+    return redirect("/admin");
+  }),
+);

@@ -72,19 +72,28 @@ function mutationResponse(result: EditorMutation, section: EditorSectionKey): Re
   return redirect(`/admin?${params.toString()}`);
 }
 
-export const loader = routeHandler(function* () {
-  return yield* loadEditor();
-});
+// The layout loader checks the cookie too, but a client navigation can ask
+// for this loader's data alone, so it checks for itself.
+export const loader = routeHandler(
+  Effect.gen(function* () {
+    const { request } = yield* ReactRouterContext;
+    const auth = yield* Auth;
+    yield* auth.checkCookie(request.headers.get("cookie"));
+    return yield* loadEditor();
+  }),
+);
 
-export const action = routeAction(function* () {
-  const { request } = yield* ReactRouterContext;
-  const auth = yield* Auth;
-  yield* auth.checkCookie(request.headers.get("cookie"));
-  const form = yield* Effect.tryPromise(() => request.formData());
-  const requestedSection = String(form.get("_section"));
-  const section = isEditorSection(requestedSection) ? requestedSection : DEFAULT_SECTION;
-  return mutationResponse(yield* submitEditor(form), section);
-});
+export const action = routeAction(
+  Effect.gen(function* () {
+    const { request } = yield* ReactRouterContext;
+    const auth = yield* Auth;
+    yield* auth.checkCookie(request.headers.get("cookie"));
+    const form = yield* Effect.tryPromise(() => request.formData());
+    const requestedSection = String(form.get("_section"));
+    const section = isEditorSection(requestedSection) ? requestedSection : DEFAULT_SECTION;
+    return mutationResponse(yield* submitEditor(form), section);
+  }),
+);
 
 function formatDate(timestamp: number): string {
   return new Intl.DateTimeFormat(undefined, {

@@ -13,7 +13,7 @@ A private revision of Site content that an editor can save and resume without ch
 _Avoid_: Unpublished content, working copy
 
 **Publish**:
-The act of replacing public Site content with the current Draft and starting the website deployment that makes it visible.
+The act of replacing public Site content with the current Draft and clearing the edge cache, so visitors see it at once.
 _Avoid_: Save, deploy
 
 **Asset**:

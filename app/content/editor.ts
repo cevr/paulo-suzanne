@@ -12,7 +12,7 @@ import {
   MENU_PDF_ASSET_KEY,
   MENU_PDF_PUBLIC_HREF,
 } from "~/lib/managed-assets";
-import { Railway, RailwayDisabled, RailwayError } from "~/services/Railway";
+import { SiteCache } from "~/services/SiteCache";
 import { Storage } from "~/services/Storage";
 
 import { defaultContent } from "./defaults";
@@ -23,22 +23,6 @@ import { SiteContent } from "./schema";
 
 const CONTENT_KEY = "content/site.json";
 const DRAFT_CONTENT_KEY = "content/site.draft.json";
-const PUBLISH_STATE_KEY = "content/publish-state.json";
-const IN_FLIGHT_TIMEOUT_MS = 90_000;
-
-const PublishState = Schema.Struct({
-  contentHash: Schema.NullOr(Schema.NonEmptyString),
-  lastDeploymentId: Schema.NullOr(Schema.NonEmptyString),
-  lastPublishedAt: Schema.NullOr(Schema.Number),
-  inFlight: Schema.NullOr(
-    Schema.Struct({
-      hash: Schema.NonEmptyString,
-      startedAt: Schema.Number,
-    }),
-  ),
-});
-type PublishState = typeof PublishState.Type;
-
 export type EditorFieldErrors = Partial<Record<EditorSectionKey, string[]>>;
 
 export { imageUploadIntent, type EditorAsset } from "./editor-contract";
@@ -50,8 +34,6 @@ export type EditorModel = {
   readonly assets: readonly EditorAsset[];
   readonly assetCatalogStatus: "available" | "fallback";
   readonly isUsingDefaults: boolean;
-  readonly railwayEnabled: boolean;
-  readonly lastDeploymentId: string | null;
   readonly lastPublishedAt: number | null;
 };
 
@@ -59,7 +41,6 @@ type EditorRedirect = {
   readonly _tag: "Redirect";
   readonly status: string;
   readonly published: boolean;
-  readonly deploymentId?: string;
 };
 
 type EditorRejected = {
@@ -71,21 +52,9 @@ type EditorRejected = {
 
 export type EditorMutation = EditorRedirect | EditorRejected;
 
-const decodePublishState = Schema.decodeUnknownEffect(Schema.fromJsonString(PublishState));
 const decodeContent = Schema.decodeUnknownEffect(SiteContent);
+const decodeContentJson = Schema.decodeUnknownEffect(Schema.fromJsonString(SiteContent));
 const formatIssue = SchemaIssue.makeFormatterStandardSchemaV1();
-
-const readPublishState = Effect.fn("Content.readPublishState")(function* () {
-  const storage = yield* Storage;
-  const exit = yield* Effect.exit(
-    Effect.gen(function* () {
-      const object = yield* storage.get(PUBLISH_STATE_KEY);
-      const text = yield* Effect.promise(() => new Response(object.stream).text());
-      return yield* decodePublishState(text);
-    }),
-  );
-  return exit._tag === "Success" ? exit.value : null;
-});
 
 function canonicalize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonicalize);
@@ -99,10 +68,9 @@ function canonicalize(value: unknown): unknown {
   return value;
 }
 
-function hashContent(content: SiteContent): string {
-  const hasher = new Bun.CryptoHasher("sha256");
-  hasher.update(JSON.stringify(canonicalize(content)));
-  return hasher.digest("hex");
+/** Content as a canonical string, so equal content compares equal. */
+function canonicalJson(content: unknown): string {
+  return JSON.stringify(canonicalize(content));
 }
 
 type MutableRecord = Record<string, unknown>;
@@ -253,12 +221,37 @@ function schemaIssueFromCause(cause: Cause.Cause<unknown>): SchemaIssue.Issue | 
   return null;
 }
 
+/** The published content, or null when none is published or it no longer decodes. */
+const readPublishedContent = Effect.fn("Content.readPublishedContent")(function* () {
+  const storage = yield* Storage;
+  const exit = yield* Effect.exit(
+    Effect.gen(function* () {
+      const object = yield* storage.get(CONTENT_KEY);
+      const text = yield* Effect.promise(() => new Response(object.stream).text());
+      return yield* decodeContentJson(text);
+    }),
+  );
+  return exit._tag === "Success" ? exit.value : null;
+});
+
+/** Purge the edge cache, and say which status the admin should read. */
+const purgeSiteCache = Effect.fn("Content.purgeSiteCache")(function* (
+  purged: string,
+  stale: string,
+) {
+  const cache = yield* SiteCache;
+  return yield* cache.purge.pipe(
+    Effect.as(purged),
+    Effect.catchTag("paulo-suzanne/services/SiteCache/SiteCachePurgeError", (error) =>
+      Effect.logWarning("site cache purge failed", error).pipe(Effect.as(stale)),
+    ),
+  );
+});
+
 export const loadEditor = Effect.fn("Content.loadEditor")(function* () {
   const contentLoad = yield* loadAdminContent;
-  const railway = yield* Railway;
   const storage = yield* Storage;
-  const railwayEnabled = yield* railway.enabled;
-  const publishState = yield* readPublishState();
+  const publishedHead = yield* storage.head(CONTENT_KEY);
   const assetListExit = yield* Effect.exit(storage.list());
   const assets =
     assetListExit._tag === "Success"
@@ -275,9 +268,7 @@ export const loadEditor = Effect.fn("Content.loadEditor")(function* () {
     isUsingDefaults:
       contentLoad.source === "defaults" ||
       JSON.stringify(content) === JSON.stringify(defaultContent),
-    railwayEnabled,
-    lastDeploymentId: publishState?.lastDeploymentId ?? null,
-    lastPublishedAt: publishState?.lastPublishedAt ?? null,
+    lastPublishedAt: publishedHead?.lastModified.getTime() ?? null,
   } satisfies EditorModel;
 });
 
@@ -287,73 +278,112 @@ const rejected = (
   fieldErrors: EditorFieldErrors = {},
 ): EditorRejected => ({ _tag: "Rejected", status, error, fieldErrors });
 
+/** An uploaded photo, saved with the Draft that now names it. */
+const uploadDraftImage = Effect.fn("Content.uploadDraftImage")(function* (
+  form: FormData,
+  imageUploadField: string,
+) {
+  const storage = yield* Storage;
+  const file = form.get(`${imageUploadField}.__file`);
+  if (!(file instanceof File)) {
+    return rejected(400, "Choose an image before uploading.");
+  }
+  const now = yield* Clock.currentTimeMillis;
+  const imageExit = yield* Effect.exit(ingestAdminImage(file, now));
+  if (imageExit._tag === "Failure") {
+    for (const reason of imageExit.cause.reasons) {
+      if (Cause.isFailReason(reason) && Schema.is(AdminImageUploadError)(reason.error)) {
+        return rejected(400, reason.error.message);
+      }
+    }
+    return yield* Effect.failCause(imageExit.cause);
+  }
+
+  const draftInput = deriveLockedAssetFields(assembleFromFormData(form));
+  setPath(draftInput, `${imageUploadField}.key`.split("."), imageExit.value.key);
+  setPath(draftInput, `${imageUploadField}.width`.split("."), imageExit.value.width);
+  setPath(draftInput, `${imageUploadField}.height`.split("."), imageExit.value.height);
+  const decodeExit = yield* Effect.exit(decodeContent(draftInput));
+  if (decodeExit._tag === "Failure") {
+    const issue = schemaIssueFromCause(decodeExit.cause);
+    return rejected(
+      400,
+      issue
+        ? "The image was uploaded, but some fields need attention before the Draft can be saved."
+        : `Content validation failed: ${String(decodeExit.cause)}`,
+      issue ? fieldErrorsFromIssue(issue) : {},
+    );
+  }
+  yield* storage.put(
+    DRAFT_CONTENT_KEY,
+    JSON.stringify(decodeExit.value, null, 2),
+    "application/json",
+  );
+  return {
+    _tag: "Redirect",
+    status: "Image uploaded and Draft saved.",
+    published: false,
+  } satisfies EditorRedirect;
+});
+
+/** A new menu PDF, live at once: the edge cache is purged. */
+const uploadMenuPdf = Effect.fn("Content.uploadMenuPdf")(function* (form: FormData) {
+  const storage = yield* Storage;
+  const file = form.get("file");
+  const asset = findAsset(MENU_PDF_ASSET_KEY);
+  if (asset === undefined) return rejected(500, "Menu PDF asset is not configured.");
+  if (!(file instanceof File) || file.size === 0) {
+    return rejected(400, "Choose a PDF before uploading.");
+  }
+  const buffer = yield* Effect.tryPromise(() => file.arrayBuffer());
+  yield* storage.put(asset.key, new Uint8Array(buffer), file.type || asset.accept);
+  return {
+    _tag: "Redirect",
+    status: yield* purgeSiteCache(
+      "Menu PDF uploaded.",
+      "Menu PDF uploaded. Visitors may see the old menu for up to a day.",
+    ),
+    published: false,
+  } satisfies EditorRedirect;
+});
+
+/** The content, published unless it already is. */
+const publishContent = Effect.fn("Content.publishContent")(function* (content: SiteContent) {
+  const storage = yield* Storage;
+  const published = yield* readPublishedContent();
+  if (published !== null && canonicalJson(published) === canonicalJson(content)) {
+    yield* storage.delete(DRAFT_CONTENT_KEY).pipe(Effect.ignore);
+    return {
+      _tag: "Redirect",
+      status: "No changes to publish. The live website is already up to date.",
+      published: true,
+    } satisfies EditorRedirect;
+  }
+
+  yield* storage.put(CONTENT_KEY, JSON.stringify(content, null, 2), "application/json");
+  yield* storage.delete(DRAFT_CONTENT_KEY).pipe(Effect.ignore);
+
+  return {
+    _tag: "Redirect",
+    status: yield* purgeSiteCache(
+      "Published. The website is up to date.",
+      "Published. Some visitors may see the previous version for up to a day.",
+    ),
+    published: true,
+  } satisfies EditorRedirect;
+});
+
 export const submitEditor = Effect.fn("Content.submitEditor")(function* (form: FormData) {
   const storage = yield* Storage;
-  const railway = yield* Railway;
   const intent = String(form.get("intent") ?? "save-draft");
   const imageUploadField = imageUploadFieldFromIntent(intent);
 
-  if (imageUploadField !== null) {
-    const file = form.get(`${imageUploadField}.__file`);
-    if (!(file instanceof File)) {
-      return rejected(400, "Choose an image before uploading.");
-    }
-    const now = yield* Clock.currentTimeMillis;
-    const imageExit = yield* Effect.exit(ingestAdminImage(file, now));
-    if (imageExit._tag === "Failure") {
-      for (const reason of imageExit.cause.reasons) {
-        if (Cause.isFailReason(reason) && Schema.is(AdminImageUploadError)(reason.error)) {
-          return rejected(400, reason.error.message);
-        }
-      }
-      return yield* Effect.failCause(imageExit.cause);
-    }
+  if (imageUploadField !== null) return yield* uploadDraftImage(form, imageUploadField);
 
-    const draftInput = deriveLockedAssetFields(assembleFromFormData(form));
-    setPath(draftInput, `${imageUploadField}.key`.split("."), imageExit.value.key);
-    setPath(draftInput, `${imageUploadField}.width`.split("."), imageExit.value.width);
-    setPath(draftInput, `${imageUploadField}.height`.split("."), imageExit.value.height);
-    const decodeExit = yield* Effect.exit(decodeContent(draftInput));
-    if (decodeExit._tag === "Failure") {
-      const issue = schemaIssueFromCause(decodeExit.cause);
-      return rejected(
-        400,
-        issue
-          ? "The image was uploaded, but some fields need attention before the Draft can be saved."
-          : `Content validation failed: ${String(decodeExit.cause)}`,
-        issue ? fieldErrorsFromIssue(issue) : {},
-      );
-    }
-    yield* storage.put(
-      DRAFT_CONTENT_KEY,
-      JSON.stringify(decodeExit.value, null, 2),
-      "application/json",
-    );
-    return {
-      _tag: "Redirect",
-      status: "Image uploaded and Draft saved.",
-      published: false,
-    } satisfies EditorRedirect;
-  }
-
-  if (intent === "upload-menu-pdf") {
-    const file = form.get("file");
-    const asset = findAsset(MENU_PDF_ASSET_KEY);
-    if (asset === undefined) return rejected(500, "Menu PDF asset is not configured.");
-    if (!(file instanceof File) || file.size === 0) {
-      return rejected(400, "Choose a PDF before uploading.");
-    }
-    const buffer = yield* Effect.tryPromise(() => file.arrayBuffer());
-    yield* storage.put(asset.key, new Uint8Array(buffer), file.type || asset.accept);
-    return {
-      _tag: "Redirect",
-      status: "Menu PDF uploaded.",
-      published: false,
-    } satisfies EditorRedirect;
-  }
+  if (intent === "upload-menu-pdf") return yield* uploadMenuPdf(form);
 
   if (intent === "discard-draft") {
-    yield* storage.delete(DRAFT_CONTENT_KEY).pipe(Effect.catch(() => Effect.void));
+    yield* storage.delete(DRAFT_CONTENT_KEY).pipe(Effect.ignore);
     return {
       _tag: "Redirect",
       status: "Draft discarded.",
@@ -389,73 +419,5 @@ export const submitEditor = Effect.fn("Content.submitEditor")(function* (form: F
     } satisfies EditorRedirect;
   }
 
-  const newHash = hashContent(content);
-  const previous = yield* readPublishState();
-  const now = yield* Clock.currentTimeMillis;
-
-  if (previous?.contentHash === newHash) {
-    yield* storage.delete(DRAFT_CONTENT_KEY).pipe(Effect.catch(() => Effect.void));
-    return {
-      _tag: "Redirect",
-      status: previous.lastDeploymentId
-        ? "No changes to publish. The live website is already up to date."
-        : "No changes to publish.",
-      published: true,
-      ...(previous.lastDeploymentId === null ? {} : { deploymentId: previous.lastDeploymentId }),
-    } satisfies EditorRedirect;
-  }
-
-  if (previous?.inFlight && now - previous.inFlight.startedAt < IN_FLIGHT_TIMEOUT_MS) {
-    return rejected(409, "Publishing is already underway. Wait a moment, then try again.");
-  }
-
-  const inFlightState: PublishState = {
-    contentHash: previous?.contentHash ?? null,
-    lastDeploymentId: previous?.lastDeploymentId ?? null,
-    lastPublishedAt: previous?.lastPublishedAt ?? null,
-    inFlight: { hash: newHash, startedAt: now },
-  };
-  yield* storage.put(PUBLISH_STATE_KEY, JSON.stringify(inFlightState, null, 2), "application/json");
-  yield* storage.put(CONTENT_KEY, JSON.stringify(content, null, 2), "application/json");
-
-  const deployExit = yield* Effect.exit(railway.triggerDeploy);
-  let deploymentId: string | null = null;
-  let status = "Changes saved, but the website could not be updated.";
-  let published = false;
-  if (deployExit._tag === "Success") {
-    deploymentId = deployExit.value.deploymentId;
-    published = true;
-    status = "Published. The website should update within about a minute.";
-  } else {
-    for (const reason of deployExit.cause.reasons) {
-      if (!Cause.isFailReason(reason)) continue;
-      if (Schema.is(RailwayDisabled)(reason.error)) {
-        status = "Changes saved. Automatic website updates are not configured.";
-      } else if (Schema.is(RailwayError)(reason.error)) {
-        status = `Changes saved, but the website update failed: ${reason.error.message}`;
-      }
-    }
-  }
-
-  const railwaySucceededOrDisabled =
-    deployExit._tag === "Success" ||
-    (deployExit._tag === "Failure" &&
-      [...deployExit.cause.reasons].some(
-        (reason) => Cause.isFailReason(reason) && Schema.is(RailwayDisabled)(reason.error),
-      ));
-  const finalState: PublishState = {
-    contentHash: railwaySucceededOrDisabled ? newHash : (previous?.contentHash ?? null),
-    lastDeploymentId: deploymentId ?? previous?.lastDeploymentId ?? null,
-    lastPublishedAt: railwaySucceededOrDisabled ? now : (previous?.lastPublishedAt ?? null),
-    inFlight: null,
-  };
-  yield* storage.put(PUBLISH_STATE_KEY, JSON.stringify(finalState, null, 2), "application/json");
-  yield* storage.delete(DRAFT_CONTENT_KEY).pipe(Effect.catch(() => Effect.void));
-
-  return {
-    _tag: "Redirect",
-    status,
-    published,
-    ...(deploymentId === null ? {} : { deploymentId }),
-  } satisfies EditorRedirect;
+  return yield* publishContent(content);
 });

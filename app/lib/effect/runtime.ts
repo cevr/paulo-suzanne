@@ -1,34 +1,47 @@
-import { Cause, Effect, Exit, Layer, ManagedRuntime, Schema } from "effect";
-import { FetchHttpClient } from "effect/unstable/http";
+/**
+ * How a route loader or action runs an Effect.
+ *
+ * Each host builds the app's services its own way: the Worker from its R2,
+ * Images and cache bindings per request (`src/worker/Site.ts`), the dev server
+ * from local layers (`server.ts`). Both hand React Router a `RequestRuntime`
+ * made here from their `RunExit`, so routes see one contract, and a failure
+ * becomes the same HTTP response on every host.
+ */
+import { Cause, Effect, Exit, Schema } from "effect";
 import { redirect } from "react-router";
 
-import { Content, ContentLoadError } from "~/content/loader";
-import { Auth, Unauthorized } from "~/services/Auth";
-import { Railway, RailwayDisabled, RailwayError } from "~/services/Railway";
-import { NotFound, Storage, StorageError } from "~/services/Storage";
+import type { Content, ContentLoadError } from "~/content/loader";
+import type { ImageProcessor } from "~/services/ImageProcessor";
+import { Unauthorized, type Auth } from "~/services/Auth";
+import type { SiteCache } from "~/services/SiteCache";
+import { NotFound, StorageError, type Storage } from "~/services/Storage";
 
 import { ReactRouterContext, type RouteArgs } from "./router-context";
 
-export type AppServices = Storage | Auth | Railway | Content;
-export type AppError =
-  | Response
-  | Unauthorized
-  | NotFound
-  | StorageError
-  | RailwayDisabled
-  | RailwayError
-  | ContentLoadError;
+export type AppServices = Storage | Auth | Content | SiteCache | ImageProcessor;
+export type AppError = Response | Unauthorized | NotFound | StorageError | ContentLoadError;
 
-const RailwayLayer = Railway.layer.pipe(Layer.provideMerge(FetchHttpClient.layer));
+/** Run an Effect with the app's services to its Exit. Supplied by the host. */
+export type RunExit = <A, E>(effect: Effect.Effect<A, E, AppServices>) => Promise<Exit.Exit<A, E>>;
 
-const AppLayer = Layer.mergeAll(Storage.layer, Auth.layer, RailwayLayer, Content.layer);
-const AppRuntime = ManagedRuntime.make(AppLayer);
+export type RequestRuntime = {
+  readonly run: <A, E>(
+    args: RouteArgs,
+    effect: Effect.Effect<A, E, AppServices | ReactRouterContext>,
+  ) => Promise<A>;
+};
+
+declare module "react-router" {
+  interface RouterContextProvider {
+    runtime: RequestRuntime;
+  }
+}
 
 const isResponse = (v: unknown): v is Response =>
   typeof v === "object" && v !== null && v instanceof Response;
 
 const reportServerError = (cause: Cause.Cause<unknown>): void => {
-  Bun.stderr.write(`[paulo-suzanne] Effect error: ${Cause.pretty(cause)}\n`);
+  console.error(`[paulo-suzanne] Effect error: ${Cause.pretty(cause)}`);
 };
 
 const throwHttpError = (error: unknown): never => {
@@ -62,24 +75,9 @@ const throwCauseError = (cause: Cause.Cause<unknown>): never => {
   throw new Response("Internal Server Error", { status: 500 });
 };
 
-export type RequestRuntime = {
-  readonly run: <A, E, R>(args: RouteArgs, effect: Effect.Effect<A, E, R>) => Promise<A>;
-};
-
-const runWithContext = <A, E, R>(args: RouteArgs, effect: Effect.Effect<A, E, R>): Promise<A> => {
-  const provided = effect.pipe(Effect.provideService(ReactRouterContext, args)) as Effect.Effect<
-    A,
-    E,
-    AppServices
-  >;
-  return AppRuntime.runPromiseExit(provided).then((exit) => {
-    if (Exit.isSuccess(exit)) return exit.value;
-    return throwCauseError(exit.cause);
-  });
-};
-
-export const makeRequestRuntime = (): RequestRuntime => ({
-  run: runWithContext,
+export const makeRequestRuntime = (runExit: RunExit): RequestRuntime => ({
+  run: (args, effect) =>
+    runExit(effect.pipe(Effect.provideService(ReactRouterContext, args))).then((exit) =>
+      Exit.isSuccess(exit) ? exit.value : throwCauseError(exit.cause),
+    ),
 });
-
-export const disposeAppRuntime = (): Promise<void> => AppRuntime.dispose();

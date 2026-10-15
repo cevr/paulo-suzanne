@@ -15,36 +15,40 @@ export const meta = adminMeta;
 
 export const headers = adminSecurityHeaders;
 
-export const loader = routeHandler(function* () {
-  const { request } = yield* ReactRouterContext;
-  const auth = yield* Auth;
-  return yield* auth.checkCookie(request.headers.get("cookie")).pipe(
-    Effect.match({
-      onSuccess: () => redirect("/admin"),
-      onFailure: () => null,
-    }),
-  );
-});
+export const loader = routeHandler(
+  Effect.gen(function* () {
+    const { request } = yield* ReactRouterContext;
+    const auth = yield* Auth;
+    return yield* auth.checkCookie(request.headers.get("cookie")).pipe(
+      Effect.match({
+        onSuccess: () => redirect("/admin"),
+        onFailure: () => null,
+      }),
+    );
+  }),
+);
 
-export const action = routeAction(function* () {
-  const { request } = yield* ReactRouterContext;
-  const auth = yield* Auth;
-  const form = yield* Effect.tryPromise(() => request.formData());
-  const password = String(form.get("password") ?? "");
+export const action = routeAction(
+  Effect.gen(function* () {
+    const { request } = yield* ReactRouterContext;
+    const auth = yield* Auth;
+    const form = yield* Effect.tryPromise(() => request.formData());
+    const password = String(form.get("password") ?? "");
 
-  return yield* auth.verifyPassword(password).pipe(
-    Effect.match({
-      onSuccess: (token) =>
-        redirect("/admin", {
-          headers: { "Set-Cookie": auth.cookieHeader(token) },
-        }),
-      onFailure: (e) =>
-        Schema.is(BadPassword)(e)
-          ? Response.json({ error: "Wrong password" }, { status: 401 })
-          : Response.json({ error: "Login failed" }, { status: 500 }),
-    }),
-  );
-});
+    return yield* auth.verifyPassword(password).pipe(
+      Effect.match({
+        onSuccess: (token) =>
+          redirect("/admin", {
+            headers: { "Set-Cookie": auth.cookieHeader(token) },
+          }),
+        onFailure: (e) =>
+          Schema.is(BadPassword)(e)
+            ? Response.json({ error: "Wrong password" }, { status: 401 })
+            : Response.json({ error: "Login failed" }, { status: 500 }),
+      }),
+    );
+  }),
+);
 
 export default function Login() {
   const data = useActionData<typeof action>() as { error?: string } | undefined;

@@ -9,10 +9,10 @@ export const createDevVite = (): Promise<ViteDevServer> =>
     appType: "custom",
   });
 
-class ViteMiddlewareError extends Schema.TaggedError<ViteMiddlewareError>()(
-  "paulo-suzanne/lib/dev/vite-middleware/ViteMiddlewareError",
-  { message: Schema.String },
-) {}
+class ViteMiddlewareError extends Schema.TaggedError<
+  ViteMiddlewareError,
+  { readonly brand: unique symbol }
+>()("paulo-suzanne/lib/dev/vite-middleware/ViteMiddlewareError", { message: Schema.String }) {}
 
 const runViteMiddlewareEffect = (
   vite: ViteDevServer,
@@ -23,12 +23,9 @@ const runViteMiddlewareEffect = (
     const headers: Record<string, string | string[]> = {};
     req.headers.forEach((value, key) => {
       const existing = headers[key];
-      headers[key] =
-        existing === undefined
-          ? value
-          : Array.isArray(existing)
-            ? [...existing, value]
-            : [existing, value];
+      if (existing === undefined) headers[key] = value;
+      else if (Array.isArray(existing)) headers[key] = [...existing, value];
+      else headers[key] = [existing, value];
     });
 
     const nodeReq: any = {
@@ -88,7 +85,7 @@ const runViteMiddlewareEffect = (
       writeHead(code: number, maybeHeaders?: Record<string, string>) {
         statusCode = code;
         if (maybeHeaders)
-          for (const k in maybeHeaders) resHeaders[k.toLowerCase()] = maybeHeaders[k]!;
+          for (const [k, v] of Object.entries(maybeHeaders)) resHeaders[k.toLowerCase()] = v;
       },
       write(chunk: Uint8Array | string) {
         chunks.push(typeof chunk === "string" ? new TextEncoder().encode(chunk) : chunk);
@@ -123,7 +120,7 @@ const runViteMiddlewareEffect = (
 
     vite.middlewares(nodeReq, nodeRes, (err?: unknown) => {
       if (err !== undefined) {
-        resume(Effect.fail(new ViteMiddlewareError({ message: String(err) })));
+        resume(Effect.fail(ViteMiddlewareError.make({ message: String(err) })));
         return;
       }
       resume(Effect.succeed(null));
