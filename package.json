@@ -37,6 +37,7 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@alchemy.run/cloudflare": "2.0.0-beta.84",
     "@effect/platform-bun": "4.0.5",
     "@effect/platform-node": "4.0.5",
     "@effect/tsgo": "0.53.1",
@@ -46,7 +47,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "@typescript/native-preview": "7.0.0-dev.20260707.2",
-    "alchemy": "2.0.0-beta.83",
+    "alchemy": "2.0.0-beta.84",
     "concurrently": "10.0.6",
     "effect-bun-test": "0.4.0",
     "lefthook": "2.2.2",

@@ -10,7 +10,7 @@
  * bucket with the `cf` CLI, so `cf` must be logged in to the same account.
  */
 import { expect } from "bun:test";
-import * as Cloudflare from "alchemy/Cloudflare";
+import * as Cloudflare from "@alchemy.run/cloudflare";
 import * as Test from "alchemy/Test/Bun";
 import { Effect, FileSystem, Option, Schedule, Schema } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/http";
