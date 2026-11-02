@@ -11,7 +11,7 @@
  */
 import { expect } from "bun:test";
 import * as Cloudflare from "@alchemy.run/cloudflare";
-import * as Test from "alchemy/Test/Bun";
+import * as Test from "@alchemy.run/test/Bun";
 import { Effect, FileSystem, Option, Schedule, Schema } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/http";
 import { ChildProcess, ChildProcessSpawner } from "effect/process";

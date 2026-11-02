@@ -69,15 +69,10 @@ const bucketFile = Effect.fn("Site.bucketFile")(function* (key: string) {
   });
 });
 
-const page = Effect.fn("Site.page")(function* (
-  handle: Handle,
-  web: Request,
-  services: Context.Context<AppServices>,
-) {
+const page = Effect.fn("Site.page")(function* (handle: Handle, web: Request) {
+  const services = yield* Effect.context<AppServices>();
   const context = new RouterContextProvider();
-  context.runtime = makeRequestRuntime((effect) =>
-    Effect.runPromiseExit(Effect.provideContext(effect, services)),
-  );
+  context.runtime = makeRequestRuntime(Effect.runPromiseExitWith(services));
   // React Router answers every request it is handed, errors included, so a
   // rejected promise is a defect, not an expected failure.
   const response = yield* Effect.promise(() => handle(web, context));
@@ -94,14 +89,14 @@ export const render = Effect.fn("Site.render")(function* (
   const source: Effect.Effect<
     HttpServerResponse.HttpServerResponse,
     NotFound | StorageError,
-    Storage
+    AppServices
   > = Option.match(readsFile(request.method, pathname), {
-    onNone: () => page(handle, web, services),
+    onNone: () => page(handle, web),
     onSome: bucketFile,
   });
   const response = yield* source.pipe(
     Effect.catchTags({
-      "paulo-suzanne/services/Storage/NotFound": () => page(handle, web, services),
+      "paulo-suzanne/services/Storage/NotFound": () => page(handle, web),
       "paulo-suzanne/services/Storage/StorageError": (error) =>
         Effect.logError("bucket read failed", error).pipe(
           Effect.as(HttpServerResponse.empty({ status: 502 })),
