@@ -1,9 +1,8 @@
-import { BunHttpServer, BunRuntime, BunServices } from "@effect/platform-bun";
-import { Data, Effect, Layer } from "effect";
+import { BunHttpServer, BunRuntime } from "@effect/platform-bun";
+import { Effect, Layer, Schema } from "effect";
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
 import { createRequestHandler, RouterContextProvider, type ServerBuild } from "react-router";
 
-import { Content } from "./app/content/loader.ts";
 import {
   createDevVite,
   looksLikeViteAsset,
@@ -15,32 +14,27 @@ import {
   type AppServices,
   type RequestRuntime,
 } from "./app/lib/effect/runtime.ts";
-import { Auth } from "./app/services/Auth.ts";
-import { ImageProcessor } from "./app/services/ImageProcessor.ts";
-import { SiteCache } from "./app/services/SiteCache.ts";
 import { Storage } from "./app/services/Storage.ts";
+import { DevServices } from "./src/dev/services.ts";
 
 const PORT = Number(Bun.env["PORT"]) || 3000;
 
-const AppLayer = Layer.mergeAll(
-  Storage.layerDirectory(".data/bucket"),
-  Auth.layer,
-  Content.layer,
-  SiteCache.layerNone,
-  ImageProcessor.layerBun,
-).pipe(Layer.provide(BunServices.layer));
+const AppLayer = DevServices(".data/bucket");
 const vite = await createDevVite();
 
-class Unhandled extends Data.TaggedError("paulo-suzanne/server/Unhandled")<{}> {}
+class Unhandled extends Schema.TaggedError<Unhandled, { readonly brand: unique symbol }>()(
+  "paulo-suzanne/server/Unhandled",
+  {},
+) {}
 
 const bucketFile = Effect.fn("bucketFile")(function* (pathname: string) {
   if (!/\.[A-Za-z0-9]+$/.test(pathname) || pathname.endsWith(".data")) {
-    return yield* new Unhandled();
+    return yield* Unhandled.make();
   }
   const storage = yield* Storage;
   const object = yield* storage
     .get(decodeURIComponent(pathname.slice(1)))
-    .pipe(Effect.catchTag("paulo-suzanne/services/Storage/NotFound", () => new Unhandled()));
+    .pipe(Effect.catchTag("paulo-suzanne/services/Storage/NotFound", () => Unhandled.make()));
   return HttpServerResponse.raw(object.stream, {
     headers: { "content-type": object.contentType, "content-length": String(object.size) },
   });
@@ -48,9 +42,9 @@ const bucketFile = Effect.fn("bucketFile")(function* (pathname: string) {
 
 const viteAsset = Effect.fn("viteAsset")(function* (request: Request) {
   const { pathname } = new URL(request.url);
-  if (request.method !== "GET" || !looksLikeViteAsset(pathname)) return yield* new Unhandled();
+  if (request.method !== "GET" || !looksLikeViteAsset(pathname)) return yield* Unhandled.make();
   const response = yield* Effect.promise(() => runViteMiddleware(vite, request));
-  if (response === null) return yield* new Unhandled();
+  if (response === null) return yield* Unhandled.make();
   return HttpServerResponse.fromWeb(response);
 });
 
@@ -69,9 +63,7 @@ const reactRouter = Effect.fn("reactRouter")(function* (runtime: RequestRuntime,
 const Routes = Layer.unwrap(
   Effect.gen(function* () {
     const services = yield* Effect.context<AppServices>();
-    const runtime = makeRequestRuntime((effect) =>
-      Effect.runPromiseExit(Effect.provideContext(effect, services)),
-    );
+    const runtime = makeRequestRuntime(Effect.runPromiseExitWith(services));
     return HttpRouter.add("*", "*", (request) =>
       Effect.gen(function* () {
         const web = yield* HttpServerRequest.toWeb(request);

@@ -193,6 +193,7 @@
     "tests/**/*.ts",
     ".react-router/types/**/*",
     "alchemy.run.ts",
+    "server.ts",
     "react-router.config.ts",
     "vite.config.ts"
   ],

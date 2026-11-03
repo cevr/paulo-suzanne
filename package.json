@@ -16,7 +16,7 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "test": "bun test app/ tests/",
+    "test": "bun test app/ src/ tests/",
     "gate": "concurrently -n type,style,build -c blue,yellow,cyan \"bun run typecheck\" \"bun run lint && bun run fmt\" \"bun run build\" && bun run test",
     "plan": "react-router build && alchemy plan alchemy.run.ts --stage prod",
     "deploy": "react-router build && alchemy deploy alchemy.run.ts --stage prod",
