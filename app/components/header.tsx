@@ -54,7 +54,6 @@ export function Header() {
               </a>
             </Button>
 
-            {/* Mobile Order Button */}
             <Button asChild variant="neo" size="sm" className="px-2 py-1 text-lg lg:hidden">
               <a href={header.orderOnlineUrl} target="_blank" rel="noopener noreferrer">
                 {header.orderShort[lang]}
@@ -77,7 +76,6 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       <div
         data-visible={isMenuOpen ? "" : undefined}
         className="border-primary absolute top-20 right-0 left-0 hidden border-t-2 bg-black text-white data-visible:block lg:hidden"

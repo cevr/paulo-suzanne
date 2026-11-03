@@ -1,9 +1,3 @@
-/**
- * The site's R2 bucket: published and draft content, the menu PDF and photos.
- *
- * In `prod` it is retained, so destroying the stack never deletes the site's
- * content. Any other stage empties and deletes its own bucket on destroy.
- */
 import * as Alchemy from "alchemy";
 import * as Cloudflare from "@alchemy.run/cloudflare";
 import { Stage } from "alchemy/Stage";

@@ -1,12 +1,3 @@
-/**
- * The app's services, made from the Worker's bindings for one request.
- *
- * Every binding call needs the context of the request it serves, while the
- * app's services need nothing (`app/lib/effect/runtime.ts`). So each adapter
- * takes the request's whole context and provides it to every call. The whole
- * context, not only `RuntimeContext`: the cache purge also reads the request's
- * execution context from it, which its type does not say.
- */
 import type { RuntimeContext } from "alchemy";
 import type * as Cloudflare from "@alchemy.run/cloudflare";
 import { Array as Arr, Effect, Option, Stream, type Context } from "effect";
@@ -95,7 +86,6 @@ export const storageFromR2 = (bucket: Cloudflare.R2.ReadWriteBucketClient, reque
               lastModified: object.uploaded,
               etag: object.httpEtag,
             })),
-            // The app's Storage contract says "absent" with null.
             Option.getOrNull,
           ),
         ),

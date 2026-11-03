@@ -1,14 +1,3 @@
-/**
- * The deploy, checked against real Cloudflare: a throwaway `test_$USER` stage
- * is deployed, seeded with the bundled default content, probed and destroyed
- * in one scope, so a failure destroys it too.
- *
- * Outside the gate's test folder pattern on purpose, so the gate never
- * deploys. Run it with `bun run test:deploy` (it builds first) before handing
- * off a change to the stack, the Worker, or the Alchemy or Effect versions.
- * It reads `ADMIN_PASSWORD` and `COOKIE_SECRET` from `.env`, and seeds the
- * bucket with the `cf` CLI, so `cf` must be logged in to the same account.
- */
 import { expect } from "bun:test";
 import * as Cloudflare from "@alchemy.run/cloudflare";
 import * as Test from "@alchemy.run/test/Bun";
@@ -25,7 +14,6 @@ const { test, deploy, destroy } = Test.make({ providers, state: Cloudflare.state
 
 const deployed = Effect.acquireRelease(deploy(Stack), () => destroy(Stack).pipe(Effect.orDie));
 
-/** Publish the bundled defaults, as the admin's first publish would. */
 const seed = Effect.fn("seed")(function* (bucket: string) {
   const fs = yield* FileSystem.FileSystem;
   const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
@@ -61,7 +49,6 @@ test(
 
     const raw = yield* HttpClient.HttpClient;
     const client = raw.pipe(HttpClient.filterStatusOk);
-    // A fresh workers.dev host can answer 404 for a few seconds after deploy.
     const get = (path: string) =>
       client
         .get(`${url}${path}`)
@@ -76,12 +63,10 @@ test(
     const css = yield* get(asset);
     expect(css.headers["cache-control"]).toBe("public, max-age=31536000, immutable");
 
-    // The admin sends a visitor without a session to its login page, uncached.
     const login = yield* get("/admin");
     expect(yield* login.text).toContain('name="password"');
     expect(login.headers["cache-control"]).toBe(CACHE.private);
 
-    // A wrong password is refused, so the Worker has its secrets.
     const refused = yield* raw.execute(
       HttpClientRequest.post(`${url}/admin/login`).pipe(
         HttpClientRequest.bodyUrlParams({ password: "not-the-password" }),

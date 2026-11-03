@@ -1,16 +1,3 @@
-/**
- * pauloetsuzanne.com, declared as an Alchemy stack: one Cloudflare Worker
- * serving the React Router build (`src/worker/Site.ts`) and the R2 bucket it
- * reads content and photos from (`src/worker/Bucket.ts`).
- *
- * `bun run deploy` builds and deploys `prod`. Any other stage is a throwaway
- * copy (`bunx alchemy deploy alchemy.run.ts --stage <name>`), destroyed with
- * `bunx alchemy destroy alchemy.run.ts --stage <name>`.
- *
- * The Worker's secrets, `ADMIN_PASSWORD` and `COOKIE_SECRET`, are read from
- * `.env` at deploy. State lives in the Cloudflare state store, so every
- * machine and CI see the same resources.
- */
 import * as Alchemy from "alchemy";
 import * as Cloudflare from "@alchemy.run/cloudflare";
 import { Effect } from "effect";

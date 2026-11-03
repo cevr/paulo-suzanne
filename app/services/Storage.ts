@@ -1,9 +1,3 @@
-/**
- * The site's object storage: published and draft content, menu PDF and photos.
- *
- * The deployed Worker provides it from its R2 bucket (`src/worker/adapters.ts`).
- * The local dev server provides `layerDirectory`, and tests `layerTest`.
- */
 import { Clock, Context, DateTime, Effect, FileSystem, Layer, Option, Schema } from "effect";
 
 const StorageOp = Schema.Literals(["get", "put", "head", "list", "delete"]);
@@ -64,7 +58,6 @@ const CONTENT_TYPES: Record<string, string> = {
   woff2: "font/woff2",
 };
 
-/** The content type a key's extension names, for stores that keep none. */
 export const contentTypeFor = (key: string): string =>
   CONTENT_TYPES[key.slice(key.lastIndexOf(".") + 1).toLowerCase()] ?? "application/octet-stream";
 
@@ -157,10 +150,6 @@ export class Storage extends Context.Service<
       });
     });
 
-  /**
-   * A local directory as the bucket, for the dev server. Content types come
-   * from each key's extension.
-   */
   static layerDirectory = (root: string) =>
     Layer.effect(
       Storage,

@@ -1,11 +1,3 @@
-/**
- * The local dev server: Vite with hot reload, React Router, and the app's
- * services from local layers. Production is the Worker (`src/worker/Site.ts`).
- *
- * The bucket is the `.data/bucket` directory. Start with an empty one and
- * `ALLOW_DEFAULT_CONTENT=1` to see the bundled defaults, or copy objects in.
- * `ADMIN_PASSWORD` and `COOKIE_SECRET` come from `.env`.
- */
 import { BunHttpServer, BunRuntime, BunServices } from "@effect/platform-bun";
 import { Data, Effect, Layer } from "effect";
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
@@ -74,7 +66,6 @@ const reactRouter = Effect.fn("reactRouter")(function* (runtime: RequestRuntime,
   return HttpServerResponse.fromWeb(response);
 });
 
-// The app's services are built once; every request runs against them.
 const Routes = Layer.unwrap(
   Effect.gen(function* () {
     const services = yield* Effect.context<AppServices>();

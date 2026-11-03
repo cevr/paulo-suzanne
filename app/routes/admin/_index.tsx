@@ -72,8 +72,6 @@ function mutationResponse(result: EditorMutation, section: EditorSectionKey): Re
   return redirect(`/admin?${params.toString()}`);
 }
 
-// The layout loader checks the cookie too, but a client navigation can ask
-// for this loader's data alone, so it checks for itself.
 export const loader = routeHandler(
   Effect.gen(function* () {
     const { request } = yield* ReactRouterContext;

@@ -59,14 +59,6 @@ const readContentFromStorage = Effect.fn("readContentFromStorage")(function* (ke
   });
 });
 
-/**
- * Public content loader: the published `content/site.json`.
- *
- * Strict mode is the default: a missing key, a read error or a decode error
- * fails the request rather than silently showing defaults over published
- * content. Set ALLOW_DEFAULT_CONTENT=1 in the dev server's environment to
- * permit the bundled defaults. The deployed Worker never binds it.
- */
 const loadContentFromStorage = Effect.fn("loadContentFromStorage")(function* () {
   const allowDefaults = yield* allowDefaultContent;
 
@@ -144,7 +136,6 @@ export class Content extends Context.Service<
     >;
   }
 >()("paulo-suzanne/content/loader/Content") {
-  /** Content read from the given storage. */
   static make = (storage: Storage["Service"]) =>
     Content.of({
       loadContent: loadContentFromStorage().pipe(Effect.provideService(Storage, storage)),

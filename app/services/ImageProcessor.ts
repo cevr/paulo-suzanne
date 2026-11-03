@@ -1,10 +1,3 @@
-/**
- * Image measuring and WebP encoding for admin uploads.
- *
- * The deployed Worker provides it from the Cloudflare Images binding
- * (`src/worker/adapters.ts`), so the Worker spends no CPU on pixels. The dev
- * server and tests provide `layerBun`, which uses `Bun.Image`.
- */
 import { Context, Effect, Layer, Schema } from "effect";
 
 export class ImageProcessingError extends Schema.TaggedError<
@@ -18,7 +11,6 @@ export interface ImageSize {
 }
 
 export interface WebpOptions {
-  /** The longest edge of the output. A smaller image is never enlarged. */
   readonly maxEdge: number;
   readonly quality: number;
 }

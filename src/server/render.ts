@@ -1,15 +1,3 @@
-/**
- * A request the static files do not answer: a bucket file, or a page
- * rendered by React Router.
- *
- * A path with a file extension is looked up in the bucket first (photos, the
- * menu PDF, uploads). A miss, and every other path, goes to React Router with
- * a request runtime made from the services the Worker built for this request.
- *
- * Public responses are cached at the edge under the site's cache tag, which
- * a publish or a menu upload purges. The admin, and any response that sets a
- * cookie, is never cached.
- */
 import { Effect, Option, type Context } from "effect";
 import { Headers, HttpServerRequest, HttpServerResponse } from "effect/http";
 import { RouterContextProvider } from "react-router";
@@ -18,7 +6,6 @@ import { makeRequestRuntime, type AppServices } from "~/lib/effect/runtime";
 import { SITE_CACHE_TAG } from "~/services/SiteCache";
 import { Storage, type NotFound, type StorageError } from "~/services/Storage";
 
-/** React Router's request handler, as `createRequestHandler` returns it. */
 export type Handle = (request: Request, context: RouterContextProvider) => Promise<Response>;
 
 export const CACHE = {
@@ -33,7 +20,6 @@ const isPrivate = (pathname: string, headers: Headers.Headers): boolean =>
   pathname.startsWith("/admin.") ||
   Headers.has(headers, "set-cookie");
 
-/** The response with its edge policy: private, cached under the site tag, or as it set. */
 export const withPolicy = (pathname: string, response: HttpServerResponse.HttpServerResponse) => {
   if (isPrivate(pathname, response.headers)) {
     return HttpServerResponse.setHeader(response, "cache-control", CACHE.private);
@@ -47,7 +33,6 @@ export const withPolicy = (pathname: string, response: HttpServerResponse.HttpSe
 
 const decodePath = Option.liftThrowable(decodeURIComponent);
 
-/** The bucket key a path names, when it names a file and not React Router data. */
 export const bucketKey = (pathname: string): Option.Option<string> => {
   if (!/\.[A-Za-z0-9]+$/.test(pathname) || pathname.endsWith(".data")) return Option.none();
   return decodePath(pathname.slice(1)).pipe(Option.filter((key) => !key.split("/").includes("..")));
@@ -73,8 +58,6 @@ const page = Effect.fn("Site.page")(function* (handle: Handle, web: Request) {
   const services = yield* Effect.context<AppServices>();
   const context = new RouterContextProvider();
   context.runtime = makeRequestRuntime(Effect.runPromiseExitWith(services));
-  // React Router answers every request it is handed, errors included, so a
-  // rejected promise is a defect, not an expected failure.
   const response = yield* Effect.promise(() => handle(web, context));
   return HttpServerResponse.fromWeb(response);
 });
@@ -107,7 +90,6 @@ export const render = Effect.fn("Site.render")(function* (
   return withPolicy(pathname, response);
 });
 
-/** `render`, with a request the host cannot hand to React Router answered 400. */
 export const respond = (
   handle: Handle,
   request: HttpServerRequest.HttpServerRequest,

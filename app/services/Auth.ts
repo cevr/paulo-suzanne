@@ -74,7 +74,6 @@ export class Auth extends Context.Service<
     readonly clearCookieHeader: () => string;
   }
 >()("paulo-suzanne/services/Auth") {
-  /** The admin's password and the key that signs their session cookie. */
   static make = (secrets: AuthSecrets) => {
     const adminPw = Redacted.value(secrets.adminPassword);
     const secret = Redacted.value(secrets.cookieSecret);
@@ -126,7 +125,6 @@ export class Auth extends Context.Service<
     });
   };
 
-  /** The secrets from `ADMIN_PASSWORD` and `COOKIE_SECRET`. */
   static readonly secrets = Config.all({
     adminPassword: Config.Redacted("ADMIN_PASSWORD").pipe(Config.withDefault(Redacted.make(""))),
     cookieSecret: Config.Redacted("COOKIE_SECRET"),

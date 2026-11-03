@@ -5,7 +5,6 @@ import type { AppServices } from "./runtime";
 
 type RouteServices = AppServices | ReactRouterContext;
 
-/** A loader or action that runs `effect` with the app's services and its arguments. */
 export const routeHandler =
   <A, E>(effect: Effect.Effect<A, E, RouteServices>) =>
   (args: RouteArgs): Promise<A> =>

@@ -26,7 +26,6 @@ export function MenuSection() {
           </h2>
           <p className="mx-auto my-8 max-w-2xl text-2xl font-bold">{menu.intro[lang]}</p>
 
-          {/* Food Image Carousel */}
           <div className="mx-auto mb-12 max-w-3xl">
             <Carousel>
               <div className="neo-brutalist overflow-hidden">

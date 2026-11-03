@@ -68,7 +68,6 @@ function canonicalize(value: unknown): unknown {
   return value;
 }
 
-/** Content as a canonical string, so equal content compares equal. */
 function canonicalJson(content: unknown): string {
   return JSON.stringify(canonicalize(content));
 }
@@ -221,7 +220,6 @@ function schemaIssueFromCause(cause: Cause.Cause<unknown>): SchemaIssue.Issue | 
   return null;
 }
 
-/** The published content, or null when none is published or it no longer decodes. */
 const readPublishedContent = Effect.fn("Content.readPublishedContent")(function* () {
   const storage = yield* Storage;
   const exit = yield* Effect.exit(
@@ -234,7 +232,6 @@ const readPublishedContent = Effect.fn("Content.readPublishedContent")(function*
   return exit._tag === "Success" ? exit.value : null;
 });
 
-/** Purge the edge cache, and say which status the admin should read. */
 const purgeSiteCache = Effect.fn("Content.purgeSiteCache")(function* (
   purged: string,
   stale: string,
@@ -278,7 +275,6 @@ const rejected = (
   fieldErrors: EditorFieldErrors = {},
 ): EditorRejected => ({ _tag: "Rejected", status, error, fieldErrors });
 
-/** An uploaded photo, saved with the Draft that now names it. */
 const uploadDraftImage = Effect.fn("Content.uploadDraftImage")(function* (
   form: FormData,
   imageUploadField: string,
@@ -326,7 +322,6 @@ const uploadDraftImage = Effect.fn("Content.uploadDraftImage")(function* (
   } satisfies EditorRedirect;
 });
 
-/** A new menu PDF, live at once: the edge cache is purged. */
 const uploadMenuPdf = Effect.fn("Content.uploadMenuPdf")(function* (form: FormData) {
   const storage = yield* Storage;
   const file = form.get("file");
@@ -347,7 +342,6 @@ const uploadMenuPdf = Effect.fn("Content.uploadMenuPdf")(function* (form: FormDa
   } satisfies EditorRedirect;
 });
 
-/** The content, published unless it already is. */
 const publishContent = Effect.fn("Content.publishContent")(function* (content: SiteContent) {
   const storage = yield* Storage;
   const published = yield* readPublishedContent();

@@ -1,12 +1,3 @@
-/**
- * How a route loader or action runs an Effect.
- *
- * Each host builds the app's services its own way: the Worker from its R2,
- * Images and cache bindings per request (`src/worker/Site.ts`), the dev server
- * from local layers (`server.ts`). Both hand React Router a `RequestRuntime`
- * made here from their `RunExit`, so routes see one contract, and a failure
- * becomes the same HTTP response on every host.
- */
 import { Cause, Effect, Exit, Schema } from "effect";
 import { redirect } from "react-router";
 
@@ -21,7 +12,6 @@ import { ReactRouterContext, type RouteArgs } from "./router-context";
 export type AppServices = Storage | Auth | Content | SiteCache | ImageProcessor;
 export type AppError = Response | Unauthorized | NotFound | StorageError | ContentLoadError;
 
-/** Run an Effect with the app's services to its Exit. Supplied by the host. */
 export type RunExit = <A, E>(effect: Effect.Effect<A, E, AppServices>) => Promise<Exit.Exit<A, E>>;
 
 export type RequestRuntime = {

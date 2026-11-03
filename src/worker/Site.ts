@@ -1,17 +1,3 @@
-/**
- * pauloetsuzanne.com on Cloudflare: one Worker with the client build as its
- * static assets, an R2 bucket for content and photos, the Images binding for
- * admin uploads, and Workers Cache in front.
- *
- * Requests are served assets-first: a hashed file or a public file never
- * invokes the Worker. Everything else reaches `fetch`, which serves a bucket
- * file or a React Router page (`../server/render.ts`).
- *
- * `prod` takes the Worker name `paulo-suzanne` and zone routes for the three
- * domains and their `www`, which serve their proxied traffic with no DNS
- * change (`PROD_HOSTS`). Any other stage is a throwaway copy on a generated
- * `workers.dev` name.
- */
 import type { RuntimeContext } from "alchemy";
 import * as Cloudflare from "@alchemy.run/cloudflare";
 import { Stage } from "alchemy/Stage";
@@ -33,10 +19,6 @@ import { Bucket } from "./Bucket.ts";
 
 export const DOMAINS = ["pauloetsuzanne.com", "pauloetsuzanne.ca", "pauloetsuzanne.net"] as const;
 
-/**
- * Where `prod` answers: the domains. `"workers-dev"` drops the zone routes,
- * which hands the domains back to whatever their DNS points at (the rollback).
- */
 const PROD_HOSTS: keyof typeof HOSTS = "domains";
 
 const ASSETS = {
@@ -50,13 +32,11 @@ const routes = Arr.flatMap(DOMAINS, (zoneName) => [
   { pattern: `www.${zoneName}/*`, zoneName },
 ]);
 
-/** The props each choice of `PROD_HOSTS` adds to `prod`. */
 const HOSTS = {
   "workers-dev": {},
   domains: { routes },
 };
 
-/** The props, by stage. The running Worker reads them without one. */
 const props = Effect.gen(function* () {
   const stage = yield* Effect.serviceOption(Stage);
   const base = { main: import.meta.url, assets: ASSETS };
