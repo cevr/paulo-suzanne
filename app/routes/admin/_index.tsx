@@ -72,20 +72,23 @@ function mutationResponse(result: EditorMutation, section: EditorSectionKey): Re
   return redirect(`/admin?${params.toString()}`);
 }
 
+const checkSessionWithoutTrustingTheLayoutLoader = Effect.gen(function* () {
+  const { request } = yield* ReactRouterContext;
+  const auth = yield* Auth;
+  yield* auth.checkCookie(request.headers.get("cookie"));
+});
+
 export const loader = routeHandler(
   Effect.gen(function* () {
-    const { request } = yield* ReactRouterContext;
-    const auth = yield* Auth;
-    yield* auth.checkCookie(request.headers.get("cookie"));
+    yield* checkSessionWithoutTrustingTheLayoutLoader;
     return yield* loadEditor();
   }),
 );
 
 export const action = routeAction(
   Effect.gen(function* () {
+    yield* checkSessionWithoutTrustingTheLayoutLoader;
     const { request } = yield* ReactRouterContext;
-    const auth = yield* Auth;
-    yield* auth.checkCookie(request.headers.get("cookie"));
     const form = yield* Effect.tryPromise(() => request.formData());
     const requestedSection = String(form.get("_section"));
     const section = isEditorSection(requestedSection) ? requestedSection : DEFAULT_SECTION;

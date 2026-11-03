@@ -12,10 +12,10 @@ import {
   type ListedObject,
 } from "~/services/Storage";
 
-type Request = Context.Context<RuntimeContext>;
+type WholeRequestContext = Context.Context<RuntimeContext>;
 
-const inRequest =
-  (request: Request) =>
+const provideWholeRequestContext =
+  (request: WholeRequestContext) =>
   <A, E>(effect: Effect.Effect<A, E, RuntimeContext>): Effect.Effect<A, E> =>
     Effect.provideContext(effect, request);
 
@@ -48,8 +48,11 @@ const contentTypeOf = (key: string, object: Cloudflare.R2.R2Object) =>
     Option.getOrElse(() => contentTypeFor(key)),
   );
 
-export const storageFromR2 = (bucket: Cloudflare.R2.ReadWriteBucketClient, request: Request) => {
-  const run = inRequest(request);
+export const storageFromR2 = (
+  bucket: Cloudflare.R2.ReadWriteBucketClient,
+  request: WholeRequestContext,
+) => {
+  const run = provideWholeRequestContext(request);
   return Storage.of({
     get: (key) =>
       run(bucket.get(key)).pipe(
@@ -108,8 +111,11 @@ export const storageFromR2 = (bucket: Cloudflare.R2.ReadWriteBucketClient, reque
 const imageError = (error: { message: string }) =>
   ImageProcessingError.make({ message: error.message });
 
-export const imagesFromBinding = (images: Cloudflare.Images.ImagesClient, request: Request) => {
-  const run = inRequest(request);
+export const imagesFromBinding = (
+  images: Cloudflare.Images.ImagesClient,
+  request: WholeRequestContext,
+) => {
+  const run = provideWholeRequestContext(request);
   return ImageProcessor.of({
     measure: (bytes) =>
       run(images.info(Stream.make(bytes))).pipe(
@@ -140,8 +146,11 @@ export const imagesFromBinding = (images: Cloudflare.Images.ImagesClient, reques
   });
 };
 
-export const siteCacheFromWorkersCache = (cache: Cloudflare.CacheClient, request: Request) => {
-  const run = inRequest(request);
+export const siteCacheFromWorkersCache = (
+  cache: Cloudflare.CacheClient,
+  request: WholeRequestContext,
+) => {
+  const run = provideWholeRequestContext(request);
   return SiteCache.of({
     purge: run(cache.purge({ tags: [SITE_CACHE_TAG] })).pipe(
       Effect.mapError((error) => SiteCachePurgeError.make({ message: error.message })),

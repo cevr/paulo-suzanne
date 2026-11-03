@@ -14,7 +14,12 @@ const { test, deploy, destroy } = Test.make({ providers, state: Cloudflare.state
 
 const deployed = Effect.acquireRelease(deploy(Stack), () => destroy(Stack).pipe(Effect.orDie));
 
-const seed = Effect.fn("seed")(function* (bucket: string) {
+const untilFreshWorkersDevHostStopsAnswering404 = {
+  schedule: Schedule.exponential("1 second"),
+  times: 8,
+};
+
+const seedWithLoggedInCfCli = Effect.fn("seedWithLoggedInCfCli")(function* (bucket: string) {
   const fs = yield* FileSystem.FileSystem;
   const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
   const file = yield* fs.makeTempFileScoped({ suffix: ".json" });
@@ -45,14 +50,12 @@ test(
     const outputs = yield* deployed;
     const url = yield* Effect.fromOption(Option.fromNullishOr(outputs.url));
     const bucket = yield* Effect.fromOption(Option.fromNullishOr(outputs.bucket));
-    yield* seed(bucket);
+    yield* seedWithLoggedInCfCli(bucket);
 
     const raw = yield* HttpClient.HttpClient;
     const client = raw.pipe(HttpClient.filterStatusOk);
     const get = (path: string) =>
-      client
-        .get(`${url}${path}`)
-        .pipe(Effect.retry({ schedule: Schedule.exponential("1 second"), times: 8 }));
+      client.get(`${url}${path}`).pipe(Effect.retry(untilFreshWorkersDevHostStopsAnswering404));
 
     const home = yield* get("/en");
     const html = yield* home.text;
